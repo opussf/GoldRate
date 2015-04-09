@@ -1,0 +1,10 @@
+## Interface: @INTERFACE@
+## Title: GoldRate
+## Notes: Tracks gold income rate @VERSION@
+## Author: opussf
+## Version: @VERSION@
+## Description: Tracks gold income and cost of WoW Token
+## SavedVariables: GoldRate_data
+## SavedVariablesPerCharacter:
+GoldRate.lua
+GoldRate.xml
