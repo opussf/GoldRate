@@ -49,7 +49,7 @@ end
 function test.testCapture_GoldAmount_LeavingWorld()
 	-- Assert that PLAYER_MONEY event takes a snapshot of the current toon's money amount
 	local now = time()
-	GoldRate.PLAYER_LEAVING_WORLD()  -- Capture the amount
+	GoldRate.PLAYER_LOGOUT()  -- Capture the amount
 	assertEquals( 150000, GoldRate_data.testRealm.testPlayer[now] )
 end
 test.run()
