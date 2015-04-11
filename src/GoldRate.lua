@@ -33,8 +33,6 @@ function GoldRate.OnLoad()
 	GoldRate_Frame:RegisterEvent("ADDON_LOADED")
 	GoldRate_Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 	GoldRate_Frame:RegisterEvent("PLAYER_MONEY")
---GetMoney()
---http://wow.gamepedia.com/API_GetMoney   (In Copper)
 end
 
 --------------
@@ -51,15 +49,15 @@ function GoldRate.ADDON_LOADED()
 
 	GoldRate_data[GoldRate.realm] = GoldRate_data[GoldRate.realm] or {}
 	GoldRate_data[GoldRate.realm][GoldRate.name] = GoldRate_data[GoldRate.realm][GoldRate.name] or {}
-
-	--GoldRate.Print("Loaded")
 end
 function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.name][time()] = GetMoney()
 	GoldRate_data[GoldRate.realm][GoldRate.name]["last"] = GetMoney()
 end
 GoldRate.PLAYER_ENTERING_WORLD = GoldRate.PLAYER_MONEY
+--------------
 -- Non Event functions
+--------------
 function GoldRate.parseCmd(msg)
 	if msg then
 		local i,c = strmatch(msg, "^(|c.*|r)%s*(%d*)$")
