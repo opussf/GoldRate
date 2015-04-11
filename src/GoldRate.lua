@@ -34,7 +34,6 @@ function GoldRate.OnLoad()
 	GoldRate_Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 	GoldRate_Frame:RegisterEvent("PLAYER_MONEY")
 end
-
 --------------
 -- Event Functions
 --------------
@@ -102,7 +101,6 @@ function GoldRate.PrintHelp()
 		end
 	end
 end
-
 -- this needs to be at the end because it is referencing functions
 GoldRate.CommandList = {
 	["help"] = {
