@@ -110,4 +110,3 @@ GoldRate.CommandList = {
 		["help"] = {"","Print this help."},
 	},
 }
-
