@@ -31,7 +31,7 @@ function GoldRate.OnLoad()
 	SlashCmdList["GOLDRATE"] = function(msg) GoldRate.Command(msg); end
 
 	GoldRate_Frame:RegisterEvent("ADDON_LOADED")
-	GoldRate_Frame:RegisterEvent("PLAYER_LOGOUT")
+	GoldRate_Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 	GoldRate_Frame:RegisterEvent("PLAYER_MONEY")
 --GetMoney()
 --http://wow.gamepedia.com/API_GetMoney   (In Copper)
@@ -56,8 +56,9 @@ function GoldRate.ADDON_LOADED()
 end
 function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.name][time()] = GetMoney()
+	GoldRate_data[GoldRate.realm][GoldRate.name]["last"] = GetMoney()
 end
-GoldRate.PLAYER_LOGOUT = GoldRate.PLAYER_MONEY
+GoldRate.PLAYER_ENTERING_WORLD = GoldRate.PLAYER_MONEY
 -- Non Event functions
 function GoldRate.parseCmd(msg)
 	if msg then
