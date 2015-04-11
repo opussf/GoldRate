@@ -52,7 +52,7 @@ function GoldRate.ADDON_LOADED()
 	GoldRate_data[GoldRate.realm] = GoldRate_data[GoldRate.realm] or {}
 	GoldRate_data[GoldRate.realm][GoldRate.name] = GoldRate_data[GoldRate.realm][GoldRate.name] or {}
 
-	GoldRate.Print("Loaded")
+	--GoldRate.Print("Loaded")
 end
 function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.name][time()] = GetMoney()
