@@ -7,6 +7,8 @@ GOLDRATE_OFFLINE = {}
 -- Data file:
 GOLDRATE_OFFLINE.dataFile = "/Applications/World of Warcraft/WTF/Account/OPUSSF/SavedVariables/GoldRate.lua"
 GoldRate_data = {}
+dataStructure = {}  -- Used to store computed values from the data
+timeRanges = {}  -- Used to store the time info from the data
 
 function GOLDRATE_OFFLINE.FileExists(name)
    local f=io.open(name,"r")
@@ -15,6 +17,58 @@ end
 function GOLDRATE_OFFLINE.DoFile( filename )
 	local f = assert( loadfile( filename ) )
 	return f()
+end
+function PairsByKeys( t, f )
+	local a = {}
+	for n in pairs(t) do table.insert(a, n) end
+	table.sort(a, f)
+	local i = 0
+	local iter = function()
+		i = i + 1
+		if a[i] == nil then return nil
+		else return a[i], t[a[i]]
+		end
+	end
+	return iter
+end
+function GOLDRATE_OFFLINE.ProcessData()
+	timeRanges.all = {}
+	timeRanges.all.oldestEntry = os.time()  -- track the oldest entry
+	timeRanges.all.newestEntry = 0  -- track the newest entry
+	-- Process the saved data into a better internal format
+	for realm, rdata in pairs(GoldRate_data) do
+		print(realm)
+		dataStructure[realm] = {}
+		timeRanges[realm] = {}
+		timeRanges[realm].oldestEntry = os.time()  -- track the oldest entry per realm
+		timeRanges[realm].newestEntry = 0
+		for player, pdata in pairs(rdata) do
+			print("\t"..player)
+			dataStructure[realm][player] = {}
+			timeRanges[realm][player] = {}
+			timeRanges[realm][player].oldestEntry = os.time() -- track the oldest entry per player
+			timeRanges[realm][player].newestEntry = 0
+			for ts, gold in pairs(pdata) do
+				if ts ~= "last" then
+					timeRanges[realm][player].oldestEntry = math.min( timeRanges[realm][player].oldestEntry, ts )  -- find oldestEntry for player
+					timeRanges[realm][player].newestEntry = math.max( timeRanges[realm][player].newestEntry, ts )  -- find newestEntry for player
+				end
+			end
+			timeRanges[realm].oldestEntry = math.min( timeRanges[realm].oldestEntry, timeRanges[realm][player].oldestEntry ) -- find oldestEntry for realm
+			timeRanges[realm].newestEntry = math.max( timeRanges[realm].newestEntry, timeRanges[realm][player].newestEntry )  -- find newestEntry for realm
+		end
+	end
+end
+function GOLDRATE_OFFLINE.ReportData()
+	print("ReportData\n==========")
+	for realm, rdata in pairs( dataStructure ) do
+		print( string.format( "% 20s: Date range: %s  -->  %s",
+				realm, os.date( "%x %X", timeRanges[realm].oldestEntry), os.date( "%x %X", timeRanges[realm].newestEntry ) ) )
+		for player, pdata in pairs( rdata ) do
+			print( string.format( "% 32s: Date range: %s  -->  %s",
+					player, os.date( "%x %X", timeRanges[realm][player].oldestEntry ), os.date( "%x %X", timeRanges[realm][player].newestEntry ) ) )
+		end
+	end
 end
 --[[
 function INEED_OFFLINE.setMetaData()
@@ -175,11 +229,13 @@ end
 ]]
 -------------------------------------------------
 
-if INEED_OFFLINE.file_exists( INEED_OFFLINE.dataFile ) then
-	INEED_OFFLINE.dofile( INEED_OFFLINE.dataFile )
+if GOLDRATE_OFFLINE.FileExists( GOLDRATE_OFFLINE.dataFile ) then
+	GOLDRATE_OFFLINE.DoFile( GOLDRATE_OFFLINE.dataFile )
 end
-INEED_OFFLINE.setMetaData()
-
+GOLDRATE_OFFLINE.ProcessData()
+GOLDRATE_OFFLINE.ReportData()
+--[[
 while INEED_OFFLINE.isRunning do
 	INEED_OFFLINE.performPrompt()
 end
+]]
