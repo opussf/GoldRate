@@ -32,6 +32,7 @@ function PairsByKeys( t, f )
 	return iter
 end
 function GOLDRATE_OFFLINE.ProcessData()
+	-- process GoldRate_data into internal structures that make processing easier.
 	timeRanges.all = {}
 	timeRanges.all.oldestEntry = os.time()  -- track the oldest entry
 	timeRanges.all.newestEntry = 0  -- track the newest entry
@@ -57,15 +58,19 @@ function GOLDRATE_OFFLINE.ProcessData()
 			timeRanges[realm].oldestEntry = math.min( timeRanges[realm].oldestEntry, timeRanges[realm][player].oldestEntry ) -- find oldestEntry for realm
 			timeRanges[realm].newestEntry = math.max( timeRanges[realm].newestEntry, timeRanges[realm][player].newestEntry )  -- find newestEntry for realm
 		end
+		timeRanges.all.oldestEntry = math.min( timeRanges.all.oldestEntry, timeRanges[realm].oldestEntry ) -- find oldestEntry for all
+		timeRanges.all.newestEntry = math.max( timeRanges.all.newestEntry, timeRanges[realm].newestEntry ) -- find newestEntry for all
 	end
 end
 function GOLDRATE_OFFLINE.ReportData()
 	print("ReportData\n==========")
+	print( string.format( "Data ranges from %s  -->  %s",
+			os.date( "%x %X", timeRanges.all.oldestEntry ), os.date( "%x %X", timeRanges.all.newestEntry ) ) )
 	for realm, rdata in pairs( dataStructure ) do
-		print( string.format( "% 20s: Date range: %s  -->  %s",
+		print( string.format( "% 15s: Date range: %s  -->  %s",
 				realm, os.date( "%x %X", timeRanges[realm].oldestEntry), os.date( "%x %X", timeRanges[realm].newestEntry ) ) )
 		for player, pdata in pairs( rdata ) do
-			print( string.format( "% 32s: Date range: %s  -->  %s",
+			print( string.format( "% 27s: Date range: %s  -->  %s",
 					player, os.date( "%x %X", timeRanges[realm][player].oldestEntry ), os.date( "%x %X", timeRanges[realm][player].newestEntry ) ) )
 		end
 	end
