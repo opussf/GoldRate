@@ -44,6 +44,7 @@ function GOLDRATE_OFFLINE.ProcessData()
 		timeRanges[realm] = {}
 		timeRanges[realm].oldestEntry = os.time()  -- track the oldest entry per realm
 		timeRanges[realm].newestEntry = 0
+<<<<<<< HEAD
 		for player, pdata in pairs(rdata) do
 			print("\t"..player)
 			dataStructure[realm][player] = {}
@@ -58,6 +59,31 @@ function GOLDRATE_OFFLINE.ProcessData()
 			end
 			timeRanges[realm].oldestEntry = math.min( timeRanges[realm].oldestEntry, timeRanges[realm][player].oldestEntry ) -- find oldestEntry for realm
 			timeRanges[realm].newestEntry = math.max( timeRanges[realm].newestEntry, timeRanges[realm][player].newestEntry )  -- find newestEntry for realm
+=======
+		for faction, fdata in pairs( rdata ) do
+			print("\t"..faction)
+			dataStructure[realm][faction] = {}
+			timeRanges[realm][faction] = {}
+			timeRanges[realm][faction].oldestEntry = os.time() -- track the oldest entry per player
+			timeRanges[realm][faction].newestEntry = 0
+			for player, pdata in pairs( fdata ) do
+				print("\t\t"..player)
+				dataStructure[realm][faction][player] = {}
+				timeRanges[realm][faction][player] = {}
+				timeRanges[realm][faction][player].oldestEntry = os.time() -- track the oldest entry per player
+				timeRanges[realm][faction][player].newestEntry = 0
+				for ts, gold in pairs(pdata) do
+					if ts ~= "last" then
+						timeRanges[realm][faction][player].oldestEntry = math.min( timeRanges[realm][faction][player].oldestEntry, ts )  -- find oldestEntry for player
+						timeRanges[realm][faction][player].newestEntry = math.max( timeRanges[realm][faction][player].newestEntry, ts )  -- find newestEntry for player
+					end
+				end
+				timeRanges[realm][faction].oldestEntry = math.min( timeRanges[realm][faction].oldestEntry, timeRanges[realm][faction][player].oldestEntry ) -- find oldestEntry for faction
+				timeRanges[realm][faction].newestEntry = math.max( timeRanges[realm][faction].newestEntry, timeRanges[realm][faction][player].newestEntry )  -- find newestEntry for faction
+			end
+			timeRanges[realm].oldestEntry = math.min( timeRanges[realm].oldestEntry, timeRanges[realm][faction].oldestEntry ) -- find oldestEntry for realm
+			timeRanges[realm].newestEntry = math.max( timeRanges[realm].newestEntry, timeRanges[realm][faction].newestEntry )  -- find newestEntry for realm
+>>>>>>> develop
 		end
 		timeRanges.all.oldestEntry = math.min( timeRanges.all.oldestEntry, timeRanges[realm].oldestEntry ) -- find oldestEntry for all
 		timeRanges.all.newestEntry = math.max( timeRanges.all.newestEntry, timeRanges[realm].newestEntry ) -- find newestEntry for all
@@ -70,9 +96,19 @@ function GOLDRATE_OFFLINE.ReportData()
 	for realm, rdata in pairs( dataStructure ) do
 		print( string.format( "% 15s: Date range: %s  -->  %s",
 				realm, os.date( "%x %X", timeRanges[realm].oldestEntry), os.date( "%x %X", timeRanges[realm].newestEntry ) ) )
+<<<<<<< HEAD
 		for player, pdata in pairs( rdata ) do
 			print( string.format( "% 27s: Date range: %s  -->  %s",
 					player, os.date( "%x %X", timeRanges[realm][player].oldestEntry ), os.date( "%x %X", timeRanges[realm][player].newestEntry ) ) )
+=======
+		for faction, fdata in pairs( rdata ) do
+			print( string.format( "% 27s: Date range: %s  -->  %s",
+					faction, os.date( "%x %X", timeRanges[realm][faction].oldestEntry ), os.date( "%x %X", timeRanges[realm][faction].newestEntry ) ) )
+			for player, pdata in pairs( fdata ) do
+				print( string.format( "% 39s: Date range: %s  -->  %s",
+						player, os.date( "%x %X", timeRanges[realm][faction][player].oldestEntry ), os.date( "%x %X", timeRanges[realm][faction][player].newestEntry ) ) )
+			end
+>>>>>>> develop
 		end
 	end
 end
