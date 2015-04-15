@@ -47,11 +47,12 @@ function GoldRate.ADDON_LOADED()
 	GoldRate.name = UnitName("player")
 
 	GoldRate_data[GoldRate.realm] = GoldRate_data[GoldRate.realm] or {}
-	GoldRate_data[GoldRate.realm][GoldRate.name] = GoldRate_data[GoldRate.realm][GoldRate.name] or {}
+	GoldRate_data[GoldRate.realm][GoldRate.faction] = GoldRate_data[GoldRate.realm][GoldRate.faction] or {}
+	GoldRate_data[GoldRate.realm][GoldRate.faction][GoldRate.name] = GoldRate_data[GoldRate.realm][GoldRate.faction][GoldRate.name] or {}
 end
 function GoldRate.PLAYER_MONEY()
-	GoldRate_data[GoldRate.realm][GoldRate.name][time()] = GetMoney()
-	GoldRate_data[GoldRate.realm][GoldRate.name]["last"] = GetMoney()
+	GoldRate_data[GoldRate.realm][GoldRate.faction][GoldRate.name][time()] = GetMoney()
+	GoldRate_data[GoldRate.realm][GoldRate.faction][GoldRate.name]["last"] = GetMoney()
 end
 GoldRate.PLAYER_ENTERING_WORLD = GoldRate.PLAYER_MONEY
 --------------
