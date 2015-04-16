@@ -14,9 +14,9 @@ GoldRate_Frame = CreateFrame()
 -- require the file to test
 package.path = "../src/?.lua;'" .. package.path
 require "GoldRate"
+require "GoldRate_Offline"
 
 -- addon setup
-
 function test.before()
 	GoldRate.OnLoad()
 	GoldRate.ADDON_LOADED()
