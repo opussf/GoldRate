@@ -39,19 +39,19 @@ function GOLDRATE_OFFLINE.ProcessData()
 	timeRanges.all.newestEntry = 0  -- track the newest entry
 	-- Process the saved data into a better internal format
 	for realm, rdata in pairs(GoldRate_data) do
-		print(realm)
+		--print(realm)
 		dataStructure[realm] = {}
 		timeRanges[realm] = {}
 		timeRanges[realm].oldestEntry = os.time()  -- track the oldest entry per realm
 		timeRanges[realm].newestEntry = 0
 		for faction, fdata in pairs( rdata ) do
-			print("\t"..faction)
+			--print("\t"..faction)
 			dataStructure[realm][faction] = {}
 			timeRanges[realm][faction] = {}
 			timeRanges[realm][faction].oldestEntry = os.time() -- track the oldest entry per player
 			timeRanges[realm][faction].newestEntry = 0
 			for player, pdata in pairs( fdata ) do
-				print("\t\t"..player)
+				--print("\t\t"..player)
 				dataStructure[realm][faction][player] = {}
 				timeRanges[realm][faction][player] = {}
 				timeRanges[realm][faction][player].oldestEntry = os.time() -- track the oldest entry per player
@@ -74,7 +74,7 @@ function GOLDRATE_OFFLINE.ProcessData()
 end
 function GOLDRATE_OFFLINE.ReportData()
 	print("ReportData\n==========")
-	print( string.format( "Data ranges from %s  -->  %s",
+	print( string.format( "Data ranges from %s  -->  %s\n",
 			os.date( "%x %X", timeRanges.all.oldestEntry ), os.date( "%x %X", timeRanges.all.newestEntry ) ) )
 	for realm, rdata in pairs( dataStructure ) do
 		print( string.format( "% 15s: Date range: %s  -->  %s",
@@ -103,6 +103,10 @@ GOLDRATE_OFFLINE.CommandList = {
 	['q'] = {
 		["func"] = function() GOLDRATE_OFFLINE.isRunning = false end,
 		["help"] = {"", "Quit" },
+	},
+	['r'] = {
+		["func"] = GOLDRATE_OFFLINE.ReportData,
+		["help"] = {"", "Shows a report of the data."},
 	},
 }
 function GOLDRATE_OFFLINE.parseCmd( line )
@@ -138,7 +142,7 @@ if GOLDRATE_OFFLINE.FileExists( GOLDRATE_OFFLINE.dataFile ) then
 	GOLDRATE_OFFLINE.DoFile( GOLDRATE_OFFLINE.dataFile )
 end
 GOLDRATE_OFFLINE.ProcessData()
-GOLDRATE_OFFLINE.ReportData()
+--GOLDRATE_OFFLINE.ReportData()
 
 while GOLDRATE_OFFLINE.isRunning do
 	GOLDRATE_OFFLINE.performPrompt()
