@@ -104,12 +104,14 @@ function test.testGoldRateOffline_AdditiveMerge_1Item()
 	test.beforeGoldRateOffline()
 	GoldRate_data = { ["testRealm"] = { ["Alliance"] = { ["testPlayer1"] = { [10] = 100 } } } }
 	GOLDRATE_OFFLINE.ProcessData()
+	assertEquals( 100, combinedData.testRealm.Alliance[10] )
 end
 function test.testGoldRateOffline_AdditiveMerge_2Items()
 	test.beforeGoldRateOffline()
 	GoldRate_data = { ["testRealm"] = { ["Alliance"] = { ["testPlayer1"] = { [10] = 100 } } } }
 	GoldRate_data.testRealm.Alliance.testPlayer2 = { [20] = 200 }
 	GOLDRATE_OFFLINE.ProcessData()
+	assertEquals( 300, combinedData.testRealm.Alliance[20] )
 end
 function test.testGoldRateOffline_AdditiveMerge_3Items()
 	test.beforeGoldRateOffline()
@@ -118,5 +120,33 @@ function test.testGoldRateOffline_AdditiveMerge_3Items()
 	GoldRate_data.testRealm.Alliance.testPlayer3 = { [30] = 400 }
 	GOLDRATE_OFFLINE.ProcessData()
 	--GOLDRATE_OFFLINE.ReportData()
+	assertEquals( 700, combinedData.testRealm.Alliance[30] )
+end
+function test.testGoldRateOffline_AdditvieMerge_3Toons_4Data()
+	test.beforeGoldRateOffline()
+	GoldRate_data = { ["testRealm"] = { ["Alliance"] = { ["testPlayer1"] = { [10] = 100, [40] = 800 } } } }
+	GoldRate_data.testRealm.Alliance.testPlayer2 = { [20] = 200 }
+	GoldRate_data.testRealm.Alliance.testPlayer3 = { [30] = 400 }
+	GOLDRATE_OFFLINE.ProcessData()
+	--GOLDRATE_OFFLINE.ReportData()
+	assertEquals( 1500, combinedData.testRealm.Alliance[40] )
+end
+function test.testGoldRateOffline_AdditeMerge_diffAlliance()
+	test.beforeGoldRateOffline()
+	GoldRate_data = { ["testRealm"] = { ["Alliance"] = { ["testPlayer1"] = { [10] = 100 } } } }
+	GoldRate_data.testRealm.Horde = { ["testPlayer2"] = { [20] = 200 } }
+	GOLDRATE_OFFLINE.ProcessData()
+	GOLDRATE_OFFLINE.ReportData()
+	assertEquals( 100, combinedData.testRealm.Alliance[10] )
+	assertEquals( 200, combinedData.testRealm.Horde[20] )
+end
+function test.testGoldRateOffline_AdditeMerge_diffRealms()
+	test.beforeGoldRateOffline()
+	GoldRate_data = { ["testRealm"] = { ["Alliance"] = { ["testPlayer1"] = { [10] = 100 } } } }
+	GoldRate_data.testRealm2 = { ["Alliance"] = { ["testPlayer2"] = { [20] = 200 } } }
+	GOLDRATE_OFFLINE.ProcessData()
+	GOLDRATE_OFFLINE.ReportData()
+	assertEquals( 100, combinedData.testRealm.Alliance[10] )
+	assertEquals( 200, combinedData.testRealm2.Alliance[20] )
 end
 test.run()
