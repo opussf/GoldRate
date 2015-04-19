@@ -61,6 +61,7 @@ function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["firstTS"] =
 			GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["firstTS"] or time()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[time()] = GoldRate.otherSummed + GetMoney()
+	GoldRate.Print( "Realm total: "..GetCoinTextureString( GoldRate.otherSummed + GetMoney() ) )
 end
 GoldRate.PLAYER_ENTERING_WORLD = GoldRate.PLAYER_MONEY
 --------------
