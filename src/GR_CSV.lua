@@ -38,7 +38,7 @@ if FileExists( dataFile ) then
 			end
 			for ts, val in PairsByKeys( GoldRate_data.Hyjal.Alliance.consolidated ) do
 				if ts >= maxInitialTS then
-					strOut = strOut .. string.format( '%s,%s,%i,%i\n', realm, faction, ts, val )
+					strOut = strOut .. string.format( '%s,%s,%s,%i\n', realm, faction, os.date( "%x %X", ts ), val )
 				end
 			end
 			print(strOut)
