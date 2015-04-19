@@ -18,6 +18,7 @@ require "GoldRate"
 
 -- addon setup
 function test.before()
+	GoldRate_data = {}
 	GoldRate.OnLoad()
 	GoldRate.ADDON_LOADED()
 	myCopper = 150000
@@ -82,7 +83,8 @@ end
 function test.testCapture_GoldAmount_PlayerMoney_MultiToon()
 	local now = time()
 	assertTrue( GoldRate_data.testRealm.Alliance.toons )
-	GoldRate_data.testRealm.Alliance.toons.otherPlayer = {["last"] = 70000} -- give the other player 7 gole
+	GoldRate_data.testRealm.Alliance.toons.otherPlayer = {["last"] = 70000} -- give the other player 7 gold
+	GoldRate.ADDON_LOADED()
 	GoldRate.PLAYER_MONEY()
 	assertEquals( 220000, GoldRate_data.testRealm.Alliance.consolidated[now] )
 end
