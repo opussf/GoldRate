@@ -52,10 +52,16 @@ function test.testCapture_SetsConsolidatedDataSection()
 	GoldRate.PLAYER_MONEY()
 	assertTrue( GoldRate_data.testRealm.Alliance.consolidated )
 end
-function test.testCapture_SetsPlayersFirstCaptureTS()
+function test.testCapture_SetsPlayersFirstCaptureTS_FirstSeen()
 	local now = time()
 	GoldRate.PLAYER_MONEY()
 	assertEquals( now, GoldRate_data.testRealm.Alliance.toons.testPlayer["firstTS"] )
+end
+function test.testCapture_SetsPlayersFirstCaptureTS_notFirstSeen()
+	local now = time()
+	GoldRate_data.testRealm.Alliance.toons.testPlayer["firstTS"] = 200
+	GoldRate.PLAYER_MONEY()
+	assertEquals( 200, GoldRate_data.testRealm.Alliance.toons.testPlayer["firstTS"] )
 end
 function test.testCapture_GoldAmount_PlayerMoney_Last()
 	-- Assert that PLAYER_MONEY event takes a snapshot of the current toon's money amount
