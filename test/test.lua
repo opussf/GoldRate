@@ -14,7 +14,7 @@ GoldRate_Frame = CreateFrame()
 -- require the file to test
 package.path = "../src/?.lua;'" .. package.path
 require "GoldRate"
-require "GoldRate_Offline"
+--require "GoldRate_Offline"
 
 -- addon setup
 function test.before()
@@ -40,35 +40,49 @@ function test.testCapture_SetsFaction()
 	GoldRate.PLAYER_MONEY()
 	assertTrue( GoldRate_data.testRealm.Alliance )
 end
+function test.testCapture_SetsToonsSection()
+	GoldRate.PLAYER_MONEY()
+	assertTrue( GoldRate_data.testRealm.Alliance.toons )
+end
 function test.testCapture_SetsName()
 	GoldRate.PLAYER_MONEY()
-	assertTrue( GoldRate_data.testRealm.Alliance.testPlayer )
+	assertTrue( GoldRate_data.testRealm.Alliance.toons.testPlayer )
+end
+function test.testCapture_SetsConsolidatedDataSection()
+	GoldRate.PLAYER_MONEY()
+	assertTrue( GoldRate_data.testRealm.Alliance.consolidated )
 end
 function test.testCapture_GoldAmount_PlayerMoney_Last()
 	-- Assert that PLAYER_MONEY event takes a snapshot of the current toon's money amount
-	local now = time()
 	GoldRate.PLAYER_MONEY()  -- Capture the amount
-	assertEquals( 150000, GoldRate_data.testRealm.Alliance.testPlayer["last"] )
+	assertEquals( 150000, GoldRate_data.testRealm.Alliance.toons.testPlayer["last"] )
+end
+function test.testCapture_GoldAmount_PlayerMoney_MultiToon()
+	local now = time()
+	assertTrue( GoldRate_data.testRealm.Alliance.toons )
+	GoldRate_data.testRealm.Alliance.toons.otherPlayer = {["last"] = 70000} -- give the other player 7 gole
+	GoldRate.PLAYER_MONEY()
+	assertEquals( 220000, GoldRate_data.testRealm.Alliance.consolidated[now] )
 end
 function test.testCapture_GoldAmount_PlayerMoney_TimeStamp()
 	-- Assert that PLAYER_MONEY event takes a snapshot of the current toon's money amount
 	local now = time()
 	GoldRate.PLAYER_MONEY()  -- Capture the amount
-	assertEquals( 150000, GoldRate_data.testRealm.Alliance.testPlayer[now] )
+	assertEquals( 150000, GoldRate_data.testRealm.Alliance.consolidated[now] )
 end
 function test.testCapture_GoldAmount_EnteringWorld_Last()
 	-- Assert that PLAYER_MONEY event takes a snapshot of the current toon's money amount
-	local now = time()
 	GoldRate.PLAYER_ENTERING_WORLD()  -- Capture the amount
-	assertEquals( 150000, GoldRate_data.testRealm.Alliance.testPlayer["last"] )
+	assertEquals( 150000, GoldRate_data.testRealm.Alliance.toons.testPlayer["last"] )
 end
 function test.testCapture_GoldAmount_EnteringWorld_TimeStamp()
 	-- Assert that PLAYER_MONEY event takes a snapshot of the current toon's money amount
 	local now = time()
 	GoldRate.PLAYER_ENTERING_WORLD()  -- Capture the amount
-	assertEquals( 150000, GoldRate_data.testRealm.Alliance.testPlayer[now] )
+	assertEquals( 150000, GoldRate_data.testRealm.Alliance.consolidated[now] )
 end
 -- GoldRateOffline tests
+--[[
 function test.beforeGoldRateOffline()
 	GoldRate_data = {}
 	dataStructure = {}
@@ -149,4 +163,5 @@ function test.testGoldRateOffline_AdditeMerge_diffRealms()
 	assertEquals( 100, combinedData.testRealm.Alliance[10] )
 	assertEquals( 200, combinedData.testRealm2.Alliance[20] )
 end
+]]
 test.run()
