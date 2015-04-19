@@ -32,6 +32,17 @@ function test.testCommand_Help()
 	-- These are here basicly to assure that the command does not error
 	GoldRate.Command( "help" )
 end
+function test.testADDON_LOADED_setsOtherSummed_newToon()
+	GoldRate_data.testRealm.Alliance.toons.otherPlayer = {["last"] = 70000} -- give the other player 7 gole
+	GoldRate.ADDON_LOADED() -- force this again
+	assertEquals( 70000, GoldRate.otherSummed )
+end
+function test.testADDON_LOADED_setsOtherSummed_revisit()
+	GoldRate_data.testRealm.Alliance.toons.testPlayer = {["last"] = 80000 }  -- give me 8 gold
+	GoldRate_data.testRealm.Alliance.toons.otherPlayer = {["last"] = 70000 } -- give the other player 7 gold
+	GoldRate.ADDON_LOADED() -- force this again
+	assertEquals( 70000, GoldRate.otherSummed )
+end
 function test.testCapture_SetsRealm()
 	GoldRate.PLAYER_MONEY()
 	assertTrue( GoldRate_data.testRealm )
