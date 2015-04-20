@@ -10,7 +10,7 @@ function DoFile( filename )
 	local f = assert( loadfile( filename ) )
 	return f()
 end
-function PairsByKeys( t, f )
+function PairsByKeys( t, f )  -- This is an awesome function I found
 	local a = {}
 	for n in pairs( t ) do table.insert( a, n ) end
 	table.sort( a, f )
@@ -27,7 +27,7 @@ end
 if FileExists( dataFile ) then
 	DoFile( dataFile )
 
-	print( "Realm,Faction,TimeStamp,Gold" )
+	print( "Realm,Faction,TimeStamp,TimeStamp,Gold" )
 
 	for realm, rdata in pairs( GoldRate_data ) do
 		maxInitialTS = 0
@@ -38,7 +38,7 @@ if FileExists( dataFile ) then
 			end
 			for ts, val in PairsByKeys( GoldRate_data.Hyjal.Alliance.consolidated ) do
 				if ts >= maxInitialTS then
-					strOut = strOut .. string.format( '%s,%s,%s,%i\n', realm, faction, os.date( "%x %X", ts ), val )
+					strOut = strOut .. string.format( '%s,%s,%s,%i,%i\n', realm, faction, os.date( "%x %X", ts ),ts, val )
 				end
 			end
 			print(strOut)
