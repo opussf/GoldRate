@@ -42,9 +42,9 @@ function GoldRate.ADDON_LOADED()
 	GoldRate_Frame:UnregisterEvent("ADDON_LOADED")
 
 	-- Setup needed variables
-	GoldRate.realm = GetRealmName()
+	GoldRate.realm   = GetRealmName()
 	GoldRate.faction = UnitFactionGroup("player")
-	GoldRate.name = UnitName("player")
+	GoldRate.name    = UnitName("player")
 
 	GoldRate_data[GoldRate.realm] = GoldRate_data[GoldRate.realm] or {}
 	GoldRate_data[GoldRate.realm][GoldRate.faction] = GoldRate_data[GoldRate.realm][GoldRate.faction] or {}
