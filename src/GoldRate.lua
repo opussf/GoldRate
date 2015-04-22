@@ -67,6 +67,26 @@ GoldRate.PLAYER_ENTERING_WORLD = GoldRate.PLAYER_MONEY
 --------------
 -- Non Event functions
 --------------
+function GoldRate.SetGoal( value )
+	local sub, add = false, false
+	if value and value ~= "" then
+		sub = strfind( value, "^[-]" )
+		add = strfind( value, "^[+]" )
+		if not tonumber(value) then
+			local gold   = strmatch( value, "(%d+)g" )
+			local silver = strmatch( value, "(%d+)s" )
+			local copper = strmatch( value, "(%d+)c" )
+			value = ((gold or 0) * 10000) + ((silver or 0) * 100) + (copper or 0)
+			if sub then value = -value end
+		end
+		GoldRate_data[GoldRate.realm][GoldRate.faction].goal = GoldRate_data[GoldRate.realm][GoldRate.faction].goal
+				and ((sub or add) and GoldRate_data[GoldRate.realm][GoldRate.faction].goal + value)
+				or tonumber(value)
+	end
+	if GoldRate_data[GoldRate.realm][GoldRate.faction].goal and GoldRate_data[GoldRate.realm][GoldRate.faction].goal <= 0 then
+		GoldRate_data[GoldRate.realm][GoldRate.faction].goal = nil
+	end
+end
 function GoldRate.parseCmd(msg)
 	if msg then
 		local i,c = strmatch(msg, "^(|c.*|r)%s*(%d*)$")
@@ -116,5 +136,9 @@ GoldRate.CommandList = {
 	["help"] = {
 		["func"] = GoldRate.PrintHelp,
 		["help"] = {"","Print this help."},
+	},
+	["goal"] = {
+		["func"] = GoldRate.SetGoal,
+		["help"] = {"<amount>","Set the target goal."}
 	},
 }
