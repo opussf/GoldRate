@@ -33,8 +33,116 @@ function test.testCommand_Help()
 	-- These are here basicly to assure that the command does not error
 	GoldRate.Command( "help" )
 end
+function test.testCommand_Goal()
+	-- These are here basicly to assure that the command does not error
+	GoldRate.Command( "goal" )
+end
+function test.testCommand_MinGold()
+	GoldRate.Command( "min" )
+end
+function test.testGoalInfo_NoParameter_WithNoValue()
+	GoldRate.Command( "goal" )
+	assertIsNil( GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_NoParameter_WithValue()
+	GoldRate_data.testRealm.Alliance.goal = 100000
+	GoldRate.Command( "goal" )
+	assertEquals( 100000, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_SetToZero()
+	GoldRate_data.testRealm.Alliance.goal = 100000
+	GoldRate.Command( "goal 0" )
+	assertIsNil( GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_SetCopperValue()
+	GoldRate.SetGoal( 100000 ) -- sets 10 gold
+	assertEquals( 100000, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_SetCopperValue_Reset()
+	GoldRate.SetGoal( 100000 ) -- sets 10 gold
+	GoldRate.SetGoal( 10000 )  -- sets 1 gold
+	assertEquals( 10000, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_SetStringValue_Gold()
+	GoldRate.Command( "goal 20G" )
+	assertEquals( 200000, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_SetStringValue_Silver()
+	GoldRate.Command( "goal 20S" )
+	assertEquals( 2000, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_SetStringValue_Copper()
+	GoldRate.Command( "goal 20C" )
+	assertEquals( 20, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_SetStringValue_MixedValues01()
+	GoldRate.Command( "goal 20G 20C" )
+	assertEquals( 200020, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_SetStringValue_MixedValues02()
+	GoldRate.Command( "goal 20G20C" )
+	assertEquals( 200020, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_SetStringValue_MixedValues03()
+	GoldRate.Command( "goal 20G20C15S" )
+	assertEquals( 201520, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_SetStringValue_MixedValues_UnexpectedRage()
+	GoldRate.Command( "goal 20G20C100S" )
+	assertEquals( 210020, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_SetStringValue_MixedValues_inAllLower()
+	GoldRate.Command( "goal 20g99s43c" )
+	assertEquals( 209943, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_AdditiveValue_Copper()
+	GoldRate_data.testRealm.Alliance.goal = 10
+	GoldRate.Command( "goal +20" )
+	assertEquals( 30, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_AdditiveString_Copper()
+	GoldRate_data.testRealm.Alliance.goal = 10
+	GoldRate.Command( "goal +20c" )
+	assertEquals( 30, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_AdditiveString_Silver()
+	GoldRate_data.testRealm.Alliance.goal = 10
+	GoldRate.Command( "goal +20s" )
+	assertEquals( 2010, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_AdditiveString_Gold()
+	GoldRate_data.testRealm.Alliance.goal = 10
+	GoldRate.Command( "goal +20g" )
+	assertEquals( 200010, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_AdditiveString_MixedValues01()
+	GoldRate_data.testRealm.Alliance.goal = 10
+	GoldRate.Command( "goal +15s16C20g" )
+	assertEquals( 201526, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_SubtractValue_Copper_01()
+	GoldRate_data.testRealm.Alliance.goal = 30
+	GoldRate.Command( "goal -20" )
+	assertEquals( 10, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_SubtractValue_Copper_02()
+	GoldRate_data.testRealm.Alliance.goal = 30
+	GoldRate.Command( "goal -20c" )
+	assertEquals( 10, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testGoalInfo_SubtractValue_Copper_SubZero()
+	GoldRate_data.testRealm.Alliance.goal = 30
+	GoldRate.Command( "goal -90" )
+	assertIsNil( GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testMin_SetMin_NoParameter_WithNoValue()
+	GoldRate.Command( "min" )
+	assertIsNil( GoldRate_data.testRealm.Alliance.goal )
+end
+
 function test.testADDON_LOADED_setsOtherSummed_newToon()
-	GoldRate_data.testRealm.Alliance.toons.otherPlayer = {["last"] = 70000} -- give the other player 7 gole
+	GoldRate_data.testRealm.Alliance.toons.otherPlayer = {["last"] = 70000, ["firstTS"] = 100} -- give the other player 7 gold
+	GoldRate_data.testRealm.Alliance.consolidated = {[100]= 70000}
 	GoldRate.ADDON_LOADED() -- force this again
 	assertEquals( 70000, GoldRate.otherSummed )
 end
@@ -71,7 +179,8 @@ function test.testCapture_SetsPlayersFirstCaptureTS_FirstSeen()
 end
 function test.testCapture_SetsPlayersFirstCaptureTS_notFirstSeen()
 	local now = time()
-	GoldRate_data.testRealm.Alliance.toons.testPlayer["firstTS"] = 200
+	GoldRate_data.testRealm.Alliance.toons.testPlayer = {["firstTS"] = 200, ["last"] = 10000 }
+	GoldRate_data.testRealm.Alliance.consolidated = { [200] = 10000 }
 	GoldRate.PLAYER_MONEY()
 	assertEquals( 200, GoldRate_data.testRealm.Alliance.toons.testPlayer["firstTS"] )
 end
@@ -83,7 +192,7 @@ end
 function test.testCapture_GoldAmount_PlayerMoney_MultiToon()
 	local now = time()
 	assertTrue( GoldRate_data.testRealm.Alliance.toons )
-	GoldRate_data.testRealm.Alliance.toons.otherPlayer = {["last"] = 70000} -- give the other player 7 gold
+	GoldRate_data.testRealm.Alliance.toons.otherPlayer = {["firstTS"] = 3276534, ["last"] = 70000} -- give the other player 7 gold
 	GoldRate.ADDON_LOADED()
 	GoldRate.PLAYER_MONEY()
 	assertEquals( 220000, GoldRate_data.testRealm.Alliance.consolidated[now] )
@@ -105,6 +214,31 @@ function test.testCapture_GoldAmount_EnteringWorld_TimeStamp()
 	GoldRate.PLAYER_ENTERING_WORLD()  -- Capture the amount
 	assertEquals( 150000, GoldRate_data.testRealm.Alliance.consolidated[now] )
 end
+
+function test.rateSetup()
+	GoldRate_data = nil
+	GoldRate_data = { ["testRealm"] = { ["Alliance"] = { ["toons"] = { ["testPlayer"] = { ["firstTS"] = 10, ["last"] = 400 } } } } }
+	GoldRate_data.testRealm.Alliance.consolidated = { [10] = 100, [20] = 200, [30] = 300, [40] = 400 }
+	GoldRate_data.testRealm.Alliance.goal = 1000
+	-- Data given should represent a gain of 10/s, reaching the goal at 100, total gained of 900
+	--GoldRate.ADDON_LOADED()
+end
+function test.testRate_ratePerSecond()
+	test.rateSetup()
+	rate = GoldRate.Rate()
+	assertEquals( 10, rate )
+end
+function test.notestRate_goalValue()
+	test.rateSetup()
+	goal = select(2, GoldRate.Rate() )
+	assertEquals( 100, goal )
+end
+function test.testRate_totalGained()
+	test.rateSetup()
+	result = select(3, GoldRate.Rate() )
+	assertEquals( 300, result )
+end
+
 -- GoldRateOffline tests
 --[[
 function test.beforeGoldRateOffline()

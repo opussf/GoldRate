@@ -48,8 +48,8 @@ function GoldRate.ADDON_LOADED()
 
 	GoldRate_data[GoldRate.realm] = GoldRate_data[GoldRate.realm] or {}
 	GoldRate_data[GoldRate.realm][GoldRate.faction] = GoldRate_data[GoldRate.realm][GoldRate.faction] or {}
-	GoldRate_data[GoldRate.realm][GoldRate.faction].toons = GoldRate_data[GoldRate.realm][GoldRate.faction].toons or {}
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated or {}
+	GoldRate_data[GoldRate.realm][GoldRate.faction].toons = GoldRate_data[GoldRate.realm][GoldRate.faction].toons or {}
 	GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name] = GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name] or {}
 	GoldRate.otherSummed = 0
 	for toonName, toonData in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].toons ) do
@@ -61,13 +61,84 @@ function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["firstTS"] =
 			GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["firstTS"] or time()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[time()] = GoldRate.otherSummed + GetMoney()
-	GoldRate.Print( "Realm total: "..GetCoinTextureString( GoldRate.otherSummed + GetMoney() ) )
+
+	GoldRate.ShowRate()
 end
 GoldRate.PLAYER_ENTERING_WORLD = GoldRate.PLAYER_MONEY
 --------------
 -- Non Event functions
 --------------
-function GoldRate.parseCmd(msg)
+function GoldRate.Rate()
+	-- returns rate/second, seconds till threshold, totalgained
+	fdata = GoldRate_data[GoldRate.realm][GoldRate.faction]
+	GoldRate.maxInitialTS = 0
+	for name, pdata in pairs( fdata.toons ) do
+		GoldRate.maxInitialTS = math.max( GoldRate.maxInitialTS, pdata.firstTS )
+	end
+	local sortedKeys = {}
+	for ts in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated ) do
+		if ts >= GoldRate.maxInitialTS then table.insert( sortedKeys, ts ) end
+	end
+	table.sort( sortedKeys )
+	local startGold = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[GoldRate.maxInitialTS]
+	local newestTS = sortedKeys[#sortedKeys]
+	local endGold = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[newestTS]
+	local timeDiff = newestTS - GoldRate.maxInitialTS
+
+	local goldDiff = endGold - startGold
+	local rate = goldDiff / timeDiff
+	--GoldRate.Print( "Gold Needed: "..GetCoinTextureString(
+	--		(GoldRate_data[GoldRate.realm][GoldRate.faction].goal and GoldRate_data[GoldRate.realm][GoldRate.faction].goal - endGold or 0) ) )
+	local targetTS = (GoldRate_data[GoldRate.realm][GoldRate.faction].goal and
+			(time() + ((GoldRate_data[GoldRate.realm][GoldRate.faction].goal - endGold) / rate)) or 0)
+
+	return rate, targetTS, goldDiff
+end
+function GoldRate.ShowRate()
+	local r, targetTS, gGained = GoldRate.Rate()
+	GoldRate.Print( "Total: "..GetCoinTextureString( GoldRate.otherSummed + GetMoney() ) ..
+			(GoldRate_data[GoldRate.realm][GoldRate.faction].goal
+				and " -> "..GetCoinTextureString( GoldRate_data[GoldRate.realm][GoldRate.faction].goal ).." @ "..(targetTS and date("%x %X", targetTS) or "unknown")
+				or "")
+	)
+	--GoldRate.Print( GetCoinTextureString( gGained ).." gained since "..date("%x %X", GoldRate.maxInitialTS).." at a rate of "..r.." g/sec ")
+end
+function GoldRate.SetGoal( value )
+	GoldRate_data[GoldRate.realm][GoldRate.faction].goal = GoldRate.SumGoldValue( value, GoldRate_data[GoldRate.realm][GoldRate.faction].goal )
+
+	if GoldRate_data[GoldRate.realm][GoldRate.faction].goal and GoldRate_data[GoldRate.realm][GoldRate.faction].goal <= 0 then
+		GoldRate_data[GoldRate.realm][GoldRate.faction].goal = nil
+	end
+	GoldRate.Print( "Goal set to: "..
+			(GoldRate_data[GoldRate.realm][GoldRate.faction].goal
+				and GetCoinTextureString( GoldRate_data[GoldRate.realm][GoldRate.faction].goal)
+				or "0" )
+	)
+end
+function GoldRate.SumGoldValue( strIn, valueIn )
+	-- takes a string representing a gold (silver, copper) value, and an optional value, returns the value or sum of the 2.
+	-- strIn - string: string or interger value
+	-- valueIn - integer: optional integer to sum in
+	-- returns - interger: value in copper
+	local copperValue = 0
+	if strIn and strIn ~= "" then
+		sub = strfind( strIn, "^[-]" )
+		add = strfind( strIn, "^[+]" )
+		if tonumber(strIn) then
+			copperValue = tonumber(strIn)
+		else
+			local gold   = strmatch( strIn, "(%d+)g" )
+			local silver = strmatch( strIn, "(%d+)s" )
+			local copper = strmatch( strIn, "(%d+)c" )
+			copperValue = ((gold or 0) * 10000) + ((silver or 0) * 100) + (copper or 0)
+			if sub then copperValue = -copperValue end
+		end
+	else
+		return valueIn
+	end
+	return( valueIn and ((sub or add) and valueIn + copperValue) or tonumber(copperValue) )
+end
+function GoldRate.ParseCmd(msg)
 	if msg then
 		local i,c = strmatch(msg, "^(|c.*|r)%s*(%d*)$")
 		if i then  -- i is an item, c is a count or nil
@@ -85,7 +156,7 @@ function GoldRate.parseCmd(msg)
 	end
 end
 function GoldRate.Command(msg)
-	local cmd, param = GoldRate.parseCmd(msg);
+	local cmd, param = GoldRate.ParseCmd(msg);
 	if GoldRate.CommandList[cmd] and GoldRate.CommandList[cmd].alias then
 		cmd = GoldRate.CommandList[cmd].alias
 	end
@@ -116,5 +187,9 @@ GoldRate.CommandList = {
 	["help"] = {
 		["func"] = GoldRate.PrintHelp,
 		["help"] = {"","Print this help."},
+	},
+	["goal"] = {
+		["func"] = GoldRate.SetGoal,
+		["help"] = {"<amount>","Set the target goal."}
 	},
 }
