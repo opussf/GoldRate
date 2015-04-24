@@ -37,6 +37,9 @@ function test.testCommand_Goal()
 	-- These are here basicly to assure that the command does not error
 	GoldRate.Command( "goal" )
 end
+function test.testCommand_MinGold()
+	GoldRate.Command( "min" )
+end
 function test.testGoalInfo_NoParameter_WithNoValue()
 	GoldRate.Command( "goal" )
 	assertIsNil( GoldRate_data.testRealm.Alliance.goal )
@@ -132,10 +135,14 @@ function test.testGoalInfo_SubtractValue_Copper_SubZero()
 	GoldRate.Command( "goal -90" )
 	assertIsNil( GoldRate_data.testRealm.Alliance.goal )
 end
-
+function test.testMin_SetMin_NoParameter_WithNoValue()
+	GoldRate.Command( "min" )
+	assertIsNil( GoldRate_data.testRealm.Alliance.goal )
+end
 
 function test.testADDON_LOADED_setsOtherSummed_newToon()
-	GoldRate_data.testRealm.Alliance.toons.otherPlayer = {["last"] = 70000} -- give the other player 7 gole
+	GoldRate_data.testRealm.Alliance.toons.otherPlayer = {["last"] = 70000, ["firstTS"] = 100} -- give the other player 7 gold
+	GoldRate_data.testRealm.Alliance.consolidated = {[100]= 70000}
 	GoldRate.ADDON_LOADED() -- force this again
 	assertEquals( 70000, GoldRate.otherSummed )
 end
@@ -172,7 +179,8 @@ function test.testCapture_SetsPlayersFirstCaptureTS_FirstSeen()
 end
 function test.testCapture_SetsPlayersFirstCaptureTS_notFirstSeen()
 	local now = time()
-	GoldRate_data.testRealm.Alliance.toons.testPlayer["firstTS"] = 200
+	GoldRate_data.testRealm.Alliance.toons.testPlayer = {["firstTS"] = 200, ["last"] = 10000 }
+	GoldRate_data.testRealm.Alliance.consolidated = { [200] = 10000 }
 	GoldRate.PLAYER_MONEY()
 	assertEquals( 200, GoldRate_data.testRealm.Alliance.toons.testPlayer["firstTS"] )
 end
@@ -184,7 +192,7 @@ end
 function test.testCapture_GoldAmount_PlayerMoney_MultiToon()
 	local now = time()
 	assertTrue( GoldRate_data.testRealm.Alliance.toons )
-	GoldRate_data.testRealm.Alliance.toons.otherPlayer = {["last"] = 70000} -- give the other player 7 gold
+	GoldRate_data.testRealm.Alliance.toons.otherPlayer = {["firstTS"] = 3276534, ["last"] = 70000} -- give the other player 7 gold
 	GoldRate.ADDON_LOADED()
 	GoldRate.PLAYER_MONEY()
 	assertEquals( 220000, GoldRate_data.testRealm.Alliance.consolidated[now] )
@@ -206,6 +214,31 @@ function test.testCapture_GoldAmount_EnteringWorld_TimeStamp()
 	GoldRate.PLAYER_ENTERING_WORLD()  -- Capture the amount
 	assertEquals( 150000, GoldRate_data.testRealm.Alliance.consolidated[now] )
 end
+
+function test.rateSetup()
+	GoldRate_data = nil
+	GoldRate_data = { ["testRealm"] = { ["Alliance"] = { ["toons"] = { ["testPlayer"] = { ["firstTS"] = 10, ["last"] = 400 } } } } }
+	GoldRate_data.testRealm.Alliance.consolidated = { [10] = 100, [20] = 200, [30] = 300, [40] = 400 }
+	GoldRate_data.testRealm.Alliance.goal = 1000
+	-- Data given should represent a gain of 10/s, reaching the goal at 100, total gained of 900
+	--GoldRate.ADDON_LOADED()
+end
+function test.testRate_ratePerSecond()
+	test.rateSetup()
+	rate = GoldRate.Rate()
+	assertEquals( 10, rate )
+end
+function test.notestRate_goalValue()
+	test.rateSetup()
+	goal = select(2, GoldRate.Rate() )
+	assertEquals( 100, goal )
+end
+function test.testRate_totalGained()
+	test.rateSetup()
+	result = select(3, GoldRate.Rate() )
+	assertEquals( 300, result )
+end
+
 -- GoldRateOffline tests
 --[[
 function test.beforeGoldRateOffline()
