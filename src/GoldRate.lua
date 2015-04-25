@@ -68,8 +68,9 @@ GoldRate.PLAYER_ENTERING_WORLD = GoldRate.PLAYER_MONEY
 --------------
 -- Non Event functions
 --------------
-function GoldRate.Rate()
+function GoldRate.RateSimple()
 	-- returns rate/second, seconds till threshold, totalgained
+	-- this simply uses the first and last data elements to calculate a line for prediction (uber simple)
 	fdata = GoldRate_data[GoldRate.realm][GoldRate.faction]
 	GoldRate.maxInitialTS = 0
 	for name, pdata in pairs( fdata.toons ) do
@@ -94,9 +95,60 @@ function GoldRate.Rate()
 
 	return rate, targetTS, goldDiff
 end
+function GoldRate.Rate()
+	-- returns rate/second (slope), seconds till threshold, and totalgained
+	-- this uses the least squares method to define the following equation for the data set.
+	-- y = mx + b
+
+	-- Step 0 - find the maxInitialTS to filter data
+	GoldRate.maxInitialTS = 0
+	for name, pdata in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].toons ) do
+		GoldRate.maxInitialTS = math.max( GoldRate.maxInitialTS, pdata.firstTS )
+	end
+
+	-- Step 1 - Calculate the mean for both the x (timestamp) and y (gold) values
+	local count, tsSum, goldSum = 0, 0, 0
+	for ts, gold in pairs(GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated) do
+		if ts >= GoldRate.maxInitialTS then  -- only compute if the data fits the TS range
+			tsSum = tsSum + ts
+			goldSum = goldSum + gold
+			count = count + 1
+		end
+	end
+	local tsAve = tsSum / count
+	local goldAve = goldSum / count
+
+	-- Step 2 -- m (slope) = sum( (Xi - Xave) * (Yi - Yave) )
+    --                       --------------------------------
+    --                       sum( (Xi - Xave)^2 )
+    local xySum, x2Sum = 0, 0
+    for ts, gold in pairs(GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated) do -- yes, 2nd loop through data
+    	if ts >= GoldRate.maxInitialTS then  -- only compute if the data fits the TS range
+			xySum = xySum + (ts - tsAve) * (gold - goldAve)
+			x2Sum = x2Sum + math.pow( (ts - tsAve), 2 )
+		end
+    end
+    local m = xySum / x2Sum
+
+    -- Step 3 -- Calculate the y-intercept.  b = Yave - ( m * xAve )
+    local b = tsAve - ( m * goldAve )
+
+    -- Final Step -- Use the data to solve for TS at Gold Value
+    -- x = ( y - b ) / m
+
+    local targetTS = GoldRate_data[GoldRate.realm][GoldRate.faction].goal and (( GoldRate_data[GoldRate.realm][GoldRate.faction].goal - b ) / m ) or 0
+
+	return m, targetTS, 300
+end
 function GoldRate.ShowRate()
 	local r, targetTS, gGained = GoldRate.Rate()
-	GoldRate.Print( "Total: "..GetCoinTextureString( GoldRate.otherSummed + GetMoney() ) ..
+	GoldRate.Print( "Squares: "..GetCoinTextureString( GoldRate.otherSummed + GetMoney() ) ..
+			(GoldRate_data[GoldRate.realm][GoldRate.faction].goal
+				and " -> "..GetCoinTextureString( GoldRate_data[GoldRate.realm][GoldRate.faction].goal ).." @ "..(targetTS and date("%x %X", targetTS) or "unknown")
+				or "")
+	)
+	r, targetTS, gGained = GoldRate.RateSimple()
+	GoldRate.Print( "Simple: "..GetCoinTextureString( GoldRate.otherSummed + GetMoney() ) ..
 			(GoldRate_data[GoldRate.realm][GoldRate.faction].goal
 				and " -> "..GetCoinTextureString( GoldRate_data[GoldRate.realm][GoldRate.faction].goal ).." @ "..(targetTS and date("%x %X", targetTS) or "unknown")
 				or "")
