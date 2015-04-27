@@ -27,25 +27,22 @@ end
 if FileExists( dataFile ) then
 	DoFile( dataFile )
 
-	print( "Realm,Faction,TimeStamp,TimeStamp,Gold" )
-
-	for realm, rdata in pairs( GoldRate_data ) do
-		maxInitialTS = 0
-		for faction, fdata in pairs( rdata ) do
-			strOut = ""
-			for name, pdata in pairs( fdata.toons ) do
-				maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
-			end
-			for ts, val in PairsByKeys( GoldRate_data.Hyjal.Alliance.consolidated ) do
-				if ts >= maxInitialTS then
-					strOut = strOut .. string.format( '%s,%s,%s,%i,%i\n', realm, faction, os.date( "%x %X", ts ),ts, val )
+	if GoldRate_data then
+		for realm, rdata in pairs( GoldRate_data ) do
+			maxInitialTS = 0
+			for faction, fdata in pairs( rdata ) do
+				strOut = "Realm,Faction,TimeStamp,TimeStamp,Gold\n"
+				for name, pdata in pairs( fdata.toons ) do
+					maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
 				end
+				for ts, val in PairsByKeys( GoldRate_data.Hyjal.Alliance.consolidated ) do
+					if ts >= maxInitialTS then
+						strOut = strOut .. string.format( '%s,%s,%s,%i,%i\n', realm, faction, os.date( "%x %X", ts ),ts, val )
+					end
+				end
+				print(strOut)
 			end
-			print(strOut)
 		end
+		print("\n")
 	end
-
-
-
-
 end
