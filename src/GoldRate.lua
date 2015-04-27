@@ -110,49 +110,70 @@ function GoldRate.Rate()
 	local count, tsSum, goldSum = 0, 0, 0
 	for ts, gold in pairs(GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated) do
 		if ts >= GoldRate.maxInitialTS then  -- only compute if the data fits the TS range
+			--tsSum = tsSum + (ts - GoldRate.maxInitialTS)
 			tsSum = tsSum + ts
 			goldSum = goldSum + gold
 			count = count + 1
 		end
 	end
-	local tsAve = tsSum / count
-	local goldAve = goldSum / count
+	if count > 1 then
+		local tsAve = tsSum / count
+		local goldAve = goldSum / count
 
-	-- Step 2 -- m (slope) = sum( (Xi - Xave) * (Yi - Yave) )
-    --                       --------------------------------
-    --                       sum( (Xi - Xave)^2 )
-    local xySum, x2Sum = 0, 0
-    for ts, gold in pairs(GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated) do -- yes, 2nd loop through data
-    	if ts >= GoldRate.maxInitialTS then  -- only compute if the data fits the TS range
-			xySum = xySum + (ts - tsAve) * (gold - goldAve)
-			x2Sum = x2Sum + math.pow( (ts - tsAve), 2 )
-		end
-    end
-    local m = xySum / x2Sum
+		-- Step 2 -- m (slope) = sum( (Xi - Xave) * (Yi - Yave) )
+	    --                       --------------------------------
+	    --                       sum( (Xi - Xave)^2 )
+	    local xySum, x2Sum = 0, 0
+	    for ts, gold in pairs(GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated) do -- yes, 2nd loop through data
+	    	if ts >= GoldRate.maxInitialTS then  -- only compute if the data fits the TS range
+				--xySum = xySum + ((ts - GoldRate.maxInitialTS) - tsAve) * (gold - goldAve)
+				--x2Sum = x2Sum + math.pow((ts - GoldRate.maxInitialTS) - tsAve, 2)
+				xySum = xySum + (ts - tsAve) * (gold - goldAve)
+				x2Sum = x2Sum + math.pow(ts - tsAve, 2)
+				if xySum < 0 or x2Sum < 0 then
+					GoldRate.Print("------UH")
+					GoldRate.overFlow = true
+				end
+				if GoldRate.overFlow then
+					GoldRate.Print( xySum.." : "..x2Sum )
+				end
+			end
+	    end
+	    local m = xySum / x2Sum
 
-    -- Step 3 -- Calculate the y-intercept.  b = Yave - ( m * xAve )
-    local b = tsAve - ( m * goldAve )
+	    -- Step 3 -- Calculate the y-intercept.  b = Yave - ( m * xAve )
+	    --local b = (tsAve + GoldRate.maxInitialTS) - ( m * goldAve )
+	    local b = goldAve  - ( m * tsAve )
 
-    -- Final Step -- Use the data to solve for TS at Gold Value
-    -- x = ( y - b ) / m
+--	    GoldRate.Print( string.format( "tsAve(X): %s goldAve(Y): %s m: %0.2f",
+--	    								date("%x %X", tsAve), GetCoinTextureString( goldAve ), m ) )
+--	    GoldRate.Print( "b = tsAve - ( m * goldAve )" )
+	    --GoldRate.Print( string.format("func = %0.2fx + %0f", m, b ) )
+--	    GoldRate.Print( "b = "..date("%x %X", tonumber(b) ) )
 
-    local targetTS = GoldRate_data[GoldRate.realm][GoldRate.faction].goal and (( GoldRate_data[GoldRate.realm][GoldRate.faction].goal - b ) / m ) or 0
+	    -- Final Step -- Use the data to solve for TS at Gold Value
+	    -- x = ( y - b ) / m
+	    local targetTS = GoldRate_data[GoldRate.realm][GoldRate.faction].goal and (( GoldRate_data[GoldRate.realm][GoldRate.faction].goal - b ) / m ) or 0
 
-	return m, targetTS, 300
+	    --GoldRate.Print( "targetTS: "..date("%m/%d/%Y",targetTS) )
+
+		return m, targetTS, 300
+	end
+	return 0, 0, 0
 end
 function GoldRate.ShowRate()
 	local r, targetTS, gGained = GoldRate.Rate()
-	GoldRate.Print( "Squares: "..GetCoinTextureString( GoldRate.otherSummed + GetMoney() ) ..
+	local rs, targetTSs, _ = GoldRate.RateSimple()
+
+	GoldRate.Print( "Total: ".. GetCoinTextureString( GoldRate.otherSummed + GetMoney() ) ..
 			(GoldRate_data[GoldRate.realm][GoldRate.faction].goal
-				and " -> "..GetCoinTextureString( GoldRate_data[GoldRate.realm][GoldRate.faction].goal ).." @ "..(targetTS and date("%x %X", targetTS) or "unknown")
-				or "")
-	)
-	r, targetTS, gGained = GoldRate.RateSimple()
-	GoldRate.Print( "Simple: "..GetCoinTextureString( GoldRate.otherSummed + GetMoney() ) ..
-			(GoldRate_data[GoldRate.realm][GoldRate.faction].goal
-				and " -> "..GetCoinTextureString( GoldRate_data[GoldRate.realm][GoldRate.faction].goal ).." @ "..(targetTS and date("%x %X", targetTS) or "unknown")
-				or "")
-	)
+				and " -> "..GetCoinTextureString( GoldRate_data[GoldRate.realm][GoldRate.faction].goal ) or "" ) )
+
+	if targetTS then
+		GoldRate.Print( string.format( "@ Simple: %s (%0.2f) Squares: %s (%0.2f)",
+			date("%c", targetTSs), rs, date("%c", targetTS), r ) )
+	end
+
 	--GoldRate.Print( GetCoinTextureString( gGained ).." gained since "..date("%x %X", GoldRate.maxInitialTS).." at a rate of "..r.." g/sec ")
 end
 function GoldRate.SetGoal( value )
