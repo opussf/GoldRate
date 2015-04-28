@@ -114,6 +114,8 @@ function GoldRate.Rate()
 			tsSum = tsSum + ts
 			goldSum = goldSum + gold
 			count = count + 1
+		else
+			GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts] = nil
 		end
 	end
 	if count > 1 then
