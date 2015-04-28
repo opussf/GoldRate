@@ -26,7 +26,6 @@ end
 
 if FileExists( dataFile ) then
 	DoFile( dataFile )
-
 	if GoldRate_data then
 		for realm, rdata in pairs( GoldRate_data ) do
 			maxInitialTS = 0
