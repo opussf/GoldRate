@@ -27,14 +27,15 @@ end
 if FileExists( dataFile ) then
 	DoFile( dataFile )
 	if GoldRate_data then
+		print("Realm,Faction,TimeStamp,TimeStamp,Gold")
 		for realm, rdata in pairs( GoldRate_data ) do
 			maxInitialTS = 0
 			for faction, fdata in pairs( rdata ) do
-				strOut = "Realm,Faction,TimeStamp,TimeStamp,Gold\n"
+				strOut = ""
 				for name, pdata in pairs( fdata.toons ) do
 					maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
 				end
-				for ts, val in PairsByKeys( GoldRate_data.Hyjal.Alliance.consolidated ) do
+				for ts, val in PairsByKeys( GoldRate_data[realm][faction].consolidated ) do
 					if ts >= maxInitialTS then
 						strOut = strOut .. string.format( '%s,%s,%s,%i,%i\n', realm, faction, os.date( "%x %X", ts ),ts, val )
 					end
