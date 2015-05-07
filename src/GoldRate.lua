@@ -16,6 +16,7 @@ COLOR_END = "|r";
 
 GoldRate = {}
 GoldRate_data = {}
+GoldRate_options = {['maxDataPoints'] = 1000}
 
 function GoldRate.Print( msg, showName)
 	-- print to the chat frame
@@ -33,6 +34,7 @@ function GoldRate.OnLoad()
 	GoldRate_Frame:RegisterEvent("ADDON_LOADED")
 	GoldRate_Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 	GoldRate_Frame:RegisterEvent("PLAYER_MONEY")
+	GoldRate_Frame:RegisterEvent("PLAYER_LEAVING_WORLD")
 end
 --------------
 -- Event Functions
@@ -65,11 +67,28 @@ function GoldRate.PLAYER_MONEY()
 	GoldRate.ShowRate()
 end
 GoldRate.PLAYER_ENTERING_WORLD = GoldRate.PLAYER_MONEY
+function GoldRate.PLAYER_LEAVING_WORLD()
+	-- use this to filter out old data
+	-- sort the keys
+	local sortedKeys = {}
+	local count = 0
+	for ts in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated ) do
+		table.insert( sortedKeys, ts )
+		count = count + 1
+	end
+	table.sort( sortedKeys )
+	GoldRate_data[GoldRate.realm][GoldRate.faction].numVals = count
+	while count > GoldRate_options.maxDataPoints do
+		key = table.remove( sortedKeys, 1 )
+		GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[key] = nil
+		count = count -1
+	end
+end
 --------------
 -- Non Event functions
 --------------
 function GoldRate.RateSimple()
-	-- returns rate/second, seconds till threshold, totalgained
+	-- returns rate/second, seconds till threshold
 	-- this simply uses the first and last data elements to calculate a line for prediction (uber simple)
 	fdata = GoldRate_data[GoldRate.realm][GoldRate.faction]
 	GoldRate.maxInitialTS = 0
@@ -93,10 +112,10 @@ function GoldRate.RateSimple()
 	local targetTS = (GoldRate_data[GoldRate.realm][GoldRate.faction].goal and
 			(time() + ((GoldRate_data[GoldRate.realm][GoldRate.faction].goal - endGold) / rate)) or 0)
 
-	return rate, targetTS, goldDiff
+	return rate, targetTS
 end
 function GoldRate.Rate()
-	-- returns rate/second (slope), seconds till threshold, and totalgained
+	-- returns rate/second (slope), seconds till threshold
 	-- this uses the least squares method to define the following equation for the data set.
 	-- y = mx + b
 
@@ -114,10 +133,9 @@ function GoldRate.Rate()
 			tsSum = tsSum + ts
 			goldSum = goldSum + gold
 			count = count + 1
-		else
-			GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts] = nil
 		end
 	end
+	--GoldRate.Print(count.." data points.")
 	if count > 1 then
 		local tsAve = tsSum / count
 		local goldAve = goldSum / count
@@ -132,13 +150,11 @@ function GoldRate.Rate()
 				--x2Sum = x2Sum + math.pow((ts - GoldRate.maxInitialTS) - tsAve, 2)
 				xySum = xySum + (ts - tsAve) * (gold - goldAve)
 				x2Sum = x2Sum + math.pow(ts - tsAve, 2)
-				if xySum < 0 or x2Sum < 0 then
+--[[				if xySum < 0 or x2Sum < 0 then
 					GoldRate.Print("------UH")
-					GoldRate.overFlow = true
-				end
-				if GoldRate.overFlow then
 					GoldRate.Print( xySum.." : "..x2Sum )
 				end
+]]
 			end
 	    end
 	    local m = xySum / x2Sum
@@ -147,33 +163,29 @@ function GoldRate.Rate()
 	    --local b = (tsAve + GoldRate.maxInitialTS) - ( m * goldAve )
 	    local b = goldAve  - ( m * tsAve )
 
---	    GoldRate.Print( string.format( "tsAve(X): %s goldAve(Y): %s m: %0.2f",
---	    								date("%x %X", tsAve), GetCoinTextureString( goldAve ), m ) )
---	    GoldRate.Print( "b = tsAve - ( m * goldAve )" )
-	    --GoldRate.Print( string.format("func = %0.2fx + %0f", m, b ) )
---	    GoldRate.Print( "b = "..date("%x %X", tonumber(b) ) )
-
 	    -- Final Step -- Use the data to solve for TS at Gold Value
 	    -- x = ( y - b ) / m
 	    local targetTS = GoldRate_data[GoldRate.realm][GoldRate.faction].goal and (( GoldRate_data[GoldRate.realm][GoldRate.faction].goal - b ) / m ) or 0
 
 	    --GoldRate.Print( "targetTS: "..date("%m/%d/%Y",targetTS) )
 
-		return m, targetTS, 300
+		return m, targetTS
 	end
-	return 0, 0, 0
+	return 0, 0
 end
 function GoldRate.ShowRate()
-	local r, targetTS, gGained = GoldRate.Rate()
-	local rs, targetTSs, _ = GoldRate.RateSimple()
+	local r, targetTS = GoldRate.Rate()
+	local rs, targetTSs = GoldRate.RateSimple()
+	local totalGoldNow = GoldRate.otherSummed + GetMoney()
 
-	GoldRate.Print( "Total: ".. GetCoinTextureString( GoldRate.otherSummed + GetMoney() ) ..
-			(GoldRate_data[GoldRate.realm][GoldRate.faction].goal
+	GoldRate.Print( "Total: ".. GetCoinTextureString( totalGoldNow ) ..
+			((GoldRate_data[GoldRate.realm][GoldRate.faction].goal and GoldRate_data[GoldRate.realm][GoldRate.faction].goal > totalGoldNow)
 				and " -> "..GetCoinTextureString( GoldRate_data[GoldRate.realm][GoldRate.faction].goal ) or "" ) )
 
-	if targetTS then
+	if (GoldRate_data[GoldRate.realm][GoldRate.faction].goal and
+			GoldRate_data[GoldRate.realm][GoldRate.faction].goal > totalGoldNow) then
 		GoldRate.Print( string.format( "@ Simple: %s (%0.2f) Squares: %s (%0.2f)",
-			date("%c", targetTSs), rs, date("%c", targetTS), r ) )
+				(date("%c", targetTSs) or "nil"), rs, (date("%c", targetTS) or "nil"), r ) )
 	end
 
 	--GoldRate.Print( GetCoinTextureString( gGained ).." gained since "..date("%x %X", GoldRate.maxInitialTS).." at a rate of "..r.." g/sec ")
@@ -186,9 +198,10 @@ function GoldRate.SetGoal( value )
 	end
 	GoldRate.Print( "Goal set to: "..
 			(GoldRate_data[GoldRate.realm][GoldRate.faction].goal
-				and GetCoinTextureString( GoldRate_data[GoldRate.realm][GoldRate.faction].goal)
+				and GetCoinTextureString( GoldRate_data[GoldRate.realm][GoldRate.faction].goal )
 				or "0" )
 	)
+	GoldRate.PLAYER_MONEY()
 end
 function GoldRate.SumGoldValue( strIn, valueIn )
 	-- takes a string representing a gold (silver, copper) value, and an optional value, returns the value or sum of the 2.
