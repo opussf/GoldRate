@@ -100,7 +100,7 @@ function GoldRate.RateSimple()
 		if ts >= GoldRate.maxInitialTS then table.insert( sortedKeys, ts ) end
 	end
 	table.sort( sortedKeys )
-	local startGold = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[GoldRate.maxInitialTS]
+	local startGold = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[sortedKeys[1]]
 	local newestTS = sortedKeys[#sortedKeys]
 	local endGold = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[newestTS]
 	local timeDiff = newestTS - GoldRate.maxInitialTS
