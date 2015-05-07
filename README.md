@@ -18,6 +18,11 @@ The idea of this addon is to track the price of the tokens over time, to track t
 
 [Wolfram] gives a concise explanation. Including error determination.
 
+[Gaussian elimination]
+
+## Cautions
+There are 3 types of lies: Lies, damn lies, and [statistics].
+
 ## Versions:
 ```
 0.3     Initial Goal acceptance and rate calculations
@@ -28,3 +33,5 @@ The idea of this addon is to track the price of the tokens over time, to track t
 [Hotmath.com]:http://hotmath.com/hotmath_help/topics/line-of-best-fit.html
 [OriginLab]:http://www.originlab.com/index.aspx?go=Products/Origin/DataAnalysis/CurveFitting/LinearAndPolynomialFitting
 [Wolfram]:http://mathworld.wolfram.com/LeastSquaresFitting.html
+[Gaussian elimination]:http://en.wikipedia.org/wiki/Gaussian_elimination
+[statistics]:http://en.wikipedia.org/wiki/Misuse_of_statistics
