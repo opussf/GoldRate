@@ -246,8 +246,20 @@ function test.testPLW_PruneOptionSet()
 	assertEquals( 1000, GoldRate_options.maxDataPoints )
 end
 function test.testPLW_PrunesOldData()
+	-- test that some data is removed
 	test.PLW_Setup()
-
+	GoldRate.PLAYER_LEAVING_WORLD()
+	for i = 1, 500 do
+		assertIsNil( GoldRate_data.testRealm.Alliance.consolidated[i] )
+	end
+end
+function test.testPLW_KeepsSomeData()
+	-- test that not all data is removed.
+	test.PLW_Setup()
+	GoldRate.PLAYER_LEAVING_WORLD()
+	for i = 501, 1000 do
+		assertEquals( i*i, GoldRate_data.testRealm.Alliance.consolidated[i] )
+	end
 end
 
 -- GoldRateOffline tests
