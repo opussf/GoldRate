@@ -81,7 +81,7 @@ function GoldRate.PLAYER_LEAVING_WORLD()
 	while count > GoldRate_options.maxDataPoints do
 		key = table.remove( sortedKeys, 1 )
 		GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[key] = nil
-		count = count -1
+		count = count - 1
 	end
 end
 --------------
@@ -184,8 +184,8 @@ function GoldRate.ShowRate()
 
 	if (GoldRate_data[GoldRate.realm][GoldRate.faction].goal and
 			GoldRate_data[GoldRate.realm][GoldRate.faction].goal > totalGoldNow) then
-		GoldRate.Print( string.format( "@ Simple: %s (%0.2f) Squares: %s (%0.2f)",
-				(date("%c", targetTSs) or "nil"), rs, (date("%c", targetTS) or "nil"), r ) )
+		GoldRate.Print( string.format( "%s (%0.2f) // %s (%0.2f)",
+				(date("%c", targetTSs) or "nil"), rs, (date("%c", targetTS) or "nil"), r ), false )
 	end
 
 	--GoldRate.Print( GetCoinTextureString( gGained ).." gained since "..date("%x %X", GoldRate.maxInitialTS).." at a rate of "..r.." g/sec ")
