@@ -228,15 +228,38 @@ function test.testRate_ratePerSecond()
 	rate = GoldRate.Rate()
 	assertEquals( 10, rate )
 end
-function test.notestRate_goalValue()
+function test.testRate_goalValue()
 	test.rateSetup()
 	goal = select(2, GoldRate.Rate() )
 	assertEquals( 100, goal )
 end
-function test.testRate_totalGained()
-	test.rateSetup()
-	result = select(3, GoldRate.Rate() )
-	assertEquals( 300, result )
+function test.PLW_Setup()
+	-- PLW = Player Leaving World
+	GoldRate_data = { ["testRealm"] = { ["Alliance"] = { ["toons"] = { ["testPlayer"] = { ["firstTS"] = 10, ["last"] = 400 } } } } }
+	GoldRate_data.testRealm.Alliance.consolidated = {}
+	for i = 1, 1500 do
+		GoldRate_data.testRealm.Alliance.consolidated[i] = i*i
+	end
+end
+function test.testPLW_PruneOptionSet()
+	test.PLW_Setup()
+	assertEquals( 1000, GoldRate_options.maxDataPoints )
+end
+function test.testPLW_PrunesOldData()
+	-- test that some data is removed
+	test.PLW_Setup()
+	GoldRate.PLAYER_LEAVING_WORLD()
+	for i = 1, 500 do
+		assertIsNil( GoldRate_data.testRealm.Alliance.consolidated[i] )
+	end
+end
+function test.testPLW_KeepsSomeData()
+	-- test that not all data is removed.
+	test.PLW_Setup()
+	GoldRate.PLAYER_LEAVING_WORLD()
+	for i = 501, 1000 do
+		assertEquals( i*i, GoldRate_data.testRealm.Alliance.consolidated[i] )
+	end
 end
 
 -- GoldRateOffline tests
