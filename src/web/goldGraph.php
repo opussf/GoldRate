@@ -8,14 +8,15 @@ require_once('jpgraph/jpgraph_date.php');
 #require_once('jpgraph/jpgraph_log.php');
 
 #init the jpgraph
-$graph = new Graph(1024,768);
+$graph = new Graph(1400,768);
 $graph->SetScale("datlin");
  
-$graph->img->SetMargin(60,40,40,40);        
+$graph->img->SetMargin(60,315,40,0);        
 $graph->SetShadow();
  
 $graph->title->Set("Gold progress");
 $graph->title->SetFont(FF_FONT1,FS_BOLD);
+#$graph->yaxis->scale->SetAutoMin(0);
 
 # Read CSV file
 $lineNum = 0;
@@ -58,7 +59,7 @@ foreach( $factionData as $rf => $dataPoints ) {
 	#print($rf." = ".count($dataPoints)."<br/>");
 	list( $stderr, $corr, $deter ) = $lr->GetStat(); # stderr, correlation coefficient, determination coefficient
 	list( $a, $m ) = $lr->GetAB();
-	list( $xd, $yd ) = $lr->GetY( min($scatterPlots[$rf]["datax"]), time(), 3600 );
+	list( $xd, $yd ) = $lr->GetY( min($scatterPlots[$rf]["datax"])-(24*3600), time(), 3600 );
 	$scatterPlots[$rf]["lr"] = new LinePlot( $yd, $xd );
 	$scatterPlots[$rf]["lr"]->SetLegend(sprintf("%s\n(r^2=%0.3f, m=%0.3f)", $rf, $deter, $m ) );
 	$scatterPlots[$rf]["lr"]->SetWeight(2);
@@ -66,26 +67,8 @@ foreach( $factionData as $rf => $dataPoints ) {
 	$graph->Add( $scatterPlots[$rf]["lr"] );
 
 }
-#print_r($scatterPlots);
 
-# build first scatterPlot
-#$datax = array_keys($factionData["Hyjal-Alliance"]);
-#$datay = array_values($factionData["Hyjal-Alliance"]);
-#print_r($datay);
-
- 
-#$sp1 = new ScatterPlot($datay,$datax);
-#$sp1->SetLegend("Hyjal-Alliance");
-#$lr1 = new LinearRegression($datax, $datay);
-#$xMin = min($datax);
-#$xMax = max($datax);
-#list( $xd, $yd ) = $lr1->GetY($xMin,$xMax);
-
-#$lp1 = new LinePlot($yd);
- 
-#$graph->Add($sp1);
-#$graph->Add($lp1);
-$graph->legend->SetPos(0.05, 0.05, 'left', 'top');
+$graph->legend->SetPos(0.00, 0.05, 'right', 'top');
 $graph->legend->SetFrameWeight(2);
 $graph->legend->SetShadow();
 $graph->legend->SetMarkAbsSize(6);
