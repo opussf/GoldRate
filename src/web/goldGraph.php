@@ -1,4 +1,5 @@
 <?php
+error_reporting(0);
 require_once('jpgraph/jpgraph.php');
 require_once('jpgraph/jpgraph_scatter.php');
 require_once('jpgraph/jpgraph_line.php');
@@ -51,9 +52,18 @@ foreach( $factionData as $rf => $dataPoints ) {
 	$scatterPlots[$rf]["sp"]->link->Show();
 	$scatterPlots[$rf]["sp"]->link->SetWeight(2);
 	$scatterPlots[$rf]["sp"]->link->SetColor($color."@0.7");
-	
-
 	$graph->Add($scatterPlots[$rf]["sp"]);
+	
+	$lr = new LinearRegression( $scatterPlots[$rf]["datax"], $scatterPlots[$rf]["datay"] );
+	#print($rf." = ".count($dataPoints)."<br/>");
+	list( $stderr, $corr, $deter ) = $lr->GetStat(); # stderr, correlation coefficient, determination coefficient
+	list( $a, $m ) = $lr->GetAB();
+	list( $xd, $yd ) = $lr->GetY( min($scatterPlots[$rf]["datax"]), time(), 3600 );
+	$scatterPlots[$rf]["lr"] = new LinePlot( $yd, $xd );
+	$scatterPlots[$rf]["lr"]->SetLegend(sprintf("%s\n(r^2=%0.3f, m=%0.3f)", $rf, $deter, $m ) );
+	$scatterPlots[$rf]["lr"]->SetWeight(2);
+	$scatterPlots[$rf]["lr"]->SetColor($color);
+	$graph->Add( $scatterPlots[$rf]["lr"] );
 
 }
 #print_r($scatterPlots);
@@ -79,6 +89,7 @@ $graph->legend->SetPos(0.05, 0.05, 'left', 'top');
 $graph->legend->SetFrameWeight(2);
 $graph->legend->SetShadow();
 $graph->legend->SetMarkAbsSize(6);
+$graph->legend->SetColumns(2);
 $graph->xaxis->SetLabelAngle(90);
 $graph->Stroke();
 ?>
