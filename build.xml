@@ -79,6 +79,11 @@
 				<include name="*.txt"/>
 			</fileset>
 		</copy>
+		<copy   todir="${package.dir}/web" filtering="false">
+			<fileset dir="src/web">
+				<include name="*"/>
+			</fileset>
+		</copy>
 		<zip 	destfile="${target.dir}/${project.zip}"
 				basedir="${working.dir}"
 				includes="${ant.project.name}/**"/>
