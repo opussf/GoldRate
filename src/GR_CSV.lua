@@ -89,7 +89,7 @@ if FileExists( dataFile ) then
 				end
 				if fdata.consolidated then
 					for ts, val in PairsByKeys( fdata.consolidated ) do
-						if ts >= maxInitialTS then
+						if ts >= maxInitialTS and ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
 							strOut = strOut .. string.format( '%s,%s,%s,%i,%i\n', realm, faction, os.date( "%x %X", ts ),ts, val )
 						end
 					end
