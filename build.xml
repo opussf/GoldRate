@@ -113,6 +113,8 @@
 			</fileset>
 		</copy>
 		<chmod perm="ugo+x" dir="${addon.dir}" includes="GR_CSV.lua" />
+		<chmod perm="ugo+x" dir="${addon.dir}" includes="GR_XML.lua" />
+
 	</target>
 
 	<target name="test" description="run unit tests" if="test.check">
