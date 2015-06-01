@@ -112,9 +112,9 @@
 				<include name="Readme.txt"/>
 			</fileset>
 		</copy>
-		<chmod perm="ugo+x" dir="${addon.dir}" includes="GR_CSV.lua" />
-		<chmod perm="ugo+x" dir="${addon.dir}" includes="GR_XML.lua" />
-
+		<chmod perm="ugo+x" dir="${addon.dir}" includes="GR2CSV.lua" />
+		<chmod perm="ugo+x" dir="${addon.dir}" includes="GR2XML.lua" />
+		<chmod perm="ugo+x" dir="${addon.dir}" includes="GR2JSON.lua" />
 	</target>
 
 	<target name="test" description="run unit tests" if="test.check">
