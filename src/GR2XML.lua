@@ -72,7 +72,6 @@ function Rate( realmIn, factionIn )
 
 		return m, targetTS
 	end
-	return 0, 0
 end
 
 if FileExists( dataFile ) then
@@ -87,8 +86,8 @@ if FileExists( dataFile ) then
 			for faction, fdata in pairs( rdata ) do
 				m, targetTS = Rate(realm, faction)
 				strOut = strOut .. string.format( '<rf realm="%s" faction="%s">\n', realm, faction )
-				if fdata.goal then
-					strOut = strOut .. string.format( "\t<goal>%i</goal>\n", fdata.goal )
+				if fdata.goal and targetTS then
+					strOut = strOut .. string.format( '\t<goal ts="%i">%i</goal>\n', targetTS, fdata.goal )
 				end
 				for name, pdata in pairs( fdata.toons ) do
 					maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
