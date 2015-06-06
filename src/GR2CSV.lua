@@ -72,7 +72,6 @@ function Rate( realmIn, factionIn )
 
 		return m, targetTS
 	end
-	return 0, 0
 end
 
 if FileExists( dataFile ) then
