@@ -66,7 +66,12 @@ function GoldRate.PLAYER_MONEY()
 
 	GoldRate.ShowRate()
 end
-GoldRate.PLAYER_ENTERING_WORLD = GoldRate.PLAYER_MONEY
+--GoldRate.PLAYER_ENTERING_WORLD = GoldRate.PLAYER_MONEY
+function GoldRate.PLAYER_ENTERING_WORLD()
+	if ( not GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["last"] ) then
+		GoldRate.PLAYER_MONEY()
+	end
+end
 function GoldRate.PLAYER_LEAVING_WORLD()
 	-- use this to filter out old data
 	-- sort the keys
