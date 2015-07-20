@@ -72,25 +72,30 @@ function Rate( realmIn, factionIn )
 
 		return m, targetTS
 	end
-	return 0, 0
 end
 
 if FileExists( dataFile ) then
 	DoFile( dataFile )
 	if GoldRate_data then
-		print("Realm,Faction,TimeStamp,TimeStamp,Gold")
+		strOut = "<?xml version='1.0' encoding='utf-8' ?>\n"
+		strOut = strOut .. "<goldRate>\n"
+		strOut = strOut .. "<graphAgeDays>"..GoldRate_options.graphAgeDays.."</graphAgeDays>"
+
 		for realm, rdata in pairs( GoldRate_data ) do
 			maxInitialTS = 0
 			for faction, fdata in pairs( rdata ) do
 				m, targetTS = Rate(realm, faction)
-				strOut = ""
+				strOut = strOut .. string.format( '<rf realm="%s" faction="%s">\n', realm, faction )
+				if fdata.goal and targetTS then
+					strOut = strOut .. string.format( '\t<goal ts="%i">%i</goal>\n', targetTS, fdata.goal )
+				end
 				for name, pdata in pairs( fdata.toons ) do
 					maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
 				end
 				if fdata.consolidated then
 					for ts, val in PairsByKeys( fdata.consolidated ) do
-						if ts >= maxInitialTS then
-							strOut = strOut .. string.format( '%s,%s,%s,%i,%i\n', realm, faction, os.date( "%x %X", ts ),ts, val )
+						if ts >= maxInitialTS and ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
+							strOut = strOut .. string.format( '\t<value ts="%i">%i</value>\n', ts, val )
 						end
 					end
 				end
@@ -99,9 +104,10 @@ if FileExists( dataFile ) then
 					strOut = strOut .. string.format("%s,%s,%s,%i,%i,target\n", realm, faction, os.date( "%x %X", targetTS), targetTS, GoldRate_data[realm][faction].goal )
 				end
 				]]
-				print(strOut)
+				strOut = strOut .. "</rf>\n"
 			end
 		end
-		print("\n")
+		strOut = strOut .. "</goldRate>\n"
+		print(strOut)
 	end
 end
