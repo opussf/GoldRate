@@ -17,6 +17,7 @@ COLOR_END = "|r";
 GoldRate = {}
 GoldRate_data = {}
 GoldRate_options = {['maxDataPoints'] = 1000}
+GoldRate_tokenData = {} -- [timestamp] = value
 
 function GoldRate.Print( msg, showName)
 	-- print to the chat frame
@@ -35,6 +36,7 @@ function GoldRate.OnLoad()
 	GoldRate_Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 	GoldRate_Frame:RegisterEvent("PLAYER_MONEY")
 	GoldRate_Frame:RegisterEvent("PLAYER_LEAVING_WORLD")
+	GoldRate_Frame:RegisterEvent("TOKEN_MARKET_PRICE_UPDATED")
 end
 --------------
 -- Event Functions
@@ -87,6 +89,14 @@ function GoldRate.PLAYER_LEAVING_WORLD()
 		key = table.remove( sortedKeys, 1 )
 		GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[key] = nil
 		count = count - 1
+	end
+end
+function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	local now = time()
+	local val = C_WowTokenPublic.GetCurrentMarketPrice()
+	if GoldRate.tokenLast and GoldRate.tokenLast ~= val then
+		GoldRate_tokenData[now] = val
+		GoldRate.tokenLast = val
 	end
 end
 --------------
