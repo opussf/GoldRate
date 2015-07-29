@@ -94,7 +94,7 @@ end
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 	local now = time()
 	local val = C_WowTokenPublic.GetCurrentMarketPrice()
-	if GoldRate.tokenLast and GoldRate.tokenLast ~= val then
+	if (not GoldRate.tokenLast) or (GoldRate.tokenLast and GoldRate.tokenLast ~= val) then
 		GoldRate_tokenData[now] = val
 		GoldRate.tokenLast = val
 	end
