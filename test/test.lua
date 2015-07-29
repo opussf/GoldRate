@@ -276,5 +276,11 @@ function test.testPLW_KeepsSomeData()
 		assertEquals( i*i, GoldRate_data.testRealm.Alliance.consolidated[i] )
 	end
 end
+---------------
+function test.testToken_TOKEN_MARKET_PRICE_UPDATED()
+	local now = time()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	assertEquals( 123456, GoldRate_tokenData[now] )
+end
 
 test.run()
