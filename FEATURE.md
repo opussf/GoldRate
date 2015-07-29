@@ -16,3 +16,6 @@ TokenChart_Events:RegisterEvent("TOKEN_MARKET_PRICE_UPDATED")
 Retrieve the current market price with:
 C_WowTokenPublic.GetCurrentMarketPrice()
 
+At this point, be very passive, and only record the values when the event is fired.
+
+
