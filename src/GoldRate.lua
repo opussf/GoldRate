@@ -17,6 +17,7 @@ COLOR_END = "|r";
 GoldRate = {}
 GoldRate_data = {}
 GoldRate_options = {['maxDataPoints'] = 1000}
+GoldRate_tokenData = {} -- [timestamp] = value
 
 function GoldRate.Print( msg, showName)
 	-- print to the chat frame
@@ -35,6 +36,7 @@ function GoldRate.OnLoad()
 	GoldRate_Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 	GoldRate_Frame:RegisterEvent("PLAYER_MONEY")
 	GoldRate_Frame:RegisterEvent("PLAYER_LEAVING_WORLD")
+	GoldRate_Frame:RegisterEvent("TOKEN_MARKET_PRICE_UPDATED")
 end
 --------------
 -- Event Functions
@@ -56,6 +58,13 @@ function GoldRate.ADDON_LOADED()
 	GoldRate.otherSummed = 0
 	for toonName, toonData in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].toons ) do
 		GoldRate.otherSummed = GoldRate.otherSummed + (toonName == GoldRate.name and 0 or toonData.last)
+	end
+	if GoldRate_tokenData then -- parse and store the last known value of the WoWToken
+		maxTS = 0
+		for ts, _ in pairs(GoldRate_tokenData) do
+			maxTS = max(maxTS, ts)
+		end
+		GoldRate.tokenLast = GoldRate_tokenData[maxTS]
 	end
 end
 function GoldRate.PLAYER_MONEY()
@@ -87,6 +96,14 @@ function GoldRate.PLAYER_LEAVING_WORLD()
 		key = table.remove( sortedKeys, 1 )
 		GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[key] = nil
 		count = count - 1
+	end
+end
+function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	local now = time()
+	local val = C_WowTokenPublic.GetCurrentMarketPrice()
+	if (not GoldRate.tokenLast) or (GoldRate.tokenLast and GoldRate.tokenLast ~= val) then
+		GoldRate_tokenData[now] = val
+		GoldRate.tokenLast = val
 	end
 end
 --------------
@@ -196,6 +213,9 @@ function GoldRate.ShowRate()
 	--GoldRate.Print( GetCoinTextureString( gGained ).." gained since "..date("%x %X", GoldRate.maxInitialTS).." at a rate of "..r.." g/sec ")
 end
 function GoldRate.SetGoal( value )
+	if (value and GoldRate.tokenLast and value == 'token') then
+		value = GoldRate.tokenLast
+	end
 	GoldRate_data[GoldRate.realm][GoldRate.faction].goal = GoldRate.SumGoldValue( value, GoldRate_data[GoldRate.realm][GoldRate.faction].goal )
 
 	if GoldRate_data[GoldRate.realm][GoldRate.faction].goal and GoldRate_data[GoldRate.realm][GoldRate.faction].goal <= 0 then
@@ -283,6 +303,6 @@ GoldRate.CommandList = {
 	},
 	["goal"] = {
 		["func"] = GoldRate.SetGoal,
-		["help"] = {"<amount>","Set the target goal."}
+		["help"] = {"<amount | 'token'>","Set the goal, or the amount of the token."}
 	},
 }

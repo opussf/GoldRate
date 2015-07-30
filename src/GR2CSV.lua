@@ -76,13 +76,14 @@ end
 
 if FileExists( dataFile ) then
 	DoFile( dataFile )
+	local strOut = ""
 	if GoldRate_data then
 		print("Realm,Faction,TimeStamp,TimeStamp,Gold")
 		for realm, rdata in pairs( GoldRate_data ) do
 			maxInitialTS = 0
 			for faction, fdata in pairs( rdata ) do
 				m, targetTS = Rate(realm, faction)
-				strOut = ""
+
 				for name, pdata in pairs( fdata.toons ) do
 					maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
 				end
@@ -98,9 +99,16 @@ if FileExists( dataFile ) then
 					strOut = strOut .. string.format("%s,%s,%s,%i,%i,target\n", realm, faction, os.date( "%x %X", targetTS), targetTS, GoldRate_data[realm][faction].goal )
 				end
 				]]
-				print(strOut)
 			end
 		end
-		print("\n")
 	end
+	if GoldRate_tokenData then
+		for ts, val in PairsByKeys( GoldRate_tokenData ) do
+			if ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
+				strOut = strOut .. string.format( '%s,%s,%s,%i,%i\n', "TokenData", "Both", os.date( "%x %X", ts ),ts, val )
+			end
+		end
+	end
+	print(strOut)
+	print("\n")
 end

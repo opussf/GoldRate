@@ -76,11 +76,10 @@ end
 
 if FileExists( dataFile ) then
 	DoFile( dataFile )
+	strOut = "<?xml version='1.0' encoding='utf-8' ?>\n"
+	strOut = strOut .. "<goldRate>\n"
+	strOut = strOut .. "<graphAgeDays>"..GoldRate_options.graphAgeDays.."</graphAgeDays>\n"
 	if GoldRate_data then
-		strOut = "<?xml version='1.0' encoding='utf-8' ?>\n"
-		strOut = strOut .. "<goldRate>\n"
-		strOut = strOut .. "<graphAgeDays>"..GoldRate_options.graphAgeDays.."</graphAgeDays>"
-
 		for realm, rdata in pairs( GoldRate_data ) do
 			maxInitialTS = 0
 			for faction, fdata in pairs( rdata ) do
@@ -107,7 +106,17 @@ if FileExists( dataFile ) then
 				strOut = strOut .. "</rf>\n"
 			end
 		end
-		strOut = strOut .. "</goldRate>\n"
-		print(strOut)
 	end
+	if GoldRate_tokenData then
+		strOut = strOut .. string.format( '<rf realm="TokenData" faction="all">\n' )
+		for ts, val in PairsByKeys( GoldRate_tokenData ) do
+			if ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
+				strOut = strOut .. string.format( '\t<value ts="%i">%i</value>\n', ts, val )
+			end
+		end
+		strOut = strOut .. "</rf>\n"
+	end
+	strOut = strOut .. "</goldRate>\n"
+	print(strOut)
+
 end
