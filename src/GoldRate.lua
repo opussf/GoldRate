@@ -59,10 +59,10 @@ function GoldRate.ADDON_LOADED()
 	for toonName, toonData in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].toons ) do
 		GoldRate.otherSummed = GoldRate.otherSummed + (toonName == GoldRate.name and 0 or toonData.last)
 	end
-	if GoldRate_tokenData then -- parse and file the last known value of the WoWToken
+	if GoldRate_tokenData then -- parse and store the last known value of the WoWToken
 		maxTS = 0
 		for ts, _ in pairs(GoldRate_tokenData) do
-			ts = max(maxTS, ts)
+			maxTS = max(maxTS, ts)
 		end
 		GoldRate.tokenLast = GoldRate_tokenData[maxTS]
 	end
