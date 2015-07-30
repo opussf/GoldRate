@@ -213,6 +213,9 @@ function GoldRate.ShowRate()
 	--GoldRate.Print( GetCoinTextureString( gGained ).." gained since "..date("%x %X", GoldRate.maxInitialTS).." at a rate of "..r.." g/sec ")
 end
 function GoldRate.SetGoal( value )
+	if (value and GoldRate.tokenLast and value == 'token') then
+		value = GoldRate.tokenLast
+	end
 	GoldRate_data[GoldRate.realm][GoldRate.faction].goal = GoldRate.SumGoldValue( value, GoldRate_data[GoldRate.realm][GoldRate.faction].goal )
 
 	if GoldRate_data[GoldRate.realm][GoldRate.faction].goal and GoldRate_data[GoldRate.realm][GoldRate.faction].goal <= 0 then
@@ -300,6 +303,6 @@ GoldRate.CommandList = {
 	},
 	["goal"] = {
 		["func"] = GoldRate.SetGoal,
-		["help"] = {"<amount>","Set the target goal."}
+		["help"] = {"<amount | 'token'>","Set the goal, or the amount of the token."}
 	},
 }

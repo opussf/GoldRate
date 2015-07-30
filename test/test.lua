@@ -282,5 +282,11 @@ function test.testToken_TOKEN_MARKET_PRICE_UPDATED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 	assertEquals( 123456, GoldRate_tokenData[now] )
 end
+function test.testToken_tokenGoal()
+	local now = time()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	GoldRate.Command( "goal token" )
+	assertEquals( 123456, GoldRate_data.testRealm.Alliance.goal )
+end
 
 test.run()
