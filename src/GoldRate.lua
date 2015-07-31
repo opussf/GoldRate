@@ -16,7 +16,7 @@ COLOR_END = "|r";
 
 GoldRate = {}
 GoldRate_data = {}
-GoldRate_options = {['maxDataPoints'] = 1000}
+GoldRate_options = {['maxDataPoints'] = 1000, ['nextTokenScanTS'] = 0}
 GoldRate_tokenData = {} -- [timestamp] = value
 
 function GoldRate.Print( msg, showName)
@@ -65,7 +65,13 @@ function GoldRate.ADDON_LOADED()
 			maxTS = max(maxTS, ts)
 		end
 		GoldRate.tokenLast = GoldRate_tokenData[maxTS]
+		GoldRate.tokenLastTS = maxTS
 	end
+	if (not GoldRate_options.nextTokenScanTS) then	-- set the nextTokenScanTime to +30 seconds if not set
+		GoldRate_options.nextTokenScanTS = time() + 30
+	end
+	GoldRate.minScanPeriod = select(2, C_WowTokenPublic.GetCommerceSystemStatus() )
+	GoldRate.Print( "v"..GOLDRATE_MSG_VERSION.." loaded." )
 end
 function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["last"] = GetMoney()
@@ -101,14 +107,33 @@ end
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 	local now = time()
 	local val = C_WowTokenPublic.GetCurrentMarketPrice()
+	local change = 0
 	if (not GoldRate.tokenLast) or (GoldRate.tokenLast and GoldRate.tokenLast ~= val) then
+		if GoldRate.tokenLast then
+			change = ((val - GoldRate.tokenLast) / GoldRate.tokenLast) * 100
+		end
 		GoldRate_tokenData[now] = val
 		GoldRate.tokenLast = val
+		GoldRate.tokenLastTS = now
+		GoldRate.UpdateScanTime()
 	end
+	GoldRate.Print( string.format("%s Token price --> %s (%0.2f%%)", date("%X", now), GetCoinTextureString( val ), change ) )
+end
+function GoldRate.OnUpdate( arg1 )
+	if ( GoldRate_options.nextTokenScanTS and GoldRate_options.nextTokenScanTS < time() ) then
+		C_WowTokenPublic.UpdateMarketPrice()
+		GoldRate.UpdateScanTime()
+	end
+end
+function GoldRate.UpdateScanTime()
+	GoldRate_options.nextTokenScanTS = time() + 20*60  -- 20 minutes
 end
 --------------
 -- Non Event functions
 --------------
+function GoldRate.TokenInfo()
+	GoldRate.Print( string.format( "Token Price %s at %s", GetCoinTextureString( GoldRate.tokenLast ), date("%X %x", GoldRate.tokenLastTS) ) )
+end
 function GoldRate.RateSimple()
 	-- returns rate/second, seconds till threshold
 	-- this simply uses the first and last data elements to calculate a line for prediction (uber simple)
@@ -304,5 +329,9 @@ GoldRate.CommandList = {
 	["goal"] = {
 		["func"] = GoldRate.SetGoal,
 		["help"] = {"<amount | 'token'>","Set the goal, or the amount of the token."}
+	},
+	["token"] = {
+		["func"] = GoldRate.TokenInfo,
+		["help"] = {"","Display info on the wowToken."}
 	},
 }
