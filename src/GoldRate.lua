@@ -131,7 +131,32 @@ end
 --------------
 -- Non Event functions
 --------------
-function GoldRate.TokenInfo()
+function GoldRate.PairsByKeys( t, f )  -- This is an awesome function I found
+	local a = {}
+	for n in pairs( t ) do table.insert( a, n ) end
+	table.sort( a, f )
+	local i = 0
+	local iter = function()
+		i = i + 1
+		if a[i] == nil then return nil
+		else return a[i], t[a[i]]
+		end
+	end
+	return iter
+end
+function GoldRate.TokenInfo( msg )
+	if (msg and string.len(msg) > 0) then
+		for ts, val in GoldRate.PairsByKeys( GoldRate_tokenData ) do
+			local diff = (last and val-last or 0)
+			GoldRate.Print( string.format( "%s %s %+i (%0.2f%%)",
+					date( "%x %X", ts ),
+					GetCoinTextureString( val ),
+					diff / 10000,
+					(last and (diff / last * 100) or 0) )
+			)
+			last = val
+		end
+	end
 	GoldRate.Print( string.format( "Token Price %s at %s", GetCoinTextureString( GoldRate.tokenLast ), date("%X %x", GoldRate.tokenLastTS) ) )
 end
 function GoldRate.RateSimple()
@@ -332,6 +357,6 @@ GoldRate.CommandList = {
 	},
 	["token"] = {
 		["func"] = GoldRate.TokenInfo,
-		["help"] = {"","Display info on the wowToken."}
+		["help"] = {"<history>","Display info on the wowToken, or optionally the history."}
 	},
 }
