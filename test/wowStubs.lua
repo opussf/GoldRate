@@ -806,6 +806,11 @@ end
 --------  C_WowTokenPublic
 C_WowTokenPublic = {}
 function C_WowTokenPublic.GetCommerceSystemStatus()
+	-- returns
+	-- [1] boolean - unsure
+	-- [2] seconds - minseconds between scans
+	-- [3] 0?
+	return true, 300, 0
 end
 function C_WowTokenPublic.GetCurrentMarketPrice()
 	-- returns the value, and a 2nd number (unknown)
