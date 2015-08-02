@@ -107,20 +107,21 @@ end
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 	local now = time()
 	local val = C_WowTokenPublic.GetCurrentMarketPrice()
-	local change = 0
+	local change, diff = 0, 0
 	if (not GoldRate.tokenLast) or (GoldRate.tokenLast and GoldRate.tokenLast ~= val) then
 		if GoldRate.tokenLast then
-			change = ((val - GoldRate.tokenLast) / GoldRate.tokenLast) * 100
+			diff = val - GoldRate.tokenLast
+			change = (diff / GoldRate.tokenLast) * 100
 		end
 		GoldRate_tokenData[now] = val
 		GoldRate.tokenLast = val
 		GoldRate.tokenLastTS = now
 		GoldRate.UpdateScanTime()
 	end
-	GoldRate.Print( string.format("%s Token price --> %s (%0.2f%%)", date("%X", now), GetCoinTextureString( val ), change ) )
+	GoldRate.Print( string.format("%s Token price --> %s %+i (%0.2f%%)", date("%X", now), GetCoinTextureString( val ), diff/10000, change ) )
 end
 function GoldRate.OnUpdate( arg1 )
-	if ( GoldRate_options.nextTokenScanTS and GoldRate_options.nextTokenScanTS < time() ) then
+	if ( GoldRate_options.nextTokenScanTS and GoldRate_options.nextTokenScanTS <= time() ) then
 		C_WowTokenPublic.UpdateMarketPrice()
 		GoldRate.UpdateScanTime()
 	end
