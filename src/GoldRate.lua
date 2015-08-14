@@ -106,20 +106,23 @@ function GoldRate.PLAYER_LEAVING_WORLD()
 end
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 	local val = C_WowTokenPublic.GetCurrentMarketPrice()
+	local changeColor = COLOR_END
 	if val then
 		local now = time()
-		local change, diff = 0, 0
+		local changePC, diff = 0, 0
 		if (not GoldRate.tokenLast) or (GoldRate.tokenLast and GoldRate.tokenLast ~= val) then
 			if GoldRate.tokenLast then
 				diff = val - GoldRate.tokenLast
-				change = (diff / GoldRate.tokenLast) * 100
+				changePC = (diff / GoldRate.tokenLast) * 100
+				changeColor = (diff > 0) and COLOR_GREEN or COLOR_RED
 			end
 			GoldRate_tokenData[now] = val
 			GoldRate.tokenLast = val
 			GoldRate.tokenLastTS = now
 			GoldRate.UpdateScanTime()
 		end
-		GoldRate.Print( string.format("%s Token price --> %s %+i (%0.2f%%)", date("%X", now), GetCoinTextureString( val ), diff/10000, change ) )
+		GoldRate.Print( string.format("%s Token price --> %s %s%+i (%0.2f%%)%s", date("%X", now), GetCoinTextureString( val ),
+				changeColor, diff/10000, changePC, COLOR_END ) )
 	end
 end
 function GoldRate.OnUpdate( arg1 )
