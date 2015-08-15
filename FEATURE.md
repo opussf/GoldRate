@@ -17,5 +17,7 @@ Retrieve the current market price with:
 C_WowTokenPublic.GetCurrentMarketPrice()
 
 At this point, be very passive, and only record the values when the event is fired.
+^^^  Schedule the events for every 20 minutes.
 
+Color the difference and %diff
 

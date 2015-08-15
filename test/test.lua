@@ -277,6 +277,18 @@ function test.testPLW_KeepsSomeData()
 	end
 end
 ---------------
+function fillTokenHistory()
+	now = time()
+	GoldRate_tokenData = {}
+	dayAgoStart = now-(2*86400)
+
+	goldVal = 250000000
+	for ts=dayAgoStart, now, 20*60 do  -- 20 minute increments
+		GoldRate_tokenData[ts] = goldVal
+		goldVal = goldVal + 10000
+	end
+	GoldRate.ADDON_LOADED()
+end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED()
 	local now = time()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
@@ -288,5 +300,12 @@ function test.testToken_tokenGoal()
 	GoldRate.Command( "goal token" )
 	assertEquals( 123456, GoldRate_data.testRealm.Alliance.goal )
 end
-
+function test.testToken_TokenInfo()
+	fillTokenHistory()
+	GoldRate.Command( "token" )
+end
+function test.testToken_TokenList()
+	fillTokenHistory()
+	GoldRate.Command( "token list" )
+end
 test.run()

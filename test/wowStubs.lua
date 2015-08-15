@@ -106,6 +106,7 @@ strtolower = string.lower
 time = os.time
 date = os.date
 max = math.max
+min = math.min
 random = math.random
 tinsert = table.insert
 
