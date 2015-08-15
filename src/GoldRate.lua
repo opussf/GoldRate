@@ -168,7 +168,7 @@ function GoldRate.TokenInfo( msg )
 			curDayTable = date("*t", ts)
 			if displayDay ~= curDayTable.yday then  -- day changed
 				if startDay > 0 then
-					GoldRate.Print( string.format( "%s %s - %s %s",
+					GoldRate.Print( string.format( "%s :: %s - %s %s",
 									date("%x", startDay),
 									GetCoinTextureString(minVal),
 									GetCoinTextureString(maxVal),
@@ -185,7 +185,7 @@ function GoldRate.TokenInfo( msg )
 			end
 			minVal = min(minVal, val)
 			maxVal = max(maxVal, val)
-			tinsert( todayOut, string.format( "%s %s %s", date("%x %X", ts), GetCoinTextureString(val), GoldRate.GetDiffString( endVal, val ) ) )
+			tinsert( todayOut, string.format( "%s :: %s %s", date("%X", ts), GetCoinTextureString(val), GoldRate.GetDiffString( endVal, val ) ) )
 			endVal = val
 		end
 		for _,v in ipairs(todayOut) do
