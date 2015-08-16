@@ -280,12 +280,18 @@ end
 function fillTokenHistory()
 	now = time()
 	GoldRate_tokenData = {}
-	dayAgoStart = now-(2*86400)
+	StartTS = now-(4*86400)
 
-	goldVal = 250000000
-	for ts=dayAgoStart, now, 20*60 do  -- 20 minute increments
+	goldValStart = 350000000
+	goldValPeriod = 86400
+	goldValAmplitude = 100000000 -- 10k G
+	goldVal = goldValStart
+	rateMod = 2*math.pi / goldValPeriod
+	for ts=StartTS, now, 20*60 do  -- 20 minute increments
+		x = ts - StartTS -- offset
+		goldVal = goldVal + (math.floor((math.sin(x * rateMod) * goldValAmplitude)/10000)*10000)
 		GoldRate_tokenData[ts] = goldVal
-		goldVal = goldVal + 10000
+		-- goldVal = goldVal + 10000
 	end
 	GoldRate.ADDON_LOADED()
 end
@@ -308,4 +314,23 @@ function test.testToken_TokenList()
 	fillTokenHistory()
 	GoldRate.Command( "token list" )
 end
+function test.testGetDiffString_startLessthanEnd()
+	--- startVal < endVal (wowGold values)
+	expected = "|cff00ff00+5 (100.00%)|r"
+	actual = GoldRate.GetDiffString( 50000, 100000 )
+	assertEquals( expected, actual )
+end
+function test.testGetDiffString_startEqualsEnd()
+	-- startVal = endVal
+	expected = "|cff00ff00+0 (0.00%)|r"
+	actual = GoldRate.GetDiffString( 50000, 50000 )
+	assertEquals( expected, actual )
+end
+function test.testGetDiffString_startGreaterthanEnd()
+	-- startVal > endVal
+	expected = "|cffff0000-5 (-50.00%)|r"
+	actual = GoldRate.GetDiffString( 100000, 50000 )
+	assertEquals( expected, actual )
+end
+
 test.run()
