@@ -857,4 +857,6 @@ function C_WowTokenPublic.GetCurrentMarketPrice()
 	return TokenPrice, 5
 end
 function C_WowTokenPublic.UpdateMarketPrice()
+	-- this has the system query the market price, and fire the TOKEN_MARKET_PRICE_UPDATED event
+	-- has no other side effects
 end
