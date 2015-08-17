@@ -21,3 +21,8 @@ At this point, be very passive, and only record the values when the event is fir
 
 Color the difference and %diff
 
+Show for each day:
+<date> :: <dailyMin> <dailyMax> +-<dayChange> <dayChange percent>%
+
+For today:
+

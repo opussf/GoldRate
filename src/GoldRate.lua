@@ -163,7 +163,9 @@ function GoldRate.TokenInfo( msg )
 	--	dayStart.hour, dayStart.min, dayStart.sec = 0, 0, 0
 	--	dayStart = time(dayStart)
 		local displayDay, startDay, startVal, endVal, minVal, maxVal = 0, 0, 0, 0, 0, 0
+		local allMin, allMax = 0, 0
 		local todayOut = {}
+		local detailCutoffTS = time() - (12 * 3600) -- 12 hours ago
 		for ts, val in GoldRate.PairsByKeys( GoldRate_tokenData ) do
 			curDayTable = date("*t", ts)
 			if displayDay ~= curDayTable.yday then  -- day changed
@@ -174,7 +176,6 @@ function GoldRate.TokenInfo( msg )
 									GetCoinTextureString(maxVal),
 									GoldRate.GetDiffString( startVal, endVal ) )
 					)
-					todayOut = {} -- clear today out data
 				end
 				startDay = ts
 				startVal = val
@@ -185,14 +186,22 @@ function GoldRate.TokenInfo( msg )
 			end
 			minVal = min(minVal, val)
 			maxVal = max(maxVal, val)
-			tinsert( todayOut, string.format( "%s :: %s %s", date("%X", ts), GetCoinTextureString(val), GoldRate.GetDiffString( endVal, val ) ) )
+			if (ts > detailCutoffTS) then  -- only capture data within the detailCutoff time window
+				tinsert( todayOut, string.format( "%s :: %s %s H%i L%i",
+												date("%X", ts),
+												GetCoinTextureString(val),
+												GoldRate.GetDiffString( endVal, val ),
+												maxVal/10000,
+												minVal/10000 )
+				)
+			end
 			endVal = val
 		end
 		for _,v in ipairs(todayOut) do
 			GoldRate.Print(v)
 		end
 	end
-	GoldRate.Print( string.format( "Token Price %s at %s", GetCoinTextureString( GoldRate.tokenLast ), date("%X %x", GoldRate.tokenLastTS) ) )
+	GoldRate.Print( string.format( "Token Price %s at %s", GetCoinTextureString( GoldRate.tokenLast ), date("%x %X", GoldRate.tokenLastTS) ) )
 end
 function GoldRate.RateSimple()
 	-- returns rate/second, seconds till threshold
