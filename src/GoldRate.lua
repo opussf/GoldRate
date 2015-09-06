@@ -121,8 +121,8 @@ function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 			GoldRate.tokenLastTS = now
 			GoldRate.UpdateScanTime()
 		end
-		GoldRate.Print( string.format("%s Token price --> %s %s%+i (%0.2f%%)%s", date("%X", now), GetCoinTextureString( val ),
-				changeColor, diff/10000, changePC, COLOR_END ) )
+		GoldRate.tickerToken = string.format("TOK %i%s%s%i%s", val, "icon", changeColor, diff/10000, COLOR_END)
+		UIErrorsFrame:AddMessage( GoldRate.tickerToken, 1.0, 1.0, 0.1, 1.0 )
 	end
 end
 function GoldRate.OnUpdate( arg1 )

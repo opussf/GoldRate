@@ -19,6 +19,7 @@ require "GoldRate"
 -- addon setup
 function test.before()
 	GoldRate_data = {}
+	GoldRate_tokenData = {}
 	GoldRate.OnLoad()
 	GoldRate.ADDON_LOADED()
 	myCopper = 150000
@@ -295,11 +296,33 @@ function fillTokenHistory()
 	end
 	GoldRate.ADDON_LOADED()
 end
-function test.testToken_TOKEN_MARKET_PRICE_UPDATED()
+function test.testToken_TOKEN_MARKET_PRICE_UPDATED_inArray()
 	local now = time()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 	assertEquals( 123456, GoldRate_tokenData[now] )
 end
+function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_positive()
+	local now = time()
+	GoldRate_tokenData[now-100000] = 73456 -- one day is 86400
+	GoldRate.ADDON_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	assertEquals( "TOK 123456icon|cff00ff005|r" , GoldRate.tickerToken )
+end
+function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_zero()
+	local now = time()
+	GoldRate_tokenData[now-100000] = 123456 -- one day is 86400
+	GoldRate.ADDON_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	assertEquals( "TOK 123456icon|r0|r" , GoldRate.tickerToken )
+end
+function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_negitive()
+	local now = time()
+	GoldRate_tokenData[now-100000] = 173461 -- one day is 86400
+	GoldRate.ADDON_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	assertEquals( "TOK 123456icon|cffff0000-5|r" , GoldRate.tickerToken )
+end
+
 function test.testToken_tokenGoal()
 	local now = time()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
