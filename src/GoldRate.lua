@@ -18,7 +18,6 @@ GoldRate = {}
 GoldRate_data = {}
 GoldRate_options = {['maxDataPoints'] = 1000, ['nextTokenScanTS'] = 0}
 GoldRate_tokenData = {} -- [timestamp] = value
-GoldRate.tickerIcons = {[-1]="{cross}", [0]="", [1]="{triangle}"}
 
 function GoldRate.Print( msg, showName)
 	-- print to the chat frame
@@ -122,8 +121,8 @@ function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 			GoldRate.tokenLastTS = now
 			GoldRate.UpdateScanTime()
 
-			GoldRate.tickerToken = string.format("TOK %s%s%s%i%s",
-					GetCoinTextureString(val), "icon", changeColor, diff/10000, COLOR_END)
+			GoldRate.tickerToken = string.format("TOK %s%s%+i%s",
+					GetCoinTextureString(val), changeColor, diff/10000, COLOR_END)
 			UIErrorsFrame:AddMessage( GoldRate.tickerToken, 1.0, 1.0, 0.1, 1.0 )
 			GoldRate.Print(GoldRate.tickerToken, false)
 		end
