@@ -13,7 +13,7 @@ Change in amount or percent
 
 #### Data to show:
 TOK price <direction icon> <change from previous day close>
-GOL amount <direction icon> <change from previous day close>
+GOL amount <direction icon> <change from previous day close> -> <Goal>
 
 How to find the 'previous day close' when there is:
 	- no data

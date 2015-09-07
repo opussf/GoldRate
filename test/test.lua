@@ -204,6 +204,26 @@ function test.testCapture_GoldAmount_PlayerMoney_TimeStamp()
 	GoldRate.PLAYER_MONEY()  -- Capture the amount
 	assertEquals( 150000, GoldRate_data.testRealm.Alliance.consolidated[now] )
 end
+function test.testCapture_GoldAmount_PlayerMoney_SetsTicker_negative()
+	local now = time()
+	GoldRate.PLAYER_MONEY()  -- Capture the amount
+	myCopper = 140000
+	GoldRate.PLAYER_MONEY()  -- Capture the amount
+	assertEquals( "GOL 14G 0S 0C", GoldRate.tickerGold )
+end
+function test.testCapture_GoldAmount_PlayerMoney_SetsTicker_noChange()
+	local now = time()
+	GoldRate.PLAYER_MONEY()  -- Capture the amount
+	assertEquals( "GOL 15G 0S 0C", GoldRate.tickerGold )
+end
+function test.testCapture_GoldAmount_PlayerMoney_SetsTicker_positive()
+	local now = time()
+	GoldRate.PLAYER_MONEY()  -- Capture the amount
+	myCopper = 160000
+	GoldRate.PLAYER_MONEY()  -- Capture the amount
+	assertEquals( "GOL 16G 0S 0C", GoldRate.tickerGold )
+end
+
 function test.testCapture_GoldAmount_EnteringWorld_Last_noData()
 	-- Assert that PLAYER_MONEY event takes a snapshot of the current toon's money amount
 	GoldRate.PLAYER_ENTERING_WORLD()  -- Capture the amount
@@ -306,23 +326,22 @@ function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_positive()
 	GoldRate_tokenData[now-100000] = 73456 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 123456icon|cff00ff005|r" , GoldRate.tickerToken )
+	assertEquals( "TOK 12G 34S 56Cicon|cff00ff005|r" , GoldRate.tickerToken )
 end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_zero()
 	local now = time()
 	GoldRate_tokenData[now-100000] = 123456 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 123456icon|r0|r" , GoldRate.tickerToken )
+	assertEquals( "TOK 12G 34S 56Cicon|r0|r" , GoldRate.tickerToken )
 end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_negitive()
 	local now = time()
 	GoldRate_tokenData[now-100000] = 173461 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 123456icon|cffff0000-5|r" , GoldRate.tickerToken )
+	assertEquals( "TOK 12G 34S 56Cicon|cffff0000-5|r" , GoldRate.tickerToken )
 end
-
 function test.testToken_tokenGoal()
 	local now = time()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
@@ -330,13 +349,16 @@ function test.testToken_tokenGoal()
 	assertEquals( 123456, GoldRate_data.testRealm.Alliance.goal )
 end
 function test.testToken_TokenInfo()
+	-- just make sure the command works
 	fillTokenHistory()
 	GoldRate.Command( "token" )
 end
 function test.testToken_TokenList()
+	-- just make sure the command works
 	fillTokenHistory()
 	GoldRate.Command( "token list" )
 end
+
 function test.testGetDiffString_startLessthanEnd()
 	--- startVal < endVal (wowGold values)
 	expected = "|cff00ff00+5 (100.00%)|r"
