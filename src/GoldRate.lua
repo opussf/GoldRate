@@ -16,7 +16,8 @@ COLOR_END = "|r";
 
 GoldRate = {}
 GoldRate_data = {}
-GoldRate_options = {['maxDataPoints'] = 1000}
+GoldRate_options = {['maxDataPoints'] = 1000, ['nextTokenScanTS'] = 0}
+GoldRate_tokenData = {} -- [timestamp] = value
 
 function GoldRate.Print( msg, showName)
 	-- print to the chat frame
@@ -35,6 +36,7 @@ function GoldRate.OnLoad()
 	GoldRate_Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 	GoldRate_Frame:RegisterEvent("PLAYER_MONEY")
 	GoldRate_Frame:RegisterEvent("PLAYER_LEAVING_WORLD")
+	GoldRate_Frame:RegisterEvent("TOKEN_MARKET_PRICE_UPDATED")
 end
 --------------
 -- Event Functions
@@ -57,6 +59,19 @@ function GoldRate.ADDON_LOADED()
 	for toonName, toonData in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].toons ) do
 		GoldRate.otherSummed = GoldRate.otherSummed + (toonName == GoldRate.name and 0 or toonData.last)
 	end
+	if GoldRate_tokenData then -- parse and store the last known value of the WoWToken
+		maxTS = 0
+		for ts, _ in pairs(GoldRate_tokenData) do
+			maxTS = max(maxTS, ts)
+		end
+		GoldRate.tokenLast = GoldRate_tokenData[maxTS]
+		GoldRate.tokenLastTS = maxTS
+	end
+	if (not GoldRate_options.nextTokenScanTS) then	-- set the nextTokenScanTime to +30 seconds if not set
+		GoldRate_options.nextTokenScanTS = time() + 30
+	end
+	GoldRate.minScanPeriod = select(2, C_WowTokenPublic.GetCommerceSystemStatus() )
+	GoldRate.Print( "v"..GOLDRATE_MSG_VERSION.." loaded." )
 end
 function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["last"] = GetMoney()
@@ -89,9 +104,108 @@ function GoldRate.PLAYER_LEAVING_WORLD()
 		count = count - 1
 	end
 end
+function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	local val = C_WowTokenPublic.GetCurrentMarketPrice()
+	local changeColor = COLOR_END
+	if val then
+		local now = time()
+		local changePC, diff = 0, 0
+		if (not GoldRate.tokenLast) or (GoldRate.tokenLast and GoldRate.tokenLast ~= val) then
+			if GoldRate.tokenLast then
+				diff = val - GoldRate.tokenLast
+				changePC = (diff / GoldRate.tokenLast) * 100
+				changeColor = (diff > 0) and COLOR_GREEN or COLOR_RED
+			end
+			GoldRate_tokenData[now] = val
+			GoldRate.tokenLast = val
+			GoldRate.tokenLastTS = now
+			GoldRate.UpdateScanTime()
+
+			GoldRate.tickerToken = string.format("TOK %s%s%+i%s",
+					GetCoinTextureString(val), changeColor, diff/10000, COLOR_END)
+			UIErrorsFrame:AddMessage( GoldRate.tickerToken, 1.0, 1.0, 0.1, 1.0 )
+			GoldRate.Print(GoldRate.tickerToken, false)
+		end
+	end
+end
+function GoldRate.OnUpdate( arg1 )
+	if ( GoldRate_options.nextTokenScanTS and GoldRate_options.nextTokenScanTS <= time() ) then
+		C_WowTokenPublic.UpdateMarketPrice()
+		GoldRate.UpdateScanTime()
+	end
+end
+function GoldRate.UpdateScanTime()
+	GoldRate_options.nextTokenScanTS = time() + 20*60  -- 20 minutes
+end
 --------------
 -- Non Event functions
 --------------
+function GoldRate.PairsByKeys( t, f )  -- This is an awesome function I found
+	local a = {}
+	for n in pairs( t ) do table.insert( a, n ) end
+	table.sort( a, f )
+	local i = 0
+	local iter = function()
+		i = i + 1
+		if a[i] == nil then return nil
+		else return a[i], t[a[i]]
+		end
+	end
+	return iter
+end
+function GoldRate.GetDiffString( startVal, endVal )
+	local diff = endVal - startVal
+	local changePC = (diff / startVal) * 100
+	local changeColor = (diff < 0) and COLOR_RED or COLOR_GREEN
+	return string.format( "%s%+i (%0.2f%%)%s", changeColor, diff/10000, changePC, COLOR_END )
+end
+function GoldRate.TokenInfo( msg )
+	print("TokenInfo: "..msg)
+	if (msg and string.len(msg) > 0) then
+	--	dayStart = date("*t")
+	--	dayStart.hour, dayStart.min, dayStart.sec = 0, 0, 0
+	--	dayStart = time(dayStart)
+		local displayDay, startDay, startVal, endVal, minVal, maxVal = 0, 0, 0, 0, 0, 0
+		local allMin, allMax = 0, 0
+		local todayOut = {}
+		local detailCutoffTS = time() - (12 * 3600) -- 12 hours ago
+		for ts, val in GoldRate.PairsByKeys( GoldRate_tokenData ) do
+			curDayTable = date("*t", ts)
+			if displayDay ~= curDayTable.yday then  -- day changed
+				if startDay > 0 then
+					GoldRate.Print( string.format( "%s :: %s - %s %s",
+									date("%x", startDay),
+									GetCoinTextureString(minVal),
+									GetCoinTextureString(maxVal),
+									GoldRate.GetDiffString( startVal, endVal ) )
+					)
+				end
+				startDay = ts
+				startVal = val
+				curDayTable = date("*t", ts)
+				displayDay = curDayTable.yday
+				minVal = val
+				maxVal = val
+			end
+			minVal = min(minVal, val)
+			maxVal = max(maxVal, val)
+			if (ts > detailCutoffTS) then  -- only capture data within the detailCutoff time window
+				tinsert( todayOut, string.format( "%s :: %s %s H%i L%i",
+												date("%X", ts),
+												GetCoinTextureString(val),
+												GoldRate.GetDiffString( endVal, val ),
+												maxVal/10000,
+												minVal/10000 )
+				)
+			end
+			endVal = val
+		end
+		for _,v in ipairs(todayOut) do
+			GoldRate.Print(v, false)
+		end
+	end
+	GoldRate.Print( string.format( "Token Price %s at %s", GetCoinTextureString( GoldRate.tokenLast ), date("%x %X", GoldRate.tokenLastTS) ) )
+end
 function GoldRate.RateSimple()
 	-- returns rate/second, seconds till threshold
 	-- this simply uses the first and last data elements to calculate a line for prediction (uber simple)
@@ -112,8 +226,7 @@ function GoldRate.RateSimple()
 
 	local goldDiff = endGold - startGold
 	local rate = goldDiff / timeDiff
-	--GoldRate.Print( "Gold Needed: "..GetCoinTextureString(
-	--		(GoldRate_data[GoldRate.realm][GoldRate.faction].goal and GoldRate_data[GoldRate.realm][GoldRate.faction].goal - endGold or 0) ) )
+	--GoldRate.Print( "Gold Needed: "..GetCoinTextureString(xndGold or 0) ) )
 	local targetTS = (GoldRate_data[GoldRate.realm][GoldRate.faction].goal and
 			(time() + ((GoldRate_data[GoldRate.realm][GoldRate.faction].goal - endGold) / rate)) or 0)
 
@@ -155,11 +268,6 @@ function GoldRate.Rate()
 				--x2Sum = x2Sum + math.pow((ts - GoldRate.maxInitialTS) - tsAve, 2)
 				xySum = xySum + (ts - tsAve) * (gold - goldAve)
 				x2Sum = x2Sum + math.pow(ts - tsAve, 2)
---[[				if xySum < 0 or x2Sum < 0 then
-					GoldRate.Print("------UH")
-					GoldRate.Print( xySum.." : "..x2Sum )
-				end
-]]
 			end
 	    end
 	    local m = xySum / x2Sum
@@ -183,9 +291,13 @@ function GoldRate.ShowRate()
 	local rs, targetTSs = GoldRate.RateSimple()
 	local totalGoldNow = GoldRate.otherSummed + GetMoney()
 
-	GoldRate.Print( "Total: ".. GetCoinTextureString( totalGoldNow ) ..
+	GoldRate.tickerGold = string.format("GOL %s%s",
+			GetCoinTextureString( totalGoldNow ),
 			((GoldRate_data[GoldRate.realm][GoldRate.faction].goal and GoldRate_data[GoldRate.realm][GoldRate.faction].goal > totalGoldNow)
-				and " -> "..GetCoinTextureString( GoldRate_data[GoldRate.realm][GoldRate.faction].goal ) or "" ) )
+				and " -> "..GetCoinTextureString( GoldRate_data[GoldRate.realm][GoldRate.faction].goal ) or "" )
+	)
+
+	GoldRate.Print( GoldRate.tickerGold )
 
 	if (GoldRate_data[GoldRate.realm][GoldRate.faction].goal and
 			GoldRate_data[GoldRate.realm][GoldRate.faction].goal > totalGoldNow) then
@@ -196,6 +308,9 @@ function GoldRate.ShowRate()
 	--GoldRate.Print( GetCoinTextureString( gGained ).." gained since "..date("%x %X", GoldRate.maxInitialTS).." at a rate of "..r.." g/sec ")
 end
 function GoldRate.SetGoal( value )
+	if (value and GoldRate.tokenLast and value == 'token') then
+		value = GoldRate.tokenLast
+	end
 	GoldRate_data[GoldRate.realm][GoldRate.faction].goal = GoldRate.SumGoldValue( value, GoldRate_data[GoldRate.realm][GoldRate.faction].goal )
 
 	if GoldRate_data[GoldRate.realm][GoldRate.faction].goal and GoldRate_data[GoldRate.realm][GoldRate.faction].goal <= 0 then
@@ -283,6 +398,10 @@ GoldRate.CommandList = {
 	},
 	["goal"] = {
 		["func"] = GoldRate.SetGoal,
-		["help"] = {"<amount>","Set the target goal."}
+		["help"] = {"<amount | 'token'>","Set the goal, or the amount of the token."}
+	},
+	["token"] = {
+		["func"] = GoldRate.TokenInfo,
+		["help"] = {"<history>","Display info on the wowToken, or optionally the history."}
 	},
 }

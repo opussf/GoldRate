@@ -19,6 +19,7 @@ require "GoldRate"
 -- addon setup
 function test.before()
 	GoldRate_data = {}
+	GoldRate_tokenData = {}
 	GoldRate.OnLoad()
 	GoldRate.ADDON_LOADED()
 	myCopper = 150000
@@ -203,6 +204,26 @@ function test.testCapture_GoldAmount_PlayerMoney_TimeStamp()
 	GoldRate.PLAYER_MONEY()  -- Capture the amount
 	assertEquals( 150000, GoldRate_data.testRealm.Alliance.consolidated[now] )
 end
+function test.testCapture_GoldAmount_PlayerMoney_SetsTicker_negative()
+	local now = time()
+	GoldRate.PLAYER_MONEY()  -- Capture the amount
+	myCopper = 140000
+	GoldRate.PLAYER_MONEY()  -- Capture the amount
+	assertEquals( "GOL 14G 0S 0C", GoldRate.tickerGold )
+end
+function test.testCapture_GoldAmount_PlayerMoney_SetsTicker_noChange()
+	local now = time()
+	GoldRate.PLAYER_MONEY()  -- Capture the amount
+	assertEquals( "GOL 15G 0S 0C", GoldRate.tickerGold )
+end
+function test.testCapture_GoldAmount_PlayerMoney_SetsTicker_positive()
+	local now = time()
+	GoldRate.PLAYER_MONEY()  -- Capture the amount
+	myCopper = 160000
+	GoldRate.PLAYER_MONEY()  -- Capture the amount
+	assertEquals( "GOL 16G 0S 0C", GoldRate.tickerGold )
+end
+
 function test.testCapture_GoldAmount_EnteringWorld_Last_noData()
 	-- Assert that PLAYER_MONEY event takes a snapshot of the current toon's money amount
 	GoldRate.PLAYER_ENTERING_WORLD()  -- Capture the amount
@@ -275,6 +296,86 @@ function test.testPLW_KeepsSomeData()
 	for i = 501, 1000 do
 		assertEquals( i*i, GoldRate_data.testRealm.Alliance.consolidated[i] )
 	end
+end
+---------------
+function fillTokenHistory()
+	now = time()
+	GoldRate_tokenData = {}
+	StartTS = now-(4*86400)
+
+	goldValStart = 350000000
+	goldValPeriod = 86400
+	goldValAmplitude = 100000000 -- 10k G
+	goldVal = goldValStart
+	rateMod = 2*math.pi / goldValPeriod
+	for ts=StartTS, now, 20*60 do  -- 20 minute increments
+		x = ts - StartTS -- offset
+		goldVal = goldVal + (math.floor((math.sin(x * rateMod) * goldValAmplitude)/10000)*10000)
+		GoldRate_tokenData[ts] = goldVal
+		-- goldVal = goldVal + 10000
+	end
+	GoldRate.ADDON_LOADED()
+end
+function test.testToken_TOKEN_MARKET_PRICE_UPDATED_inArray()
+	local now = time()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	assertEquals( 123456, GoldRate_tokenData[now] )
+end
+function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_positive()
+	local now = time()
+	GoldRate_tokenData[now-100000] = 73456 -- one day is 86400
+	GoldRate.ADDON_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	assertEquals( "TOK 12G 34S 56C|cff00ff00+5|r" , GoldRate.tickerToken )
+end
+function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_zero()
+	local now = time()
+	GoldRate_tokenData[now-100000] = 123456 -- one day is 86400
+	GoldRate.ADDON_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	assertEquals( "TOK 12G 34S 56C|r+0|r" , GoldRate.tickerToken )
+end
+function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_negitive()
+	local now = time()
+	GoldRate_tokenData[now-100000] = 173461 -- one day is 86400
+	GoldRate.ADDON_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	assertEquals( "TOK 12G 34S 56C|cffff0000-5|r" , GoldRate.tickerToken )
+end
+function test.testToken_tokenGoal()
+	local now = time()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	GoldRate.Command( "goal token" )
+	assertEquals( 123456, GoldRate_data.testRealm.Alliance.goal )
+end
+function test.testToken_TokenInfo()
+	-- just make sure the command works
+	fillTokenHistory()
+	GoldRate.Command( "token" )
+end
+function test.testToken_TokenList()
+	-- just make sure the command works
+	fillTokenHistory()
+	GoldRate.Command( "token list" )
+end
+
+function test.testGetDiffString_startLessthanEnd()
+	--- startVal < endVal (wowGold values)
+	expected = "|cff00ff00+5 (100.00%)|r"
+	actual = GoldRate.GetDiffString( 50000, 100000 )
+	assertEquals( expected, actual )
+end
+function test.testGetDiffString_startEqualsEnd()
+	-- startVal = endVal
+	expected = "|cff00ff00+0 (0.00%)|r"
+	actual = GoldRate.GetDiffString( 50000, 50000 )
+	assertEquals( expected, actual )
+end
+function test.testGetDiffString_startGreaterthanEnd()
+	-- startVal > endVal
+	expected = "|cffff0000-5 (-50.00%)|r"
+	actual = GoldRate.GetDiffString( 100000, 50000 )
+	assertEquals( expected, actual )
 end
 
 test.run()
