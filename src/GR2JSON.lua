@@ -77,20 +77,20 @@ end
 if FileExists( dataFile ) then
 	DoFile( dataFile )
 	if GoldRate_data then
-		strOut = '{\n\t"goldRate": {\n'
-		strOut = strOut .. '\t\t"graphAgeDays": '..GoldRate_options.graphAgeDays..',\n'
-		strOut = strOut .. '\t\t"realms": [\n'
+		strOut = '{"goldRate": {\n'
+		strOut = strOut .. '"graphAgeDays": '..GoldRate_options.graphAgeDays..',\n'
+		strOut = strOut .. '"realms": [\n'
 
 		realms = {}
 		for realm, rdata in pairs( GoldRate_data ) do
 			maxInitialTS = 0
-			rStr = string.format( '\t\t\t{\n\t\t\t\t"realm": "%s",\n\t\t\t\t"factions": [\n', realm)
+			rStr = string.format( '{"realm": "%s","factions": [\n', realm)
 			factions = {}
 			for faction, fdata in pairs( rdata ) do
-				fStr = string.format( '\t\t\t\t\t{\n\t\t\t\t\t\t"faction": "%s",\n', faction )
+				fStr = string.format( '{"faction": "%s",', faction )
 				m, targetTS = Rate(realm, faction)
 				if fdata.goal and targetTS then
-					fStr = fStr .. string.format( '\t\t\t\t\t\t"goal": %s,\n', fdata.goal )
+					fStr = fStr .. string.format( '"goal": %s,', fdata.goal )
 				end
 				for name, pdata in pairs( fdata.toons ) do
 					maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
@@ -99,11 +99,11 @@ if FileExists( dataFile ) then
 				if fdata.consolidated then
 					for ts, val in PairsByKeys( fdata.consolidated ) do
 						if ts >= maxInitialTS and ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
-							table.insert( gdata, string.format('\t\t\t\t\t\t\t{"ts": %s, "val": %s}', ts, val) )
+							table.insert( gdata, string.format('{"ts": %s, "val": %s}', ts, val) )
 						end
 					end
 				end
-				fStr = fStr .. '\t\t\t\t\t\t"data": [\n' .. table.concat( gdata, ",\n" ) .. "\n\t\t\t\t\t\t]\n\t\t\t\t\t}"
+				fStr = fStr .. '"data": [\n' .. table.concat( gdata, ",\n" ) .. "]}"
 				--[[
 				if GoldRate_data[realm][faction].goal then
 					strOut = strOut .. string.format("%s,%s,%s,%i,%i,target\n", realm, faction, os.date( "%x %X", targetTS), targetTS, GoldRate_data[realm][faction].goal )
@@ -111,25 +111,25 @@ if FileExists( dataFile ) then
 				]]
 				table.insert( factions, fStr )
 			end
-			rStr = rStr .. table.concat( factions, ",\n" ) .. "\n\t\t\t\t]\n\t\t\t}"
+			rStr = rStr .. table.concat( factions, ",\n" ) .. "]}"
 			table.insert( realms, rStr )
 		end
 		if GoldRate_tokenData then
-			rStr = string.format( '\t\t\t{\n\t\t\t\t"realm": "%s",\n\t\t\t\t"factions": [\n', "TokenData")
+			rStr = string.format( '{"realm": "%s","factions": [\n', "TokenData")
 			rStr = rStr .. '{"faction": "Both",'
 
 			gdata = {}
 			for ts, val in PairsByKeys( GoldRate_tokenData ) do
 				if ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
-					table.insert( gdata, string.format('\t\t\t\t\t\t\t{"ts": %s, "val": %s}', ts, val) )
+					table.insert( gdata, string.format('{"ts": %s, "val": %s}', ts, val) )
 				end
 			end
 			rStr = string.format( '%s"data": [%s]}]}\n', rStr, table.concat( gdata, ",\n" ) )
 			table.insert( realms, rStr )
 		end
 
-		strOut = strOut .. table.concat(realms, ",\n") .. '\n\t\t]\n'
-		strOut = strOut .. "\t}\n" -- goldRate
+		strOut = strOut .. table.concat(realms, ",\n") .. ']'
+		strOut = strOut .. "}" -- goldRate
 		strOut = strOut .. "}\n" -- file
 		print(strOut)
 	end
