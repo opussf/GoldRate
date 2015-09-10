@@ -77,83 +77,61 @@ end
 if FileExists( dataFile ) then
 	DoFile( dataFile )
 	if GoldRate_data then
-		strOut = '{"goldRate": {\n'
-		strOut = strOut .. '\t"graphAgeDays": "'..GoldRate_options.graphAgeDays..'",\n'
-		strOut = strOut .. "\t\"rfs\": {\n"
+		strOut = '{\n\t"goldRate": {\n'
+		strOut = strOut .. '\t\t"graphAgeDays": '..GoldRate_options.graphAgeDays..',\n'
+		strOut = strOut .. '\t\t"realms": [\n'
 
+		realms = {}
 		for realm, rdata in pairs( GoldRate_data ) do
 			maxInitialTS = 0
+			rStr = string.format( '\t\t\t{\n\t\t\t\t"realm": "%s",\n\t\t\t\t"factions": [\n', realm)
+			factions = {}
 			for faction, fdata in pairs( rdata ) do
+				fStr = string.format( '\t\t\t\t\t{\n\t\t\t\t\t\t"faction": "%s",\n', faction )
 				m, targetTS = Rate(realm, faction)
-				strOut = strOut .. string.format( '' )
-				strOut = strOut .. string.format( '<rf realm="%s" faction="%s">\n', realm, faction )
 				if fdata.goal and targetTS then
-					strOut = strOut .. string.format( '\t<goal ts="%i">%i</goal>\n', targetTS, fdata.goal )
+					fStr = fStr .. string.format( '\t\t\t\t\t\t"goal": %s,\n', fdata.goal )
 				end
 				for name, pdata in pairs( fdata.toons ) do
 					maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
 				end
+				gdata = {}
 				if fdata.consolidated then
 					for ts, val in PairsByKeys( fdata.consolidated ) do
 						if ts >= maxInitialTS and ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
-							strOut = strOut .. string.format( '\t<value ts="%i">%i</value>\n', ts, val )
+							table.insert( gdata, string.format('\t\t\t\t\t\t\t{"ts": %s, "val": %s}', ts, val) )
 						end
 					end
 				end
+				fStr = fStr .. '\t\t\t\t\t\t"data": [\n' .. table.concat( gdata, ",\n" ) .. "\n\t\t\t\t\t\t]\n\t\t\t\t\t}"
 				--[[
 				if GoldRate_data[realm][faction].goal then
 					strOut = strOut .. string.format("%s,%s,%s,%i,%i,target\n", realm, faction, os.date( "%x %X", targetTS), targetTS, GoldRate_data[realm][faction].goal )
 				end
 				]]
-				strOut = strOut .. "</rf>\n"
+				table.insert( factions, fStr )
 			end
+			rStr = rStr .. table.concat( factions, ",\n" ) .. "\n\t\t\t\t]\n\t\t\t}"
+			table.insert( realms, rStr )
 		end
-		strOut = strOut .. "\t},\n" -- rfs
-		strOut = strOut .. "}, }\n" -- goldRate and file
+		if GoldRate_tokenData then
+			rStr = string.format( '\t\t\t{\n\t\t\t\t"realm": "%s",\n\t\t\t\t"factions": [\n', "TokenData")
+			rStr = rStr .. '{"faction": "Both",'
+
+			gdata = {}
+			for ts, val in PairsByKeys( GoldRate_tokenData ) do
+				if ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
+					table.insert( gdata, string.format('\t\t\t\t\t\t\t{"ts": %s, "val": %s}', ts, val) )
+				end
+			end
+			rStr = string.format( '%s"data": [%s]}]}\n', rStr, table.concat( gdata, ",\n" ) )
+			table.insert( realms, rStr )
+		end
+
+		strOut = strOut .. table.concat(realms, ",\n") .. '\n\t\t]\n'
+		strOut = strOut .. "\t}\n" -- goldRate
+		strOut = strOut .. "}\n" -- file
 		print(strOut)
 	end
 end
 
---[[
-
-strOut = "{\"restedToons\": {\n";
-strOut = strOut .. "\t\"resting\": \""..restingRate[1].."\",\n";
-strOut = strOut .. "\t\"notresting\": \""..restingRate[0].."\",\n";
-strOut = strOut .. "\t\"maxLevel\": \""..Rested_options.maxLevel.."\",\n";
-strOut = strOut .. "\t\"chars\": [\n";
-
-
-for realm, chars in pairs(Rested_restedState) do
-	for name, c in pairs(chars) do
-		if not c.ignore or c.ignore < os.time()then
-			if pastFirst then
-				strOut = strOut .. ",\n";
-			end
-
-			strOut = strOut .. "\t\t{\"rn\": \"" .. realm .. "\", ";
-			strOut = strOut .. "\"cn\": \"" .. name .. "\", ";
-			strOut = strOut .. "\"isResting\": " .. (c.isResting and "1" or "0") .. ", ";
-			strOut = strOut .. "\"class\": \"" .. c.class .. "\", ";
-			strOut = strOut .. "\"initAt\": " .. c.initAt .. ", ";
-			strOut = strOut .. "\"updated\": " .. c.updated .. ", ";
-			strOut = strOut .. "\"race\": \"" .. c.race .. "\", ";
-			strOut = strOut .. "\"xpNow\": " .. c.xpNow .. ", ";
-			strOut = strOut .. "\"xpMax\": " .. c.xpMax .. ", ";
-			strOut = strOut .. "\"restedPC\": " .. c.restedPC .. ", ";
-			strOut = strOut .. "\"lvlNow\": " .. c.lvlNow .. ", ";
-			strOut = strOut .. "\"faction\": \"" .. c.faction .. "\", ";
-			strOut = strOut .. "\"iLvl\": " .. (c.iLvl or 0) .. ", ";
-			strOut = strOut .. "\"gender\": \"" .. c.gender .. "\"}";
-
-			pastFirst = true;
-
-		end
-
-	end
-end
-
-strOut = strOut .. "\n\t]\n}}";
-
-
-print(strOut);
-]]
