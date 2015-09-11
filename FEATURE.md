@@ -63,3 +63,43 @@ Show for each day:
 <date> :: <dailyMin> <dailyMax> +-<dayChange> <dayChange percent>%
 
 For today:
+
+
+
+
+
+
+{
+	"goldRate": {
+		"graphAgeDays": "365",
+		"realms": [
+			{
+				"realm": "Moon Guard",
+				"factions": [
+					{
+						"faction": "Alliance",
+						"goal": 2432423,
+						"data": [
+							{
+								"ts": 2222,
+								"val": 33420000
+							}
+						]
+					}, {
+						"faction": "Horde",
+						"data": [
+							{
+								"ts": 2222,
+								"val": 3234234
+							},
+							{
+								"ts": 2223,
+								"val": 3234255
+							}
+						]
+					}
+				]
+			}
+		]
+	}
+}
