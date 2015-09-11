@@ -120,9 +120,12 @@ function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 			GoldRate.tokenLast = val
 			GoldRate.tokenLastTS = now
 			GoldRate.UpdateScanTime()
+
+			GoldRate.tickerToken = string.format("TOK %s%s%+i%s",
+					GetCoinTextureString(val), changeColor, diff/10000, COLOR_END)
+			UIErrorsFrame:AddMessage( GoldRate.tickerToken, 1.0, 1.0, 0.1, 1.0 )
+			GoldRate.Print(GoldRate.tickerToken, false)
 		end
-		GoldRate.Print( string.format("%s Token price --> %s %s%+i (%0.2f%%)%s", date("%X", now), GetCoinTextureString( val ),
-				changeColor, diff/10000, changePC, COLOR_END ) )
 	end
 end
 function GoldRate.OnUpdate( arg1 )
@@ -198,7 +201,7 @@ function GoldRate.TokenInfo( msg )
 			endVal = val
 		end
 		for _,v in ipairs(todayOut) do
-			GoldRate.Print(v)
+			GoldRate.Print(v, false)
 		end
 	end
 	GoldRate.Print( string.format( "Token Price %s at %s", GetCoinTextureString( GoldRate.tokenLast ), date("%x %X", GoldRate.tokenLastTS) ) )
@@ -223,8 +226,7 @@ function GoldRate.RateSimple()
 
 	local goldDiff = endGold - startGold
 	local rate = goldDiff / timeDiff
-	--GoldRate.Print( "Gold Needed: "..GetCoinTextureString(
-	--		(GoldRate_data[GoldRate.realm][GoldRate.faction].goal and GoldRate_data[GoldRate.realm][GoldRate.faction].goal - endGold or 0) ) )
+	--GoldRate.Print( "Gold Needed: "..GetCoinTextureString(xndGold or 0) ) )
 	local targetTS = (GoldRate_data[GoldRate.realm][GoldRate.faction].goal and
 			(time() + ((GoldRate_data[GoldRate.realm][GoldRate.faction].goal - endGold) / rate)) or 0)
 
@@ -266,11 +268,6 @@ function GoldRate.Rate()
 				--x2Sum = x2Sum + math.pow((ts - GoldRate.maxInitialTS) - tsAve, 2)
 				xySum = xySum + (ts - tsAve) * (gold - goldAve)
 				x2Sum = x2Sum + math.pow(ts - tsAve, 2)
---[[				if xySum < 0 or x2Sum < 0 then
-					GoldRate.Print("------UH")
-					GoldRate.Print( xySum.." : "..x2Sum )
-				end
-]]
 			end
 	    end
 	    local m = xySum / x2Sum
@@ -294,9 +291,13 @@ function GoldRate.ShowRate()
 	local rs, targetTSs = GoldRate.RateSimple()
 	local totalGoldNow = GoldRate.otherSummed + GetMoney()
 
-	GoldRate.Print( "Total: ".. GetCoinTextureString( totalGoldNow ) ..
+	GoldRate.tickerGold = string.format("GOL %s%s",
+			GetCoinTextureString( totalGoldNow ),
 			((GoldRate_data[GoldRate.realm][GoldRate.faction].goal and GoldRate_data[GoldRate.realm][GoldRate.faction].goal > totalGoldNow)
-				and " -> "..GetCoinTextureString( GoldRate_data[GoldRate.realm][GoldRate.faction].goal ) or "" ) )
+				and " -> "..GetCoinTextureString( GoldRate_data[GoldRate.realm][GoldRate.faction].goal ) or "" )
+	)
+
+	GoldRate.Print( GoldRate.tickerGold )
 
 	if (GoldRate_data[GoldRate.realm][GoldRate.faction].goal and
 			GoldRate_data[GoldRate.realm][GoldRate.faction].goal > totalGoldNow) then
