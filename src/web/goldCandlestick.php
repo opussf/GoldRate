@@ -15,7 +15,7 @@ if (array_key_exists( "size", $_GET )) {
 $rfIn = stripslashes($_GET["rf"]);
 
 # Read CSV file
-$factionData = parseGRCSV($rfIn);
+$factionData = parseGRCSV($rfIn, $_GET["period"]);
 
 $divStyle = sprintf("width: %spx; height: %spx", $graphSizes[$size]["x"], $graphSizes[$size]["y"]);
 $ocmm = array();  # OpenCloseMinMax
@@ -79,19 +79,29 @@ foreach( $datax as $ts) {
 			bar: { groupWidth: '100%' }, // Remove space between bars.
 			title: "<?=$rf ?>",
 			titlePosition: 'in',
-			legend:'none',
+			legend: 'none',
 			hAxis: {
 				format: 'MMM d, y',
 				textPosition: 'out', 
 				maxValue: new Date('<? echo date("Y-m-d\T00:00:00")?>'),
 			},
+			vAxis: {
+				title: 'Gold'
+			},
+			seriesType: 'candlesticks',
+			trendlines: { 0: {
+				type: 'polynomial',
+				degree: 3,
+				visibleInLegend: true,},
+			},
 			candlestick: {
+				hollowIsRising: true,
 				fallingColor: { strokeWidth: 0, fill: '#a52714' }, // red
 				risingColor: { strokeWidth: 0, fill: '#0f9d58' }   // green
 			},
 		};
 
-		var chart = new google.visualization.CandlestickChart(document.getElementById('chart_div'));
+		var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
 
 		chart.draw(data, options);
 	}
