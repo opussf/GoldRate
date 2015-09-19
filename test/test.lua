@@ -326,21 +326,21 @@ function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_positive()
 	GoldRate_tokenData[now-100000] = 73456 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 12{circle}+5(+68.07%)" , GoldRate.tickerToken )
+	assertEquals( "TOK 12{circle}+5(+68.07%) 24H12 24L12" , GoldRate.tickerToken )
 end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_zero()
 	local now = time()
 	GoldRate_tokenData[now-100000] = 123456 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 12{circle}+0(+0.00%)" , GoldRate.tickerToken )
+	assertEquals( "TOK 12{circle}+0(+0.00%) 24H263918 24L12" , GoldRate.tickerToken )
 end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_negitive()
 	local now = time()
 	GoldRate_tokenData[now-100000] = 173461 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 12{circle}-5(-28.83%)" , GoldRate.tickerToken )
+	assertEquals( "TOK 12{circle}-5(-28.83%) 24H12 24L12" , GoldRate.tickerToken )
 end
 function test.testToken_tokenGoal()
 	local now = time()
@@ -376,6 +376,16 @@ function test.testGetDiffString_startGreaterthanEnd()
 	expected = "|cffff0000-5 (-50.00%)|r"
 	actual = GoldRate.GetDiffString( 100000, 50000 )
 	assertEquals( expected, actual )
+end
+function test.testGetHighLow_high()
+	fillTokenHistory()
+	high, low = GoldRate.GetHighLow( 86400 )
+	assertEquals( 2639180000, high )
+end
+function test.testGetHighLow_low()
+	fillTokenHistory()
+	high, low = GoldRate.GetHighLow( 86400 )
+	assertEquals( 123456, low )
 end
 
 test.run()

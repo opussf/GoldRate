@@ -137,9 +137,10 @@ function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 			GoldRate.tokenLast = val
 			GoldRate.tokenLastTS = now
 			GoldRate.UpdateScanTime()
+			high, low = GoldRate.GetHighLow( 86400 ) -- 24H high / low
 
-			GoldRate.tickerToken = string.format("TOK %i{circle}%+i(%+0.2f%%)",
-					val/10000, diff/10000, changePC)
+			GoldRate.tickerToken = string.format( "TOK %i{circle}%+i(%+0.2f%%) 24H%i 24L%i",
+					val/10000, diff/10000, changePC, high/10000, low/10000 )
 
 			UIErrorsFrame:AddMessage( GoldRate.tickerToken, 1.0, 1.0, 0.1, 1.0 )
 			GoldRate.Print(GoldRate.tickerToken, false)
@@ -171,6 +172,16 @@ function GoldRate.PairsByKeys( t, f )  -- This is an awesome function I found
 		end
 	end
 	return iter
+end
+function GoldRate.GetHighLow( secondsBack )
+	local cutoffTS = time() - secondsBack
+	for ts, val in pairs( GoldRate_tokenData ) do
+		if ts >= cutoffTS then
+			high = high and max(high, val) or val
+			low = low and min(low, val) or val
+		end
+	end
+	return high, low
 end
 function GoldRate.GetDiffString( startVal, endVal )
 	local diff = endVal - startVal
