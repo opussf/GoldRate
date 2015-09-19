@@ -18,6 +18,8 @@ GoldRate = {}
 GoldRate_data = {}
 GoldRate_options = {['maxDataPoints'] = 1000, ['nextTokenScanTS'] = 0}
 GoldRate_tokenData = {} -- [timestamp] = value
+GoldRate_guildWhiteList = {}
+
 
 function GoldRate.Print( msg, showName)
 	-- print to the chat frame
@@ -27,6 +29,21 @@ function GoldRate.Print( msg, showName)
 	end
 	DEFAULT_CHAT_FRAME:AddMessage( msg )
 end
+
+function GoldRate.GuildPrint( msg )
+	if (IsInGuild()) then
+		guildName, guildRankName, guildRankIndex = GetGuildInfo("player")
+
+		GoldRate.Print(GoldRate.realm.."-"..guildName)
+		SendChatMessage( msg, "GUILD" )
+	end
+	--if (IsInGuild() and RF_options.guild) then
+	--	SendChatMessage( msg, "GUILD" );
+--	else
+--		RF.Print( COLOR_RED.."RF.GuildPrint: "..COLOR_END..msg, false );
+	--end
+end
+
 function GoldRate.OnLoad()
 	SLASH_GOLDRATE1 = "/GR"
 	SLASH_GOLDRATE2 = "/GoldRate"
@@ -121,10 +138,12 @@ function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 			GoldRate.tokenLastTS = now
 			GoldRate.UpdateScanTime()
 
-			GoldRate.tickerToken = string.format("TOK %s%s%+i%s",
-					GetCoinTextureString(val), changeColor, diff/10000, COLOR_END)
+			GoldRate.tickerToken = string.format("TOK %i{circle}%+i(%+0.2f%%)",
+					val/10000, diff/10000, changePC)
+
 			UIErrorsFrame:AddMessage( GoldRate.tickerToken, 1.0, 1.0, 0.1, 1.0 )
 			GoldRate.Print(GoldRate.tickerToken, false)
+			GoldRate.GuildPrint(GoldRate.tickerToken)
 		end
 	end
 end

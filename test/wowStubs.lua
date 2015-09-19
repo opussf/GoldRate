@@ -469,6 +469,11 @@ function GetEquipmentSetInfoByName( nameIn )
 		end
 	end
 end
+function GetGuildInfo( unitID )
+	-- http://wowwiki.wikia.com/wiki/API_GetGuildInfo
+	-- Returns: guildName, guildRankName, guildRankIndex   for given unitID
+	return "testGuild", "rank", 0
+end
 function GetInventoryItemID( unitID, invSlot )
 	-- http://www.wowwiki.com/API_GetInventoryItemID
 	-- unitID: string   (http://www.wowwiki.com/API_TYPE_UnitId)  (bossN 1-4, player, partyN 1-4, raidN 1-40)

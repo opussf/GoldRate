@@ -326,21 +326,21 @@ function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_positive()
 	GoldRate_tokenData[now-100000] = 73456 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 12G 34S 56C|cff00ff00+5|r" , GoldRate.tickerToken )
+	assertEquals( "TOK 12{circle}+5(+68.07%)" , GoldRate.tickerToken )
 end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_zero()
 	local now = time()
 	GoldRate_tokenData[now-100000] = 123456 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 12G 34S 56C|r+0|r" , GoldRate.tickerToken )
+	assertEquals( "TOK 12{circle}+0(+0.00%)" , GoldRate.tickerToken )
 end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_negitive()
 	local now = time()
 	GoldRate_tokenData[now-100000] = 173461 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 12G 34S 56C|cffff0000-5|r" , GoldRate.tickerToken )
+	assertEquals( "TOK 12{circle}-5(-28.83%)" , GoldRate.tickerToken )
 end
 function test.testToken_tokenGoal()
 	local now = time()
