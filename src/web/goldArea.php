@@ -14,41 +14,15 @@ if (array_key_exists( "size", $_GET )) {
 }
 $rfIn = stripslashes($_GET["rf"]);
 
+
 # Read CSV file
 $factionData = parseGRCSV($rfIn, $_GET["period"]);
 
 $divStyle = sprintf("width: %spx; height: %spx", $graphSizes[$size]["x"], $graphSizes[$size]["y"]);
-$ocmm = array();  # OpenCloseMinMax
 
-foreach( $factionData as $rf => $dataPoints) {
-	foreach( $dataPoints as $ts => $val) {
-		$beginOfDay = strtotime("midnight", $ts);
-		if ($ocmm[$beginOfDay]) {
-			$ocmm[$beginOfDay]["min"] = min($ocmm[$beginOfDay]["min"], $val);
-			$ocmm[$beginOfDay]["max"] = max($ocmm[$beginOfDay]["max"], $val);
-			if ($ts < $ocmm[$beginOfDay]["minTS"]) {
-				$ocmm[$beginOfDay]["minTS"] = $ts;
-				$ocmm[$beginOfDay]["open"] = $val;
-			}
-			if ($ts > $ocmm[$beginOfDay]["maxTS"]) {
-				$ocmm[$beginOfDay]["maxTS"] = $ts;
-				$ocmm[$beginOfDay]["close"] = $val;
-			}
-		} else {
-			$ocmm[$beginOfDay] = array( "open" => $val, "close" => $val, "min" => $val, "max" => $val , "minTS" => $ts, "maxTS" => $ts );
-		}
-	}
-}
+$datax = array_keys( $factionData[$rfIn] );
+$datay = array_values( $factionData[$rfIn] );
 
-#$print_r($ocmm);
-# create the JpGraph expected data array
-
-$datax = array_keys($ocmm);
-sort($datax);
-$datay = array();
-foreach( $datax as $ts) {
-	array_push($datay, $ocmm[$ts]["open"], $ocmm[$ts]["close"], $ocmm[$ts]["min"], $ocmm[$ts]["max"]);
-}
 ?>
 <html>
 	<head>
@@ -62,12 +36,9 @@ foreach( $datax as $ts) {
 	$googleData = array();
 	for( $i = 0; $i < count($datax); $i++) {
 		$ts = $datax[$i];
-		array_push($googleData, sprintf("[new Date('%s'), %s, %s, %s, %s]", 
-			date("Y-m-d\T00:00:00", $ts), #2015, 8, 3 (month is 0 based?????
-			$ocmm[$ts]['min'],
-			$ocmm[$ts]['open'],
-			$ocmm[$ts]['close'],
-			$ocmm[$ts]['max']
+		array_push($googleData, sprintf("[new Date('%s'), %s]", 
+			date("Y-m-d\TH:i:s", $ts), #2015, 8, 3 (month is 0 based?????
+			$datay[$i]
 		));
 		#array_push($googleData, "['".date("Y-m-d", $ts)."', ".$ocmm[$ts]["min"].",".$ocmm[$ts]["open"].",".$ocmm[$ts]["close"].",".$ocmm[$ts]["max"]."]");
 	}
@@ -76,28 +47,24 @@ foreach( $datax as $ts) {
 		], true); // Treat first row as data as well.
 
 		var options = {
+			is3D: true,
 			bar: { groupWidth: '100%' }, // Remove space between bars.
-			title: "<?=$rf ?>",
+			title: "<?=$rfIn ?>",
 			titlePosition: 'in',
 			legend: 'none',
 			hAxis: {
 				format: 'MMM d, y',
 				textPosition: 'out', 
-				maxValue: new Date('<? echo date("Y-m-d\T00:00:00")?>'),
+				maxValue: new Date('<? echo date("Y-m-d\TH:i:s")?>'),
 			},
 			vAxis: {
 				title: 'Gold'
 			},
-			seriesType: 'candlesticks',
+			seriesType: 'area',
 			trendlines: { 0: {
 				type: 'polynomial',
 				degree: 3,
 				visibleInLegend: true,},
-			},
-			candlestick: {
-				hollowIsRising: true,
-				fallingColor: { strokeWidth: 0, fill: '#a52714' }, // red
-				risingColor: { strokeWidth: 0, fill: '#0f9d58' }   // green
 			},
 		};
 

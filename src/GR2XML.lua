@@ -86,7 +86,7 @@ if FileExists( dataFile ) then
 				m, targetTS = Rate(realm, faction)
 				strOut = strOut .. string.format( '<rf realm="%s" faction="%s">\n', realm, faction )
 				if fdata.goal and targetTS then
-					strOut = strOut .. string.format( '\t<goal ts="%i">%i</goal>\n', targetTS, fdata.goal )
+					strOut = strOut .. string.format( '<goal ts="%i">%i</goal>\n', targetTS, fdata.goal )
 				end
 				for name, pdata in pairs( fdata.toons ) do
 					maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
@@ -94,7 +94,7 @@ if FileExists( dataFile ) then
 				if fdata.consolidated then
 					for ts, val in PairsByKeys( fdata.consolidated ) do
 						if ts >= maxInitialTS and ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
-							strOut = strOut .. string.format( '\t<value ts="%i">%i</value>\n', ts, val )
+							strOut = strOut .. string.format( '<v ts="%i">%i</v>', ts, val )
 						end
 					end
 				end
@@ -111,7 +111,7 @@ if FileExists( dataFile ) then
 		strOut = strOut .. string.format( '<rf realm="TokenData" faction="all">\n' )
 		for ts, val in PairsByKeys( GoldRate_tokenData ) do
 			if ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
-				strOut = strOut .. string.format( '\t<value ts="%i">%i</value>\n', ts, val )
+				strOut = strOut .. string.format( '<v ts="%i">%i</v>', ts, val )
 			end
 		end
 		strOut = strOut .. "</rf>\n"
