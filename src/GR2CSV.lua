@@ -90,7 +90,7 @@ if FileExists( dataFile ) then
 				if fdata.consolidated then
 					for ts, val in PairsByKeys( fdata.consolidated ) do
 						if ts >= maxInitialTS and ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
-							strOut = strOut .. string.format( '%s,%s,%s,%i,%i\n', realm, faction, os.date( "%x %X", ts ),ts, val )
+							strOut = strOut .. string.format( '%s,%s,%s,%i,%s\n', realm, faction, os.date( "%x %X", ts ),ts, val )
 						end
 					end
 				end
@@ -105,7 +105,7 @@ if FileExists( dataFile ) then
 	if GoldRate_tokenData then
 		for ts, val in PairsByKeys( GoldRate_tokenData ) do
 			if ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
-				strOut = strOut .. string.format( '%s,%s,%s,%i,%i\n', "TokenData", "Both", os.date( "%x %X", ts ),ts, val )
+				strOut = strOut .. string.format( '%s,%s,%s,%i,%s\n', "TokenData", "Both", os.date( "%x %X", ts ),ts, val )
 			end
 		end
 	end
