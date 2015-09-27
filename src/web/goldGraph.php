@@ -17,7 +17,7 @@ if (array_key_exists( "size", $_GET )) {
 $rfIn = stripslashes($_GET["rf"]);
 
 # Read CSV file
-$factionData = parseGRCSV($rfIn);
+$factionData = parseGRCSV($rfIn, $_GET["period"]);
 
 #init the jpgraph
 $graph = new Graph( $graphSizes[$size]["x"], $graphSizes[$size]["y"] );

@@ -4,7 +4,7 @@
 ## Author: opussf
 ## Version: @VERSION@
 ## Description: Tracks gold income and cost of WoW Token
-## SavedVariables: GoldRate_data GoldRate_options GoldRate_tokenData
+## SavedVariables: GoldRate_data GoldRate_options GoldRate_tokenData GoldRate_guildWhiteList
 ## SavedVariablesPerCharacter:
 GoldRate.lua
 GoldRate.xml

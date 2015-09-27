@@ -99,11 +99,11 @@ if FileExists( dataFile ) then
 				if fdata.consolidated then
 					for ts, val in PairsByKeys( fdata.consolidated ) do
 						if ts >= maxInitialTS and ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
-							table.insert( gdata, string.format('{"ts": %s, "val": %s}', ts, val) )
+							table.insert( gdata, string.format('[%s,%s]', ts, val) )
 						end
 					end
 				end
-				fStr = fStr .. '"data": [\n' .. table.concat( gdata, ",\n" ) .. "]}"
+				fStr = fStr .. '"data": [\n' .. table.concat( gdata, "," ) .. "]}"
 				--[[
 				if GoldRate_data[realm][faction].goal then
 					strOut = strOut .. string.format("%s,%s,%s,%i,%i,target\n", realm, faction, os.date( "%x %X", targetTS), targetTS, GoldRate_data[realm][faction].goal )
@@ -121,10 +121,10 @@ if FileExists( dataFile ) then
 			gdata = {}
 			for ts, val in PairsByKeys( GoldRate_tokenData ) do
 				if ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
-					table.insert( gdata, string.format('{"ts": %s, "val": %s}', ts, val) )
+					table.insert( gdata, string.format('[%s,%s]', ts, val) )
 				end
 			end
-			rStr = string.format( '%s"data": [%s]}]}\n', rStr, table.concat( gdata, ",\n" ) )
+			rStr = string.format( '%s"data": [%s]}]}\n', rStr, table.concat( gdata, "," ) )
 			table.insert( realms, rStr )
 		end
 
