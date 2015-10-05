@@ -107,6 +107,7 @@ end
 function GoldRate.PLAYER_LEAVING_WORLD()
 	-- use this to filter out old data
 	-- sort the keys
+	GoldRate.Print("PLAYER_LEAVING_WORLD")
 	local sortedKeys = {}
 	local count = 0
 	for ts in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated ) do
@@ -119,6 +120,16 @@ function GoldRate.PLAYER_LEAVING_WORLD()
 		key = table.remove( sortedKeys, 1 )
 		GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[key] = nil
 		count = count - 1
+	end
+	count = 0
+	local prevVal = 0
+	for ts, val in GoldRate.PairsByKeys( GoldRate_tokenData ) do
+		diff = val - prevVal
+		if (count > 0 and diff == 0) then
+			GoldRate_tokenData[ts] = nil
+		end
+		count = count + 1
+		prevVal = val
 	end
 end
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
