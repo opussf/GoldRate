@@ -97,6 +97,7 @@ function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[time()] = GoldRate.otherSummed + GetMoney()
 
 	GoldRate.ShowRate()
+	GoldRate_Display:Show()
 end
 --GoldRate.PLAYER_ENTERING_WORLD = GoldRate.PLAYER_MONEY
 function GoldRate.PLAYER_ENTERING_WORLD()
