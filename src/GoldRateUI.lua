@@ -1,14 +1,20 @@
 GoldRateUI = {}
 GoldRateUI.lastUpdate = 0
 function GoldRateUI.OnUpdate()
-	if GoldRateUI.lastUpdate + 1 < time() then  -- do an update
+	if GoldRateUI.lastUpdate + 10 < time() then  -- do an update
 		GoldRateUI.lastUpdate = time()
+
 		GoldRate_Bar1:SetMinMaxValues(0, 150)
 		GoldRate_Bar1:SetValue( 100 )
-		GoldRate_Bar1:SetFrameStrata("LOW")
+		GoldRate_Bar1:SetFrameStrata("HIGH")
 		GoldRate_Bar1:SetStatusBarColor()
 		GoldRate_Bar1:Show()
-		GoldRate.Print(GetMoney())
+
+--[[
+		GoldRate.Print(GetMoney()..":"..(GoldRate_Bar1:IsShown() and "IsShown" or "NotShown")..":"..
+			(GoldRate_Bar1:IsVisible() and "IsVisible" or "NotVisible"))
+]]
+
 		--GoldRate_Display:Hide()
 	end
 end
