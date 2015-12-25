@@ -9,11 +9,13 @@ test.outFileName = "testOut.xml"
 
 -- Figure out how to parse the XML here, until then....
 GoldRate_Frame = CreateFrame()
+GoldRate_Display = CreateFrame()
 --SendMailNameEditBox = CreateFontString("SendMailNameEditBox")
 
 -- require the file to test
 package.path = "../src/?.lua;'" .. package.path
 require "GoldRate"
+require "GoldRateUI"
 --require "GoldRate_Offline"
 
 -- addon setup
@@ -326,21 +328,24 @@ function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_positive()
 	GoldRate_tokenData[now-100000] = 73456 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 12{circle}+5(+68.07%) 24H12 24L12" , GoldRate.tickerToken )
+	--assertEquals( "TOK 12{circle}+5(+68.07%) 24H12 24L12" , GoldRate.tickerToken )
+	assertEquals( "TOK 12{circle}+5 :: 24H12 24L12" , GoldRate.tickerToken )
 end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_zero()
 	local now = time()
 	GoldRate_tokenData[now-100000] = 123456 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 12{circle}+0(+0.00%) 24H263918 24L12" , GoldRate.tickerToken )
+	--assertEquals( "TOK 12{circle}+0(+0.00%) 24H263918 24L12" , GoldRate.tickerToken )
+	assertEquals( "TOK 12{circle}+0 :: 24H263918 24L12" , GoldRate.tickerToken )
 end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_negitive()
 	local now = time()
 	GoldRate_tokenData[now-100000] = 173461 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 12{circle}-5(-28.83%) 24H12 24L12" , GoldRate.tickerToken )
+	--assertEquals( "TOK 12{circle}-5(-28.83%) 24H12 24L12" , GoldRate.tickerToken )
+	assertEquals( "TOK 12{circle}-5 :: 24H12 24L12" , GoldRate.tickerToken )
 end
 function test.testToken_tokenGoal()
 	local now = time()

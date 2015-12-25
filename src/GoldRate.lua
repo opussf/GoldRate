@@ -97,6 +97,7 @@ function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[time()] = GoldRate.otherSummed + GetMoney()
 
 	GoldRate.ShowRate()
+	GoldRate_Display:Show()
 end
 --GoldRate.PLAYER_ENTERING_WORLD = GoldRate.PLAYER_MONEY
 function GoldRate.PLAYER_ENTERING_WORLD()
@@ -150,8 +151,8 @@ function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 			GoldRate.UpdateScanTime()
 			high, low = GoldRate.GetHighLow( 86400 ) -- 24H high / low
 
-			GoldRate.tickerToken = string.format( "TOK %i{circle}%+i(%+0.2f%%) 24H%i 24L%i",
-					val/10000, diff/10000, changePC, high/10000, low/10000 )
+			GoldRate.tickerToken = string.format( "TOK %i{circle}%+i :: 24H%i 24L%i",
+					val/10000, diff/10000, high/10000, low/10000 )
 
 			UIErrorsFrame:AddMessage( GoldRate.tickerToken, 1.0, 1.0, 0.1, 1.0 )
 			GoldRate.Print(GoldRate.tickerToken, false)
@@ -166,7 +167,7 @@ function GoldRate.OnUpdate( arg1 )
 	end
 end
 function GoldRate.UpdateScanTime()
-	GoldRate_options.nextTokenScanTS = time() + 20*60  -- 20 minutes
+	GoldRate_options.nextTokenScanTS = time() + 5*60  -- 20 minutes
 end
 --------------
 -- Non Event functions
