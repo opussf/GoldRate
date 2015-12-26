@@ -1,5 +1,22 @@
 # Feature
 
+## 306090HighLow
+Show the the High or Low for 30, 60 or 90 days back.
+
+The High / Low for 30, 60 or 90 days back is much like the high / low for the last 24 hours.
+Remove the parameter for the GetHighLow function and have it return:
+24hHigh, 24hLow, 30dHigh, 30dLow, 60dHigh, 60dLow, 90dHigh, 90dLow
+
+Continue to always show the 24h High and Low.
+Find which of the 30, 60 or 90 days High / Low is closest to the current value.
+Use a minimal diff, trying to display the oldest first.
+
+### Testing
+Always increasing values will show that the value is closest to the 30d High.
+Always decreasing values will show that the value is closest to the 30d Low.
+
+
+
 ## TokenAPI
 
 
