@@ -125,6 +125,7 @@ time = os.time
 date = os.date
 max = math.max
 min = math.min
+abs = math.abs
 random = math.random
 tinsert = table.insert
 
