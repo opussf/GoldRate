@@ -20,6 +20,8 @@ GoldRate_options = {['maxDataPoints'] = 1000, ['nextTokenScanTS'] = 0}
 GoldRate_tokenData = {} -- [timestamp] = value
 GoldRate_guildWhiteList = {}
 
+GoldRate.days = {1, 30, 60, 90}
+GoldRate.daysText = {"High", "Low", "30DH", "30DL", "60DH", "60DL", "90DH", "90DL"}
 
 function GoldRate.Print( msg, showName)
 	-- print to the chat frame
@@ -29,7 +31,6 @@ function GoldRate.Print( msg, showName)
 	end
 	DEFAULT_CHAT_FRAME:AddMessage( msg )
 end
-
 function GoldRate.GuildPrint( msg )
 	if (IsInGuild()) then
 		guildName, guildRankName, guildRankIndex = GetGuildInfo("player")
@@ -43,7 +44,6 @@ function GoldRate.GuildPrint( msg )
 --		RF.Print( COLOR_RED.."RF.GuildPrint: "..COLOR_END..msg, false );
 	--end
 end
-
 function GoldRate.OnLoad()
 	SLASH_GOLDRATE1 = "/GR"
 	SLASH_GOLDRATE2 = "/GoldRate"
@@ -97,6 +97,7 @@ function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[time()] = GoldRate.otherSummed + GetMoney()
 
 	GoldRate.ShowRate()
+	GoldRate_Display:Show()
 end
 --GoldRate.PLAYER_ENTERING_WORLD = GoldRate.PLAYER_MONEY
 function GoldRate.PLAYER_ENTERING_WORLD()
@@ -107,6 +108,7 @@ end
 function GoldRate.PLAYER_LEAVING_WORLD()
 	-- use this to filter out old data
 	-- sort the keys
+	GoldRate.Print("PLAYER_LEAVING_WORLD")
 	local sortedKeys = {}
 	local count = 0
 	for ts in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated ) do
@@ -119,6 +121,16 @@ function GoldRate.PLAYER_LEAVING_WORLD()
 		key = table.remove( sortedKeys, 1 )
 		GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[key] = nil
 		count = count - 1
+	end
+	count = 0
+	local prevVal = 0
+	for ts, val in GoldRate.PairsByKeys( GoldRate_tokenData ) do
+		diff = val - prevVal
+		if (count > 0 and diff == 0) then
+			GoldRate_tokenData[ts] = nil
+		end
+		count = count + 1
+		prevVal = val
 	end
 end
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
@@ -137,10 +149,19 @@ function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 			GoldRate.tokenLast = val
 			GoldRate.tokenLastTS = now
 			GoldRate.UpdateScanTime()
-			high, low = GoldRate.GetHighLow( 86400 ) -- 24H high / low
+			limits = {GoldRate.GetHighLow()}
 
-			GoldRate.tickerToken = string.format( "TOK %i{circle}%+i(%+0.2f%%) 24H%i 24L%i",
-					val/10000, diff/10000, changePC, high/10000, low/10000 )
+			local minAbs
+			for k=3,(#GoldRate.days * 2) do  -- 3 -> #days * 2
+				local testAbs = abs(limits[k]-val)
+				minAbs = minAbs and min(testAbs,minAbs) or testAbs
+				if minAbs == testAbs then minIndex = k end
+			end
+
+			--print("Found min diff ("..minAbs..") at index: "..minIndex.." "..GoldRate.daysText[minIndex]..limits[minIndex]/10000)
+
+			GoldRate.tickerToken = string.format( "TOK %i{circle}%+i :: 24H%i 24L%i %s%i",
+					val/10000, diff/10000, limits[1]/10000, limits[2]/10000, GoldRate.daysText[minIndex], limits[minIndex]/10000 )
 
 			UIErrorsFrame:AddMessage( GoldRate.tickerToken, 1.0, 1.0, 0.1, 1.0 )
 			GoldRate.Print(GoldRate.tickerToken, false)
@@ -155,7 +176,7 @@ function GoldRate.OnUpdate( arg1 )
 	end
 end
 function GoldRate.UpdateScanTime()
-	GoldRate_options.nextTokenScanTS = time() + 20*60  -- 20 minutes
+	GoldRate_options.nextTokenScanTS = time() + 5*60  -- 20 minutes
 end
 --------------
 -- Non Event functions
@@ -173,15 +194,23 @@ function GoldRate.PairsByKeys( t, f )  -- This is an awesome function I found
 	end
 	return iter
 end
-function GoldRate.GetHighLow( secondsBack )
-	local cutoffTS = time() - secondsBack
+function GoldRate.GetHighLow()
+	-- return the high, low pairs for the number of days in cutoffTSs
+	local cutoffTSs = {}
+	for k in pairs( GoldRate.days ) do cutoffTSs[k] = time() - (GoldRate.days[k] * 86400) end
+	local limits = {}
+
 	for ts, val in pairs( GoldRate_tokenData ) do
-		if ts >= cutoffTS then
-			high = high and max(high, val) or val
-			low = low and min(low, val) or val
+		for i, cutoffTS in pairs( cutoffTSs ) do
+			--print("i:"..i.." >i:"..(((i-1)*2)+1).." >i+1:"..(((i-1)*2)+2))
+			if ts >= cutoffTS then
+				local k = ((i-1)*2)+1  -- convert to a new index scheme.  1 based, odd is max, even is min
+				limits[k] = limits[k] and max(limits[k], val) or val
+				limits[k+1] = limits[k+1] and min(limits[k+1], val) or val
+			end
 		end
 	end
-	return high, low
+	return unpack(limits)
 end
 function GoldRate.GetDiffString( startVal, endVal )
 	local diff = endVal - startVal
@@ -207,7 +236,8 @@ function GoldRate.TokenInfo( msg )
 									date("%x", startDay),
 									GetCoinTextureString(minVal),
 									GetCoinTextureString(maxVal),
-									GoldRate.GetDiffString( startVal, endVal ) )
+									GoldRate.GetDiffString( startVal, endVal ) ),
+							false
 					)
 				end
 				startDay = ts
