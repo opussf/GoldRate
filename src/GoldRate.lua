@@ -110,11 +110,14 @@ function GoldRate.PLAYER_LEAVING_WORLD()
 	-- sort the keys
 	GoldRate.Print("PLAYER_LEAVING_WORLD")
 	local sortedKeys = {}
-	local count = 0
+	local count, oldCount = 0, 0
+	oldCutoff = time() - (86400 * 120)  -- 120 days old
 	for ts in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated ) do
 		table.insert( sortedKeys, ts )
 		count = count + 1
+		if ts < oldCutoff then oldCount = oldCount + 1 end
 	end
+	GoldRate.Print(oldCount.." data points are older than 120 days.")
 	table.sort( sortedKeys )
 	GoldRate_data[GoldRate.realm][GoldRate.faction].numVals = count
 	while count > GoldRate_options.maxDataPoints do
@@ -122,6 +125,11 @@ function GoldRate.PLAYER_LEAVING_WORLD()
 		GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[key] = nil
 		count = count - 1
 	end
+	-- Stuff
+
+
+
+	-- TokenData
 	count = 0
 	local prevVal = 0
 	for ts, val in GoldRate.PairsByKeys( GoldRate_tokenData ) do
@@ -276,7 +284,9 @@ function GoldRate.RateSimple()
 	end
 	local sortedKeys = {}
 	for ts in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated ) do
-		if ts >= GoldRate.maxInitialTS then table.insert( sortedKeys, ts ) end
+		if ts >= GoldRate.maxInitialTS then -- filter data based on most recently added toon.
+			table.insert( sortedKeys, ts )
+		end
 	end
 	table.sort( sortedKeys )
 	local startGold = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[sortedKeys[1]]
