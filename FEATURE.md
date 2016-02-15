@@ -1,5 +1,41 @@
 # Feature
 
+## dataPrune
+After gathering data for a while, upwards of ~33k worth of data points on a single realm,  I find a requirement to control the amount of data kept.
+The initial idea of pruning after a set number of data points, while it would work, seems to fall short in practice.
+
+Keeping and exporting large data sets is expensive.
+Overly large export data files (as of 23 Jan 2016, the CSV file is 3,069,318 bytes - 3.1M) take a long time (~36 seconds) to generate.
+The large data sets also produce too heavy of a load while generating graphs (Google Graphs consumes too much CPU and browser memory).
+
+
+
+The question comes down to how to this: For what reason should data be kept?
+This question would also decide how to prune data.
+
+Some answers:
+* Calculate rates.
+  * Highly fluxuating data mellows rates.
+  * Shorter calc history gives better rates, but possibly more volitile in change
+  * Only use session time frame to calculate rates?
+    * In accurate for initial start, or because of high activity times.
+  * Use a constant time chunk (2 weeks, 1 month, 1 day)
+    * Faster to correct for lots of ups and downs.
+
+Prune ideas:
+1. Data compression preserving peaks and valleys.
+  * Data points are kept when they represent a peak (before a purchase), or a valley (after a purchase)
+  * Would tend to keep the general feel or activity of data flows.
+  * Most probable purchase would be repairs
+2. Rolling averages for ever increasing time slices.
+  * Data older than 3 months could be averaged for each hour
+  * Data older than 6 months could be averaged for each day
+  * Data older than 12 months could be averaged for each week?
+3. Data could be truncated to reflect a high and a low for each 24h period.
+
+Because pruning the data will be destructive, probably the first place to do this would be when exporting the data.
+
+
 ## 306090HighLow
 Show the the High or Low for 30, 60 or 90 days back.
 
