@@ -36,6 +36,23 @@ Prune ideas:
 Because pruning the data will be destructive, probably the first place to do this would be when exporting the data.
 
 
+
+valueDirection = (currentValue - previousValue) / math.abs(currentValue - previousValue)
+
+previousValue = 0
+currentValue = 1
+valueDirection = (1 - 0) / abs(1 - 0)
+					1 / 1 = 1
+
+previousValue = 1
+currentValue = 0
+valueDirection = (0 - 1) / abs(0 - 1)
+					-1 / 1  = -1
+
+valueDirection = (currentValue < previousVal) and -1 or 1
+
+
+
 ## 306090HighLow
 Show the the High or Low for 30, 60 or 90 days back.
 
