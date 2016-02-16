@@ -125,19 +125,22 @@ function GoldRate.PLAYER_LEAVING_WORLD()
 
 	local pruneCount = 0
 	local previousVal = nil -- set this to the previous val
+	local previousTS = nil
 	local valueDirection = nil -- set this to +1, or -1 based on the direction of data
 	for _,ts in pairs( sortedKeys ) do
 		local currentValue = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts]
 		if previousVal then -- knew about a previous data point
-			if (valueDirection == 1) and (currentValue > previousVal) or
-			   (valueDirection == -1) and (currentValue < previousVal) then -- contiune in the previous direction
+			if ((valueDirection == 1) and (currentValue > previousVal)) or
+			   ((valueDirection == -1) and (currentValue < previousVal)) then -- contiune in the previous direction
 				--print("Removing "..currentValue.." at "..ts)
-				GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts] = nil
+				GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[previousTS] = nil
+				--GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts] = nil
 				pruneCount = pruneCount + 1
 			end
 			valueDirection = (currentValue < previousVal) and -1 or 1  -- default to 1 sort of thing
 		end
 		previousVal = currentValue
+		previousTS = ts
 	end
 	GoldRate.Print(pruneCount.." data points were pruned.")
 

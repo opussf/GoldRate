@@ -531,7 +531,7 @@ function test.testPruneOldData_linearIncrease()
 			valCount = valCount + 1
 		end
 	end
-	assertEquals( 2, valCount )
+	assertEquals( 1, valCount )
 end
 function test.testPruneOldData_sawblade()
 	cutOff = time()-(120*86400)
@@ -544,7 +544,7 @@ function test.testPruneOldData_sawblade()
 			valCount = valCount + 1
 		end
 	end
-	assertEquals( 6, valCount )  --
+	assertEquals( 5, valCount )  --
 
 end
 
