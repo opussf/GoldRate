@@ -109,27 +109,51 @@ function GoldRate.PLAYER_LEAVING_WORLD()
 	-- use this to filter out old data
 	-- sort the keys
 	GoldRate.Print("PLAYER_LEAVING_WORLD")
+	-- sort the keys into sortedKeys and count data points older than 120 days
+	local pruneAgeDays = 120
 	local sortedKeys = {}
-	local count, oldCount = 0, 0
-	oldCutoff = time() - (86400 * 120)  -- 120 days old
+	local count, oldCount = 0, 0  -- count is total size, oldCount is > pruneAgeDays
+	oldCutoff = time() - (86400 * pruneAgeDays)  -- 120 days old
 	for ts in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated ) do
 		table.insert( sortedKeys, ts )
 		count = count + 1
 		if ts < oldCutoff then oldCount = oldCount + 1 end
 	end
-	GoldRate.Print(oldCount.." data points are older than 120 days.")
+	GoldRate.Print(oldCount.." data points are older than "..pruneAgeDays.." days.")
 	table.sort( sortedKeys )
-	GoldRate_data[GoldRate.realm][GoldRate.faction].numVals = count
+	GoldRate_data[GoldRate.realm][GoldRate.faction].numVals = count  -- This is going to be wrong.  meh
+
+	local pruneCount = 0
+	local previousVal = nil -- set this to the previous val
+	local valueDirection = nil -- set this to +1, or -1 based on the direction of data
+	for _,ts in pairs( sortedKeys ) do
+		local currentValue = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts]
+		if previousVal then -- knew about a previous data point
+			if (valueDirection == 1) and (currentValue > previousVal) or
+			   (valueDirection == -1) and (currentValue < previousVal) then -- contiune in the previous direction
+				--print("Removing "..currentValue.." at "..ts)
+				GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts] = nil
+				pruneCount = pruneCount + 1
+			end
+			valueDirection = (currentValue < previousVal) and -1 or 1  -- default to 1 sort of thing
+		end
+		previousVal = currentValue
+	end
+	GoldRate.Print(pruneCount.." data points were pruned.")
+
+
+	--[[ this blindly removes data when larger than maxDataPoints
 	while count > GoldRate_options.maxDataPoints do
-		key = table.remove( sortedKeys, 1 )
+ 		key = table.remove( sortedKeys, 1 )
 		GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[key] = nil
 		count = count - 1
 	end
+	]]
 	-- Stuff
 
-
-
 	-- TokenData
+	-- Only remove token values where they have not changed
+	-- Probably from duplicate values being imported
 	count = 0
 	local prevVal = 0
 	for ts, val in GoldRate.PairsByKeys( GoldRate_tokenData ) do
