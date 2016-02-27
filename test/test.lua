@@ -523,28 +523,28 @@ function test.testPruneOldData_linearIncrease()
 	cutOff = time()-(120*86400)
 	print(cutOff)
 	test.makeOldData_linearIncrease()
-	GoldRate.PLAYER_LEAVING_WORLD()
+	GoldRate.PruneData()
 	valCount = 0
 	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
-		print(k..":"..v)
+		--print(k..":"..v)
 		if k<cutOff then
 			valCount = valCount + 1
 		end
 	end
-	assertEquals( 1, valCount )
+	assertEquals( 2, valCount )
 end
 function test.testPruneOldData_sawblade()
 	cutOff = time()-(120*86400)
 	test.makeOldData_linearIncrease( 10000 ) -- one gold
-	GoldRate.PLAYER_LEAVING_WORLD()
+	GoldRate.PruneData()
 	valCount = 0
 	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
-		print(k..":"..v)
+		--print(k..":"..v)
 		if k<cutOff then
 			valCount = valCount + 1
 		end
 	end
-	assertEquals( 5, valCount )  --
+	assertEquals( 6, valCount )  --
 
 end
 
