@@ -52,7 +52,6 @@ function GoldRate.OnLoad()
 	GoldRate_Frame:RegisterEvent("ADDON_LOADED")
 	GoldRate_Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 	GoldRate_Frame:RegisterEvent("PLAYER_MONEY")
-	GoldRate_Frame:RegisterEvent("PLAYER_LEAVING_WORLD")
 	GoldRate_Frame:RegisterEvent("TOKEN_MARKET_PRICE_UPDATED")
 end
 --------------
@@ -104,35 +103,9 @@ function GoldRate.PLAYER_ENTERING_WORLD()
 	if ( not GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["last"] ) then
 		GoldRate.PLAYER_MONEY()
 	end
+	GoldRate.PruneData()
 end
-function GoldRate.PLAYER_LEAVING_WORLD()
-	-- use this to filter out old data
-	-- sort the keys
-	GoldRate.Print("PLAYER_LEAVING_WORLD")
-	local sortedKeys = {}
-	local count = 0
-	for ts in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated ) do
-		table.insert( sortedKeys, ts )
-		count = count + 1
-	end
-	table.sort( sortedKeys )
-	GoldRate_data[GoldRate.realm][GoldRate.faction].numVals = count
-	while count > GoldRate_options.maxDataPoints do
-		key = table.remove( sortedKeys, 1 )
-		GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[key] = nil
-		count = count - 1
-	end
-	count = 0
-	local prevVal = 0
-	for ts, val in GoldRate.PairsByKeys( GoldRate_tokenData ) do
-		diff = val - prevVal
-		if (count > 0 and diff == 0) then
-			GoldRate_tokenData[ts] = nil
-		end
-		count = count + 1
-		prevVal = val
-	end
-end
+
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 	local val = C_WowTokenPublic.GetCurrentMarketPrice()
 	local changeColor = COLOR_END
@@ -177,6 +150,71 @@ function GoldRate.OnUpdate( arg1 )
 end
 function GoldRate.UpdateScanTime()
 	GoldRate_options.nextTokenScanTS = time() + 5*60  -- 20 minutes
+end
+function GoldRate.PruneData()
+	-- use this to filter out old data
+	-- sort the keys
+	GoldRate.Print("PruneData")
+	-- sort the keys into sortedKeys and count data points older than 120 days
+	local pruneAgeDays = 120
+	local sortedKeys = {}
+	local count, oldCount = 0, 0  -- count is total size, oldCount is > pruneAgeDays
+	oldCutoff = time() - (86400 * pruneAgeDays)  -- 120 days old
+	for ts in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated ) do
+		table.insert( sortedKeys, ts )
+		count = count + 1
+		if ts < oldCutoff then oldCount = oldCount + 1 end
+	end
+	GoldRate.Print(oldCount.." data points are older than "..pruneAgeDays.." days.")
+	table.sort( sortedKeys )
+	GoldRate_data[GoldRate.realm][GoldRate.faction].numVals = count  -- This is going to be wrong.  meh
+
+	local pruneCount = 0
+	local previousVal = nil -- set this to the previous val
+	local previousTS = nil
+	local valueDirection = nil -- set this to +1, or -1 based on the direction of data
+	for _,ts in pairs( sortedKeys ) do
+		if ts < oldCutoff then
+			local currentValue = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts]
+			if previousVal then -- knew about a previous data point
+				if ((valueDirection == 1) and (currentValue > previousVal)) or
+				   ((valueDirection == -1) and (currentValue < previousVal)) then -- contiune in the previous direction
+					--print("Removing "..currentValue.." at "..ts)
+					GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[previousTS] = nil
+					--GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts] = nil
+					pruneCount = pruneCount + 1
+				end
+				valueDirection = (currentValue < previousVal) and -1 or 1  -- default to 1 sort of thing
+			end
+			previousVal = currentValue
+			previousTS = ts
+		end
+	end
+	GoldRate.Print(pruneCount.." data points were pruned.")
+
+
+	--[[ this blindly removes data when larger than maxDataPoints
+	while count > GoldRate_options.maxDataPoints do
+ 		key = table.remove( sortedKeys, 1 )
+		GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[key] = nil
+		count = count - 1
+	end
+	]]
+	-- Stuff
+
+	-- TokenData
+	-- Only remove token values where they have not changed
+	-- Probably from duplicate values being imported
+	count = 0
+	local prevVal = 0
+	for ts, val in GoldRate.PairsByKeys( GoldRate_tokenData ) do
+		diff = val - prevVal
+		if (count > 0 and diff == 0) then
+			GoldRate_tokenData[ts] = nil
+		end
+		count = count + 1
+		prevVal = val
+	end
 end
 --------------
 -- Non Event functions
@@ -276,7 +314,9 @@ function GoldRate.RateSimple()
 	end
 	local sortedKeys = {}
 	for ts in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated ) do
-		if ts >= GoldRate.maxInitialTS then table.insert( sortedKeys, ts ) end
+		if ts >= GoldRate.maxInitialTS then -- filter data based on most recently added toon.
+			table.insert( sortedKeys, ts )
+		end
 	end
 	table.sort( sortedKeys )
 	local startGold = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[sortedKeys[1]]

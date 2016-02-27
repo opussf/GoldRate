@@ -313,6 +313,7 @@ function test.testRate_goalValue()
 	goal = select(2, GoldRate.Rate() )
 	assertEquals( 100, goal )
 end
+--[[  these are probably retireable as PLW is being drasticly changed
 function test.PLW_Setup()
 	-- PLW = Player Leaving World
 	GoldRate_data = { ["testRealm"] = { ["Alliance"] = { ["toons"] = { ["testPlayer"] = { ["firstTS"] = 10, ["last"] = 400 } } } } }
@@ -341,6 +342,7 @@ function test.testPLW_KeepsSomeData()
 		assertEquals( i*i, GoldRate_data.testRealm.Alliance.consolidated[i] )
 	end
 end
+]]
 ---------------
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_inArray()
 	local now = time()
@@ -349,6 +351,7 @@ function test.testToken_TOKEN_MARKET_PRICE_UPDATED_inArray()
 end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_positive()
 	local now = time()
+	GoldRate_tokenData={}
 	GoldRate_tokenData[now-100000] = 73456 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
@@ -357,10 +360,11 @@ function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_positive()
 end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_zero()
 	local now = time()
+	GoldRate_tokenData={}
 	GoldRate_tokenData[now-100000] = 123456 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 12{circle}+0 :: 24H12 24L12 90DL12" , GoldRate.tickerToken )
+	assertEquals( "TOK 20400{circle}+0 :: 24H20500 24L20400 30DH21000" , GoldRate.tickerToken )
 end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_negitive()
 	local now = time()
@@ -495,5 +499,58 @@ function test.testHighLow()
 	assertEquals( "TOK 20400{circle}+0 :: 24H20500 24L20400 30DH21000", GoldRate.tickerToken )
 	TokenPrice = 123456 -- return to norm
 end
+---------------
+-- Tests for DataPrune
+---------------
+function test.makeOldData_linearIncrease( spend )
+	-- pass a value to spend that much once you have that much.
+	-- (Makes a sawblade with a max of spend)
+	now = time()
+	GoldRate.PLAYER_MONEY()
+
+	val = 10
+	for ts = now-(150*86400),now,1000 do
+		if spend and (val > spend) then val = 0 end
+		GoldRate_data.testRealm.Alliance.consolidated[ts]=val
+		val = val + 10
+	end
+	print(val)
+	-- should place 2592 data points older than 120 days (the current cutt off)
+end
+function test.testPruneOldData_linearIncrease()
+	-- in this test, the first data point should be kept
+	-- with all subsequent data points up to 120 days ago removed
+	cutOff = time()-(120*86400)
+	print(cutOff)
+	test.makeOldData_linearIncrease()
+	GoldRate.PruneData()
+	valCount = 0
+	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
+		--print(k..":"..v)
+		if k<cutOff then
+			valCount = valCount + 1
+		end
+	end
+	assertEquals( 2, valCount )
+end
+function test.testPruneOldData_sawblade()
+	cutOff = time()-(120*86400)
+	test.makeOldData_linearIncrease( 10000 ) -- one gold
+	GoldRate.PruneData()
+	valCount = 0
+	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
+		--print(k..":"..v)
+		if k<cutOff then
+			valCount = valCount + 1
+		end
+	end
+	assertEquals( 6, valCount )  --
+
+end
+
+
+
+
+
 
 test.run()
