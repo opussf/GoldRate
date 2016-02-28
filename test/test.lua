@@ -545,7 +545,6 @@ function test.testPruneOldData_sawblade()
 		end
 	end
 	assertEquals( 6, valCount )  --
-
 end
 
 

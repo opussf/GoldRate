@@ -16,7 +16,7 @@ COLOR_END = "|r";
 
 GoldRate = {}
 GoldRate_data = {}
-GoldRate_options = {['maxDataPoints'] = 1000, ['nextTokenScanTS'] = 0}
+GoldRate_options = {['maxDataPoints'] = 1000, ['nextTokenScanTS'] = 0, ['ratePeriod'] = {['days']=30,}}
 GoldRate_tokenData = {} -- [timestamp] = value
 GoldRate_guildWhiteList = {}
 
