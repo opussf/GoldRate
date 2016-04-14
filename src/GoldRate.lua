@@ -156,16 +156,26 @@ function GoldRate.PruneData()
 	-- sort the keys
 	GoldRate.Print("PruneData")
 	-- sort the keys into sortedKeys and count data points older than 120 days
-	local pruneAgeDays = 120
+	local smoothAgeDays = 30
+	local pruneAgeDays = 180
 	local sortedKeys = {}
-	local count, oldCount = 0, 0  -- count is total size, oldCount is > pruneAgeDays
-	oldCutoff = time() - (86400 * pruneAgeDays)  -- 120 days old
+	local count, smoothCount, pruneCount = 0, 0, 0  -- count is total size, smoothCount is > smoothAgeDays, pruneCount is > pruneAgeDays
+	smoothCutoff = time() - (86400 * smoothAgeDays)  -- 120 days old
+	pruneCutoff = time() - (86400 * pruneAgeDays)
 	for ts in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated ) do
 		table.insert( sortedKeys, ts )
 		count = count + 1
-		if ts < oldCutoff then oldCount = oldCount + 1 end
+		if ts < smoothCutoff then
+			if ts < pruneCutoff then
+				pruneCount = pruneCount + 1
+				GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts] = nil
+			else
+				smoothCount = smoothCount + 1
+			end
+		end
 	end
-	GoldRate.Print(oldCount.." data points are older than "..pruneAgeDays.." days.")
+	GoldRate.Print(count.." data points. "..pruneCount.." expired (older than "..pruneAgeDays.." days).")
+	GoldRate.Print(smoothCount.." data points are older than "..smoothAgeDays.." days.")
 	table.sort( sortedKeys )
 	GoldRate_data[GoldRate.realm][GoldRate.faction].numVals = count  -- This is going to be wrong.  meh
 
@@ -174,7 +184,7 @@ function GoldRate.PruneData()
 	local previousTS = nil
 	local valueDirection = nil -- set this to +1, or -1 based on the direction of data
 	for _,ts in pairs( sortedKeys ) do
-		if ts < oldCutoff then
+		if ts < smoothCutoff then
 			local currentValue = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts]
 			if previousVal then -- knew about a previous data point
 				if ((valueDirection == 1) and (currentValue > previousVal)) or
@@ -190,16 +200,8 @@ function GoldRate.PruneData()
 			previousTS = ts
 		end
 	end
-	GoldRate.Print(pruneCount.." data points were pruned.")
+	GoldRate.Print(pruneCount.." data points were pruned for smoothing.")
 
-
-	--[[ this blindly removes data when larger than maxDataPoints
-	while count > GoldRate_options.maxDataPoints do
- 		key = table.remove( sortedKeys, 1 )
-		GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[key] = nil
-		count = count - 1
-	end
-	]]
 	-- Stuff
 
 	-- TokenData
