@@ -4,7 +4,4 @@ addons:
   apt:
     packages:
     - lua5.1
-script:
-    - ant clean package
-    - ls -al target
-
+script: ant clean package
