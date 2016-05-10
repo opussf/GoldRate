@@ -6,5 +6,5 @@ addons:
     - lua5.1
 script:
 	- ant clean package
-	- ls -al target/
+	- ls -al target
 
