@@ -16,7 +16,13 @@ COLOR_END = "|r";
 
 GoldRate = {}
 GoldRate_data = {}
-GoldRate_options = {['maxDataPoints'] = 1000, ['nextTokenScanTS'] = 0, ['ratePeriod'] = {['days']=30,}}
+GoldRate_options = {
+		['maxDataPoints'] = 1000,
+		['nextTokenScanTS'] = 0,
+		['ratePeriod'] = {['days']=30,},
+		['smoothAgeDays'] = 30,
+		['pruneAgeDays'] = 180,
+}
 GoldRate_tokenData = {} -- [timestamp] = value
 GoldRate_guildWhiteList = {}
 
@@ -155,12 +161,12 @@ function GoldRate.PruneData()
 	-- use this to filter out old data
 	-- sort the keys
 	GoldRate.Print("PruneData")
-	-- sort the keys into sortedKeys and count data points older than 120 days
-	local smoothAgeDays = 30
-	local pruneAgeDays = 180
+	-- sort the keys into sortedKeys and count data points older than GoldRate_options.pruneAgeDays
+	local smoothAgeDays = GoldRate_options.smoothAgeDays or 30
+	local pruneAgeDays = GoldRate_options.pruneAgeDays or 180
 	local sortedKeys = {}
 	local count, smoothCount, pruneCount = 0, 0, 0  -- count is total size, smoothCount is > smoothAgeDays, pruneCount is > pruneAgeDays
-	smoothCutoff = time() - (86400 * smoothAgeDays)  -- 120 days old
+	smoothCutoff = time() - (86400 * smoothAgeDays)
 	pruneCutoff = time() - (86400 * pruneAgeDays)
 	for ts in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated ) do
 		table.insert( sortedKeys, ts )
