@@ -517,10 +517,10 @@ function test.makeOldData_linearIncrease( spend )
 	print(val)
 	-- should place 2592 data points older than 120 days (the current cutt off)
 end
-function test.testPruneOldData_linearIncrease()
+function test.testSmoothOldData_linearIncrease()
 	-- in this test, the first data point should be kept
-	-- with all subsequent data points up to 120 days ago removed
-	cutOff = time()-(120*86400)
+	-- with all subsequent data points up to 30 days ago removed
+	cutOff = time()-(30*86400)
 	print(cutOff)
 	test.makeOldData_linearIncrease()
 	GoldRate.PruneData()
@@ -533,8 +533,8 @@ function test.testPruneOldData_linearIncrease()
 	end
 	assertEquals( 2, valCount )
 end
-function test.testPruneOldData_sawblade()
-	cutOff = time()-(120*86400)
+function test.testSmoothOldData_sawblade()
+	cutOff = time()-(30*86400)
 	test.makeOldData_linearIncrease( 10000 ) -- one gold
 	GoldRate.PruneData()
 	valCount = 0
@@ -544,8 +544,19 @@ function test.testPruneOldData_sawblade()
 			valCount = valCount + 1
 		end
 	end
-	assertEquals( 6, valCount )  --
-
+	assertEquals( 22, valCount )  --
+end
+function test.testPruneOldData()
+	cutOff = time()-(90*86400)
+	test.makeOldData_linearIncrease( 10000 )
+	GoldRate.PruneData()
+	valCount = 0
+	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
+		if k<cutOff then
+			valCount = valCount + 1
+		end
+	end
+	assertEquals( 11, valCount )
 end
 
 

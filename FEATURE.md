@@ -1,5 +1,8 @@
 # Feature
 
+## limitRange
+Limit the range of data used to predict future values.
+
 ## dataPrune
 After gathering data for a while, upwards of ~33k worth of data points on a single realm,  I find a requirement to control the amount of data kept.
 The initial idea of pruning after a set number of data points, while it would work, seems to fall short in practice.
