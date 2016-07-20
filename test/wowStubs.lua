@@ -730,6 +730,9 @@ function PickupInventoryItem( slotID )
 		onCursor['fromSlot'] = slotID
 	end
 end
+function PlaySound( sound, channel )
+	-- http://wowwiki.wikia.com/wiki/API_PlaySound
+end
 function PlaySoundFile( file )
 	-- does nothing except play a sound.  Do not test.
 end
