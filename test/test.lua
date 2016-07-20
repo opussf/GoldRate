@@ -284,7 +284,7 @@ function test.testCapture_GoldAmount_EnteringWorld_Last_withData()
 	GoldRate_data.testRealm.Alliance.toons.testPlayer = {["firstTS"] = 3276534, ["last"] = 149999}  -- Has previous data
 	GoldRate_data.testRealm.Alliance.consolidated[3276534] = 149999
 	GoldRate.PLAYER_ENTERING_WORLD()  -- Capture the amount
-	assertEquals( 149999, GoldRate_data.testRealm.Alliance.toons.testPlayer["last"] )
+	assertEquals( 150000, GoldRate_data.testRealm.Alliance.toons.testPlayer["last"] )
 end
 function test.testCapture_GoldAmount_EnteringWorld_TimeStamp_withData()
 	-- Assert that PLAYER_MONEY event takes a snapshot of the current toon's money amount, unless previous data exists (no 0 entries because of startup)
@@ -292,7 +292,7 @@ function test.testCapture_GoldAmount_EnteringWorld_TimeStamp_withData()
 	GoldRate_data.testRealm.Alliance.consolidated[3276534] = 149999
 	local now = time()
 	GoldRate.PLAYER_ENTERING_WORLD()  -- Capture the amount
-	assertIsNil( GoldRate_data.testRealm.Alliance.consolidated[now] )
+	assertEquals( 150000, GoldRate_data.testRealm.Alliance.consolidated[now] )
 end
 
 function test.rateSetup()
