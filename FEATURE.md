@@ -26,6 +26,10 @@ Hyjal-Horde    : 93823 -0 (>274 days) 28673 (>30 days) -362 (smoothing) = 93461
 Hyjal-Alliance : 93823 points. 10 expired (>274 days) 28673-362>30 days.
 Hyjal-Alliance : Of 93823 points, 10 expired, 28673 (-362) smoothed.
 
+93823 points.  10 expired, 29673 >30 days, 362 smoothed for Hyjal-Alliance
+
+29673 / 93823 points >30 days, 10 expired, 362 smoothed for Hyjal-Alliance
+
 
 
 

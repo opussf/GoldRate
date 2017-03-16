@@ -219,9 +219,17 @@ function GoldRate.PruneData()
 			end
 
 			--GoldRate.Print(smoothDelCount.." data points were pruned for smoothing.")
-			GoldRate.Print( string.format( "%s-%s%s : Of %i points, %i expired, %i (-%i) smoothed.",
-					pruneRealm, pruneFaction, (pruneFaction == "Horde" and "   " or ""),
-					count, pruneCount, smoothCount, smoothDelCount ) )
+--			GoldRate.Print( string.format( "%s-%-8s : %i points, %i expired, %i (%i) smoothed.",
+--					pruneRealm, pruneFaction,
+--					count, pruneCount, smoothCount, smoothDelCount ) )
+
+--			GoldRate.Print( string.format( "%i points, %3d expired, %d >%d days, %3d smoothed for %s-%s",
+--					count, pruneCount, smoothCount, smoothAgeDays, smoothDelCount, pruneRealm, pruneFaction ))
+			colorStart = ((pruneRealm == GoldRate.realm and pruneFaction == GoldRate.faction ) and COLOR_GREEN or nil )
+			colorEnd = (colorStart and COLOR_END or nil )
+			GoldRate.Print( string.format( "%d / %d points >%d days, %d expired, %d smoothed for %s%s-%s%s",
+					smoothCount, count, smoothAgeDays, pruneCount, smoothDelCount,
+					(colorStart or ""),	pruneRealm, pruneFaction, (colorEnd or "") ) )
 			coroutine.yield()
 		end
 	end
