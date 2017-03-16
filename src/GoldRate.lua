@@ -168,6 +168,8 @@ function GoldRate.PruneData()
 	local count, smoothCount, pruneCount = 0, 0, 0  -- count is total size, smoothCount is > smoothAgeDays, pruneCount is > pruneAgeDays
 	smoothCutoff = time() - (86400 * smoothAgeDays)
 	pruneCutoff = time() - (86400 * pruneAgeDays)
+
+	-- count all data points, prune old data.
 	for ts in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated ) do
 		table.insert( sortedKeys, ts )
 		count = count + 1
@@ -180,12 +182,12 @@ function GoldRate.PruneData()
 			end
 		end
 	end
-	GoldRate.Print(count.." data points. "..pruneCount.." expired (older than "..pruneAgeDays.." days).")
-	GoldRate.Print(smoothCount.." data points are older than "..smoothAgeDays.." days.")
+	--GoldRate.Print(count.." data points. "..pruneCount.." expired (older than "..pruneAgeDays.." days).")
+	--GoldRate.Print(smoothCount.." data points are older than "..smoothAgeDays.." days.")
 	table.sort( sortedKeys )
 	GoldRate_data[GoldRate.realm][GoldRate.faction].numVals = count  -- This is going to be wrong.  meh
 
-	local pruneCount = 0
+	local smoothDelCount = 0
 	local previousVal = nil -- set this to the previous val
 	local previousTS = nil
 	local valueDirection = nil -- set this to +1, or -1 based on the direction of data
@@ -198,7 +200,7 @@ function GoldRate.PruneData()
 					--print("Removing "..currentValue.." at "..ts)
 					GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[previousTS] = nil
 					--GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts] = nil
-					pruneCount = pruneCount + 1
+					smoothDelCount = smoothDelCount + 1
 				end
 				valueDirection = (currentValue < previousVal) and -1 or 1  -- default to 1 sort of thing
 			end
@@ -207,7 +209,10 @@ function GoldRate.PruneData()
 		end
 	end
 
-	GoldRate.Print(pruneCount.." data points were pruned for smoothing.")
+	--GoldRate.Print(smoothDelCount.." data points were pruned for smoothing.")
+	GoldRate.Print( string.format( "%s-%s%s : Of %i points, %i expired, %i (-%i) smoothed.",
+			GoldRate.realm, GoldRate.faction, (GoldRate.faction == "Horde" and "   " or ""),
+			count, pruneCount, smoothCount, smoothDelCount ) )
 
 	-- Stuff
 
