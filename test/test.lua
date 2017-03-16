@@ -517,13 +517,20 @@ function test.makeOldData_linearIncrease( spend )
 	--print(val)
 	-- should place 2592 data points older than 120 days (the current cut off)
 end
+function test.runPruneData()
+	GoldRate.pruneThread = nil
+	GoldRate.PLAYER_ENTERING_WORLD()
+	repeat
+		coroutine.resume( GoldRate.pruneThread )
+	until (coroutine.status( GoldRate.pruneThread ) == "dead" )
+end
 function test.testSmoothOldData_linearIncrease()
 	-- in this test, the first data point should be kept
 	-- with all subsequent data points up to 30 days ago removed
 	cutOff = time()-(30*86400)
 	print(cutOff)
 	test.makeOldData_linearIncrease()
-	GoldRate.PruneData()
+	test.runPruneData()
 	valCount = 0
 	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
 		--print(k..":"..v)
@@ -536,7 +543,7 @@ end
 function test.testSmoothOldData_sawblade()
 	cutOff = time()-(30*86400)
 	test.makeOldData_linearIncrease( 10000 ) -- one gold
-	GoldRate.PruneData()
+	test.runPruneData()
 	valCount = 0
 	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
 		--print(k..":"..v)
@@ -549,7 +556,7 @@ end
 function test.testPruneOldData()
 	cutOff = time()-(90*86400)
 	test.makeOldData_linearIncrease( 10000 )
-	GoldRate.PruneData()
+	test.runPruneData()
 	valCount = 0
 	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
 		if k<cutOff then
@@ -582,7 +589,8 @@ function test.makeData_multiPrune( spend )
 end
 function test.testMultiPrune_01()
 	test.makeData_multiPrune( 10000 )
-	GoldRate.PruneData()
+	test.runPruneData()
+
 	valCount = 0
 	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
 		valCount = valCount + 1
