@@ -109,7 +109,7 @@ function GoldRate.PLAYER_ENTERING_WORLD()
 	--if ( not GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["last"] ) then
 	GoldRate.PLAYER_MONEY()
 	--wend
-	GoldRate.PruneData()
+	GoldRate.pruneThread = coroutine.create( GoldRate.PruneData )
 end
 
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
@@ -153,63 +153,86 @@ function GoldRate.OnUpdate( arg1 )
 		C_WowTokenPublic.UpdateMarketPrice()
 		GoldRate.UpdateScanTime()
 	end
+	if coroutine.status( GoldRate.pruneThread ) ~= "dead" then
+		coroutine.resume( GoldRate.pruneThread )
+	end
 end
 function GoldRate.UpdateScanTime()
 	GoldRate_options.nextTokenScanTS = time() + 5*60  -- 20 minutes
 end
 function GoldRate.PruneData()
-	-- use this to filter out old data
-	-- sort the keys
 	GoldRate.Print("PruneData")
-	-- sort the keys into sortedKeys and count data points older than GoldRate_options.pruneAgeDays
+
 	local smoothAgeDays = GoldRate_options.smoothAgeDays or 30
 	local pruneAgeDays = GoldRate_options.pruneAgeDays or 180
-	local sortedKeys = {}
-	local count, smoothCount, pruneCount = 0, 0, 0  -- count is total size, smoothCount is > smoothAgeDays, pruneCount is > pruneAgeDays
 	smoothCutoff = time() - (86400 * smoothAgeDays)
 	pruneCutoff = time() - (86400 * pruneAgeDays)
-	for ts in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated ) do
-		table.insert( sortedKeys, ts )
-		count = count + 1
-		if ts < smoothCutoff then
-			if ts < pruneCutoff then
-				pruneCount = pruneCount + 1
-				GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts] = nil
-			else
-				smoothCount = smoothCount + 1
-			end
-		end
-	end
-	GoldRate.Print(count.." data points. "..pruneCount.." expired (older than "..pruneAgeDays.." days).")
-	GoldRate.Print(smoothCount.." data points are older than "..smoothAgeDays.." days.")
-	table.sort( sortedKeys )
-	GoldRate_data[GoldRate.realm][GoldRate.faction].numVals = count  -- This is going to be wrong.  meh
 
-	local pruneCount = 0
-	local previousVal = nil -- set this to the previous val
-	local previousTS = nil
-	local valueDirection = nil -- set this to +1, or -1 based on the direction of data
-	for _,ts in pairs( sortedKeys ) do
-		if ts < smoothCutoff then
-			local currentValue = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts]
-			if previousVal then -- knew about a previous data point
-				if ((valueDirection == 1) and (currentValue > previousVal)) or
-				   ((valueDirection == -1) and (currentValue < previousVal)) then -- contiune in the previous direction
-					--print("Removing "..currentValue.." at "..ts)
-					GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[previousTS] = nil
-					--GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts] = nil
-					pruneCount = pruneCount + 1
+	for pruneRealm, realmStruct in pairs( GoldRate_data ) do
+		for pruneFaction, factionStruct in pairs( realmStruct ) do
+			--print( "STARTING: "..pruneRealm.."-"..pruneFaction )
+			-- sort the keys into sortedKeys and count data points older than GoldRate_options.pruneAgeDays
+			local sortedKeys = {}
+			local count, smoothCount, pruneCount = 0, 0, 0  -- count is total size, smoothCount is > smoothAgeDays, pruneCount is > pruneAgeDays
+
+			-- count all data points, prune old data.
+			for ts in pairs( GoldRate_data[pruneRealm][pruneFaction].consolidated ) do
+				table.insert( sortedKeys, ts )
+				count = count + 1
+				if ts < smoothCutoff then
+					if ts < pruneCutoff then
+						pruneCount = pruneCount + 1
+						GoldRate_data[pruneRealm][pruneFaction].consolidated[ts] = nil
+					else
+						smoothCount = smoothCount + 1
+					end
 				end
-				valueDirection = (currentValue < previousVal) and -1 or 1  -- default to 1 sort of thing
 			end
-			previousVal = currentValue
-			previousTS = ts
+			-- yield here
+			coroutine.yield()
+
+			--GoldRate.Print(count.." data points. "..pruneCount.." expired (older than "..pruneAgeDays.." days).")
+			--GoldRate.Print(smoothCount.." data points are older than "..smoothAgeDays.." days.")
+			table.sort( sortedKeys )
+			GoldRate_data[pruneRealm][pruneFaction].numVals = count  -- This is going to be wrong.  meh
+
+			local smoothDelCount = 0
+			local previousVal = nil -- set this to the previous val
+			local previousTS = nil
+			local valueDirection = nil -- set this to +1, or -1 based on the direction of data
+			for _,ts in pairs( sortedKeys ) do
+				if ts < smoothCutoff then
+					local currentValue = GoldRate_data[pruneRealm][pruneFaction].consolidated[ts]
+					if previousVal then -- knew about a previous data point
+						if ((valueDirection == 1) and (currentValue > previousVal)) or
+						   ((valueDirection == -1) and (currentValue < previousVal)) then -- contiune in the previous direction
+							--print("Removing "..currentValue.." at "..ts)
+							GoldRate_data[pruneRealm][pruneFaction].consolidated[previousTS] = nil
+							--GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[ts] = nil
+							smoothDelCount = smoothDelCount + 1
+						end
+						valueDirection = (currentValue < previousVal) and -1 or 1  -- default to 1 sort of thing
+					end
+					previousVal = currentValue
+					previousTS = ts
+				end
+			end
+
+			--GoldRate.Print(smoothDelCount.." data points were pruned for smoothing.")
+--			GoldRate.Print( string.format( "%s-%-8s : %i points, %i expired, %i (%i) smoothed.",
+--					pruneRealm, pruneFaction,
+--					count, pruneCount, smoothCount, smoothDelCount ) )
+
+--			GoldRate.Print( string.format( "%i points, %3d expired, %d >%d days, %3d smoothed for %s-%s",
+--					count, pruneCount, smoothCount, smoothAgeDays, smoothDelCount, pruneRealm, pruneFaction ))
+			colorStart = ((pruneRealm == GoldRate.realm and pruneFaction == GoldRate.faction ) and COLOR_GREEN or nil )
+			colorEnd = (colorStart and COLOR_END or nil )
+			GoldRate.Print( string.format( "%d / %d points >%d days, %d expired, %d smoothed for %s%s-%s%s",
+					smoothCount, count, smoothAgeDays, pruneCount, smoothDelCount,
+					(colorStart or ""),	pruneRealm, pruneFaction, (colorEnd or "") ) )
+			coroutine.yield()
 		end
 	end
-
-	GoldRate.Print(pruneCount.." data points were pruned for smoothing.")
-
-	-- Stuff
 
 	-- TokenData
 	-- Only remove token values where they have not changed

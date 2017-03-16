@@ -514,8 +514,15 @@ function test.makeOldData_linearIncrease( spend )
 		GoldRate_data.testRealm.Alliance.consolidated[ts]=val
 		val = val + 10
 	end
-	print(val)
-	-- should place 2592 data points older than 120 days (the current cutt off)
+	--print(val)
+	-- should place 2592 data points older than 120 days (the current cut off)
+end
+function test.runPruneData()
+	GoldRate.pruneThread = nil
+	GoldRate.PLAYER_ENTERING_WORLD()
+	repeat
+		coroutine.resume( GoldRate.pruneThread )
+	until (coroutine.status( GoldRate.pruneThread ) == "dead" )
 end
 function test.testSmoothOldData_linearIncrease()
 	-- in this test, the first data point should be kept
@@ -523,7 +530,7 @@ function test.testSmoothOldData_linearIncrease()
 	cutOff = time()-(30*86400)
 	print(cutOff)
 	test.makeOldData_linearIncrease()
-	GoldRate.PruneData()
+	test.runPruneData()
 	valCount = 0
 	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
 		--print(k..":"..v)
@@ -536,7 +543,7 @@ end
 function test.testSmoothOldData_sawblade()
 	cutOff = time()-(30*86400)
 	test.makeOldData_linearIncrease( 10000 ) -- one gold
-	GoldRate.PruneData()
+	test.runPruneData()
 	valCount = 0
 	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
 		--print(k..":"..v)
@@ -549,7 +556,7 @@ end
 function test.testPruneOldData()
 	cutOff = time()-(90*86400)
 	test.makeOldData_linearIncrease( 10000 )
-	GoldRate.PruneData()
+	test.runPruneData()
 	valCount = 0
 	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
 		if k<cutOff then
@@ -558,7 +565,46 @@ function test.testPruneOldData()
 	end
 	assertEquals( 11, valCount )
 end
+------------------
+-- Tests for multiPrune
+------------------
+function test.makeData_multiPrune( spend )
+	now = time()
+	GoldRate.PLAYER_MONEY()
+	GoldRate_data.testRealm.Horde = {}
+	GoldRate_data.testRealm.Horde.consolidated = {}
+	GoldRate_data['otherRealm'] = {}
+	GoldRate_data['otherRealm'].Alliance = {}
+	GoldRate_data['otherRealm'].Alliance.consolidated = {}
 
+	val = 10
+	for ts = now-(180*86400),now,1000 do
+		if spend and (val > spend) then val = 0 end
+		GoldRate_data.testRealm.Alliance.consolidated[ts] = val
+		GoldRate_data.testRealm.Horde.consolidated[ts] = val / 2
+		GoldRate_data['otherRealm'].Alliance.consolidated[ts] = val
+		val = val + 10
+	end
+
+end
+function test.testMultiPrune_01()
+	test.makeData_multiPrune( 10000 )
+	test.runPruneData()
+
+	valCount = 0
+	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
+		valCount = valCount + 1
+	end
+	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Horde.consolidated ) do
+		valCount = valCount + 1
+	end
+	for k,v in GoldRate.PairsByKeys( GoldRate_data['otherRealm'].Alliance.consolidated ) do
+		valCount = valCount + 1
+	end
+
+	assertEquals( 7857, valCount )
+
+end
 
 
 
