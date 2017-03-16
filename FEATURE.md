@@ -1,5 +1,35 @@
 # Feature
 
+## multiPrune
+Prune / smooth for all realms.
+Convert the process into a co-routine
+
+Stats I may want to know:
+* How many data points are there
+* How many were pruned
+* How many were smoothed
+* Older than smooth age
+* How many are left.
+* Realm / faction
+
+93823 data points. 0 expired (older than 285 days).
+28763 data points are older than 30 days.
+362 data points were pruned for smoothing.
+
+Hyjal-Alliance : 93823 points
+               :     0 expired (older than 274 days)
+               : 28673         (older than 30 days)
+               :   362 pruned for smoothing.
+               : 93461 remain
+Hyjal-Horde    : 93823 -0 (>274 days) 28673 (>30 days) -362 (smoothing) = 93461
+
+Hyjal-Alliance : 93823 points. 10 expired (>274 days) 28673-362>30 days.
+Hyjal-Alliance : Of 93823 points, 10 expired, 28673 (-362) smoothed.
+
+
+
+
+
 ## limitRange
 Limit the range of data used to predict future values.
 
