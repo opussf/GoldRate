@@ -1,6 +1,20 @@
 #!/usr/bin/env lua
+-- args:  <accountPath> <xml | json | csv>
+accountPath = arg[1]
+exportType = arg[2]
 
-dataFile = "/Applications/World of Warcraft/WTF/Account/OPUSSF/SavedVariables/GoldRate.lua"
+pathSeparator = string.sub(package.config, 1, 1) -- first character of this string (http://www.lua.org/manual/5.2/manual.html#pdf-package.config)
+-- remove 'extra' separators from the end of the given path
+while (string.sub( accountPath, -1, -1 ) == pathSeparator) do
+	accountPath = string.sub( accountPath, 1, -2 )
+end
+-- append the expected location of the datafile
+dataFilePath = {
+	accountPath,
+	"SavedVariables",
+	"GoldRate.lua"
+}
+dataFile = table.concat( dataFilePath, pathSeparator )
 
 function FileExists( name )
    local f = io.open( name, "r" )
@@ -74,8 +88,53 @@ function Rate( realmIn, factionIn )
 	end
 end
 
-if FileExists( dataFile ) then
-	DoFile( dataFile )
+function ExportXML()
+	strOut = "No data structure."
+	if GoldRate_data then
+		strOut = "<?xml version='1.0' encoding='utf-8' ?>\n"
+		strOut = strOut .. "<goldRate>\n"
+		strOut = strOut .. "<graphAgeDays>"..GoldRate_options.graphAgeDays.."</graphAgeDays>\n"
+		for realm, rdata in pairs( GoldRate_data ) do
+			maxInitialTS = 0
+			for faction, fdata in pairs( rdata ) do
+				m, targetTS = Rate(realm, faction)
+				strOut = strOut .. string.format( '<rf realm="%s" faction="%s">\n', realm, faction )
+				if fdata.goal and targetTS then
+					strOut = strOut .. string.format( '<goal ts="%i">%i</goal>\n', targetTS, fdata.goal )
+				end
+				for name, pdata in pairs( fdata.toons ) do
+					maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
+				end
+				if fdata.consolidated then
+					for ts, val in PairsByKeys( fdata.consolidated ) do
+						if ts >= maxInitialTS and ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
+							strOut = strOut .. string.format( '<v ts="%i">%i</v>', ts, val )
+						end
+					end
+				end
+				--[[
+				if GoldRate_data[realm][faction].goal then
+					strOut = strOut .. string.format("%s,%s,%s,%i,%i,target\n", realm, faction, os.date( "%x %X", targetTS), targetTS, GoldRate_data[realm][faction].goal )
+				end
+				]]
+				strOut = strOut .. "</rf>\n"
+			end
+		end
+	end
+	if GoldRate_tokenData then
+		strOut = strOut .. string.format( '<rf realm="TokenData" faction="all">\n' )
+		for ts, val in PairsByKeys( GoldRate_tokenData ) do
+			if ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
+				strOut = strOut .. string.format( '<v ts="%i">%i</v>', ts, val )
+			end
+		end
+		strOut = strOut .. "</rf>\n"
+	end
+	strOut = strOut .. "</goldRate>\n"
+	return strOut
+end
+function ExportJSON()
+	strOut = "No data structure."
 	if GoldRate_data then
 		strOut = '{"goldRate": {\n'
 		strOut = strOut .. '"graphAgeDays": '..GoldRate_options.graphAgeDays..',\n'
@@ -130,8 +189,58 @@ if FileExists( dataFile ) then
 
 		strOut = strOut .. table.concat(realms, ",\n") .. ']'
 		strOut = strOut .. "}" -- goldRate
-		strOut = strOut .. "}\n" -- file
-		print(strOut)
+		strOut = strOut .. "}" -- file
 	end
+	return strOut
 end
+function ExportCSV()
+	strOut = "Realm,Faction,TimeStamp,TimeStamp,Gold\n"
+	if GoldRate_data then
+		for realm, rdata in pairs( GoldRate_data ) do
+			maxInitialTS = 0
+			for faction, fdata in pairs( rdata ) do
+				m, targetTS = Rate(realm, faction)
 
+				for name, pdata in pairs( fdata.toons ) do
+					maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
+				end
+				if fdata.consolidated then
+					for ts, val in PairsByKeys( fdata.consolidated ) do
+						if ts >= maxInitialTS and ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
+							strOut = strOut .. string.format( '%s,%s,%s,%i,%s\n', realm, faction, os.date( "%x %X", ts ),ts, val )
+						end
+					end
+				end
+			end
+		end
+	end
+	if GoldRate_tokenData then
+		for ts, val in PairsByKeys( GoldRate_tokenData ) do
+			if ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
+				strOut = strOut .. string.format( '%s,%s,%s,%i,%s\n', "TokenData", "Both", os.date( "%x %X", ts ),ts, val )
+			end
+		end
+	end
+	return strOut
+end
+----
+
+functionList = {
+	["xml"] = ExportXML,
+	["json"] = ExportJSON,
+	["csv"] = ExportCSV
+}
+
+func = functionList[string.lower( exportType )]
+
+if dataFile and FileExists( dataFile ) and exportType and func then
+	DoFile( dataFile )
+	strOut = func()
+	print( strOut )
+else
+	io.stderr:write( "Something is wrong.  Lets review:\n")
+	io.stderr:write( "Data file provided: "..( dataFile and " True" or "False" ).."\n" )
+	io.stderr:write( "Data file exists  : "..( FileExists( dataFile ) and " True" or "False" ).."\n" )
+	io.stderr:write( "ExportType given  : "..( exportType and " True" or "False" ).."\n" )
+	io.stderr:write( "ExportType valid  : "..( func and " True" or "False" ).."\n" )
+end
