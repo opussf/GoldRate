@@ -112,9 +112,7 @@
 				<include name="Readme.txt"/>
 			</fileset>
 		</copy>
-		<chmod perm="ugo+x" dir="${addon.dir}" includes="GR2CSV.lua" />
-		<chmod perm="ugo+x" dir="${addon.dir}" includes="GR2XML.lua" />
-		<chmod perm="ugo+x" dir="${addon.dir}" includes="GR2JSON.lua" />
+		<chmod perm="ugo+x" dir="${addon.dir}" includes="GR_Export.lua" />
 	</target>
 
 	<target name="open" description="open the addon dir in the current wow install">
