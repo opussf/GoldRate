@@ -89,6 +89,49 @@ function Rate( realmIn, factionIn )
 end
 
 function ExportXML()
+	strOut = "No data structure."
+	if GoldRate_data then
+		strOut = "<?xml version='1.0' encoding='utf-8' ?>\n"
+		strOut = strOut .. "<goldRate>\n"
+		strOut = strOut .. "<graphAgeDays>"..GoldRate_options.graphAgeDays.."</graphAgeDays>\n"
+		for realm, rdata in pairs( GoldRate_data ) do
+			maxInitialTS = 0
+			for faction, fdata in pairs( rdata ) do
+				m, targetTS = Rate(realm, faction)
+				strOut = strOut .. string.format( '<rf realm="%s" faction="%s">\n', realm, faction )
+				if fdata.goal and targetTS then
+					strOut = strOut .. string.format( '<goal ts="%i">%i</goal>\n', targetTS, fdata.goal )
+				end
+				for name, pdata in pairs( fdata.toons ) do
+					maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
+				end
+				if fdata.consolidated then
+					for ts, val in PairsByKeys( fdata.consolidated ) do
+						if ts >= maxInitialTS and ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
+							strOut = strOut .. string.format( '<v ts="%i">%i</v>', ts, val )
+						end
+					end
+				end
+				--[[
+				if GoldRate_data[realm][faction].goal then
+					strOut = strOut .. string.format("%s,%s,%s,%i,%i,target\n", realm, faction, os.date( "%x %X", targetTS), targetTS, GoldRate_data[realm][faction].goal )
+				end
+				]]
+				strOut = strOut .. "</rf>\n"
+			end
+		end
+	end
+	if GoldRate_tokenData then
+		strOut = strOut .. string.format( '<rf realm="TokenData" faction="all">\n' )
+		for ts, val in PairsByKeys( GoldRate_tokenData ) do
+			if ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
+				strOut = strOut .. string.format( '<v ts="%i">%i</v>', ts, val )
+			end
+		end
+		strOut = strOut .. "</rf>\n"
+	end
+	strOut = strOut .. "</goldRate>\n"
+	return strOut
 end
 function ExportJSON()
 	strOut = "No data structure."
