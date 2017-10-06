@@ -716,6 +716,13 @@ function GetFactionInfo( index )
 	return f.name, f.description, f.standingID, f.bottomValue, f.topValue, f.earnedValue, f.atWarWith, f.canToggleAtWar,
 			f.isHeader, f.isCollapsed, f.hasRep, f.isWatched, f.isChild, f.factionID, f.hasBonusRepGain, f.canBeLFGBonus
 end
+function GetGuildInfo( unitID )
+	-- http://wowprogramming.com/docs/api/GetGuildInfo
+	-- Returns: guildName, guildRankName, guildRankIndex
+	if myGuild and myGuild.name then
+		return myGuild.name, "Rank Name", 2
+	end
+end
 function GetHaste()
 	return 15.42345
 end
