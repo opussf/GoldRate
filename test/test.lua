@@ -82,6 +82,10 @@ function test.testCommand_Goal()
 	-- These are here basicly to assure that the command does not error
 	GoldRate.Command( "goal" )
 end
+function test.testCommand_Guild()
+-- These are here basicly to assure that the command does not error
+	GoldRate.Command( "guild" )
+end
 function test.testCommand_MinGold()
 	GoldRate.Command( "min" )
 end
@@ -356,7 +360,7 @@ function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_positive()
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 	--assertEquals( "TOK 12{circle}+5(+68.07%) 24H12 24L12" , GoldRate.tickerToken )
-	assertEquals( "TOK 12{circle}+5 :: 24H12 24L12 90DH12" , GoldRate.tickerToken )
+	assertEquals( "TOK 12{circle}+5 :: 24H12 24L12 180DH12" , GoldRate.tickerToken )
 end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_zero()
 	local now = time()
@@ -372,7 +376,7 @@ function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_negitive()
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 	--assertEquals( "TOK 12{circle}-5(-28.83%) 24H12 24L12" , GoldRate.tickerToken )
-	assertEquals( "TOK 12{circle}-5 :: 24H12 24L12 90DL12" , GoldRate.tickerToken )
+	assertEquals( "TOK 12{circle}-5 :: 24H12 24L12 180DL12" , GoldRate.tickerToken )
 end
 function test.testToken_tokenGoal()
 	local now = time()
@@ -585,7 +589,6 @@ function test.makeData_multiPrune( spend )
 		GoldRate_data['otherRealm'].Alliance.consolidated[ts] = val
 		val = val + 10
 	end
-
 end
 function test.testMultiPrune_01()
 	test.makeData_multiPrune( 10000 )
@@ -601,13 +604,44 @@ function test.testMultiPrune_01()
 	for k,v in GoldRate.PairsByKeys( GoldRate_data['otherRealm'].Alliance.consolidated ) do
 		valCount = valCount + 1
 	end
-
 	assertEquals( 7857, valCount )
-
 end
-
-
-
-
+-------------------
+-- Tests for guild reporting toggle
+-------------------
+function test.testGuildToggle_off()
+	GoldRate_options.guildBlackList = nil
+	GoldRate.Command( "guild" )
+	assertTrue( GoldRate_options.guildBlackList["testRealm-Test Guild"] )
+end
+function test.testGuildToggle_on()
+	GoldRate_options.guildBlackList = { ["testRealm-Test Guild"]=true }
+	GoldRate.Command( "guild" )
+	assertIsNil( GoldRate_options.guildBlackList["testRealm-Test Guild"] )
+end
+function test.testGuildToggle_noGuild_emptyList()
+	GoldRate_options.guildBlackList = nil
+	local guildInfo = myGuild
+	myGuild = nil
+	GoldRate.Command( "guild" )
+	myGuild = guildInfo
+	assertIsNil( GoldRate_options.guildBlackList["testRealm-Test Guild"] )
+end
+function test.testGuildToggle_noGuild_hasBlackList()
+	GoldRate_options.guildBlackList = { ["testRealm-Test Guild"]=true }
+	local guildInfo = myGuild
+	myGuild = nil
+	GoldRate.Command( "guild" )
+	myGuild = guildInfo
+	assertTrue( GoldRate_options.guildBlackList["testRealm-Test Guild"] )
+end
+function test.testGuildToggle_reportOn()
+	GoldRate_options.guildBlackList = nil
+	assertTrue( GoldRate.GuildPrint( "Test" ) )
+end
+function test.testGuildToggle_reportOff()
+	GoldRate_options.guildBlackList = { ["testRealm-Test Guild"]=true }
+	assertIsNil( GoldRate.GuildPrint( "Test" ) )
+end
 
 test.run()
