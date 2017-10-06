@@ -26,8 +26,8 @@ GoldRate_options = {
 GoldRate_tokenData = {} -- [timestamp] = value
 GoldRate_guildWhiteList = {}
 
-GoldRate.days = {1, 30, 60, 90}
-GoldRate.daysText = {"High", "Low", "30DH", "30DL", "60DH", "60DL", "90DH", "90DL"}
+GoldRate.days = {1, 30, 60, 90, 120, 150, 180}
+GoldRate.daysText = {"High", "Low", "30DH", "30DL", "60DH", "60DL", "90DH", "90DL", "120DH", "120DL", "150DH", "150DL", "180DH", "180DL"}
 
 function GoldRate.Print( msg, showName)
 	-- print to the chat frame
@@ -218,18 +218,13 @@ function GoldRate.PruneData()
 				end
 			end
 
-			--GoldRate.Print(smoothDelCount.." data points were pruned for smoothing.")
---			GoldRate.Print( string.format( "%s-%-8s : %i points, %i expired, %i (%i) smoothed.",
---					pruneRealm, pruneFaction,
---					count, pruneCount, smoothCount, smoothDelCount ) )
-
---			GoldRate.Print( string.format( "%i points, %3d expired, %d >%d days, %3d smoothed for %s-%s",
---					count, pruneCount, smoothCount, smoothAgeDays, smoothDelCount, pruneRealm, pruneFaction ))
 			colorStart = ((pruneRealm == GoldRate.realm and pruneFaction == GoldRate.faction ) and COLOR_GREEN or nil )
 			colorEnd = (colorStart and COLOR_END or nil )
-			GoldRate.Print( string.format( "%d / %d points >%d days, %d expired, %d smoothed for %s%s-%s%s",
-					smoothCount, count, smoothAgeDays, pruneCount, smoothDelCount,
-					(colorStart or ""),	pruneRealm, pruneFaction, (colorEnd or "") ) )
+			if (colorEnd or pruneCount > 0 or smoothDelCount > 0) then
+				GoldRate.Print( string.format( "%d / %d points >%d days, %d expired, %d smoothed for %s%s-%s%s",
+						smoothCount, count, smoothAgeDays, pruneCount, smoothDelCount,
+						(colorStart or ""),	pruneRealm, pruneFaction, (colorEnd or "") ) )
+			end
 			coroutine.yield()
 		end
 	end
