@@ -22,6 +22,7 @@ GoldRate_options = {
 		['ratePeriod'] = {['days']=30,},
 		['smoothAgeDays'] = 30,
 		['pruneAgeDays'] = 180,
+		['guildBlackList'] = {},
 }
 GoldRate_tokenData = {} -- [timestamp] = value
 GoldRate_guildWhiteList = {}
@@ -40,15 +41,13 @@ end
 function GoldRate.GuildPrint( msg )
 	if (IsInGuild()) then
 		guildName, guildRankName, guildRankIndex = GetGuildInfo("player")
-
-		GoldRate.Print(GoldRate.realm.."-"..guildName)
-		SendChatMessage( msg, "GUILD" )
+		local guildTest = GoldRate.realm.."-"..guildName
+		--GoldRate.Print( guildTest..": "..( GoldRate_options.guildBlackList[guildTest] and "True" or "nil" ) )
+		if not GoldRate_options.guildBlackList[guildTest] then
+			SendChatMessage( msg, "GUILD" )
+			return true
+		end
 	end
-	--if (IsInGuild() and RF_options.guild) then
-	--	SendChatMessage( msg, "GUILD" );
---	else
---		RF.Print( COLOR_RED.."RF.GuildPrint: "..COLOR_END..msg, false );
-	--end
 end
 function GoldRate.OnLoad()
 	SLASH_GOLDRATE1 = "/GR"
@@ -473,6 +472,21 @@ function GoldRate.SumGoldValue( strIn, valueIn )
 	end
 	return( valueIn and ((sub or add) and valueIn + copperValue) or tonumber(copperValue) )
 end
+function GoldRate.GuildToggle()
+	if (IsInGuild()) then
+		guildName = GetGuildInfo("player")
+		local guildTest = GoldRate.realm.."-"..guildName
+		if GoldRate_options.guildBlackList[guildTest] then
+			GoldRate_options.guildBlackList[guildTest] = nil
+			GoldRate.Print( "Will now post to "..guildTest )
+		else
+			GoldRate_options.guildBlackList[guildTest] = true
+			GoldRate.Print( guildTest.." is now excluded." )
+		end
+	else
+		GoldRate.Print( "No guild to toggle.")
+	end
+end
 function GoldRate.ParseCmd(msg)
 	if msg then
 		local i,c = strmatch(msg, "^(|c.*|r)%s*(%d*)$")
@@ -530,5 +544,9 @@ GoldRate.CommandList = {
 	["token"] = {
 		["func"] = GoldRate.TokenInfo,
 		["help"] = {"<history>","Display info on the wowToken, or optionally the history."}
+	},
+	["guild"] = {
+		["func"] = GoldRate.GuildToggle,
+		["help"] = {"","Toggle reporting to the current guild."}
 	},
 }
