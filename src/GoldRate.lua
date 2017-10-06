@@ -22,10 +22,8 @@ GoldRate_options = {
 		['ratePeriod'] = {['days']=30,},
 		['smoothAgeDays'] = 30,
 		['pruneAgeDays'] = 180,
-		['guildBlackList'] = {},
 }
 GoldRate_tokenData = {} -- [timestamp] = value
-GoldRate_guildWhiteList = {}
 
 GoldRate.days = {1, 30, 60, 90, 120, 150, 180}
 GoldRate.daysText = {"High", "Low", "30DH", "30DL", "60DH", "60DL", "90DH", "90DL", "120DH", "120DL", "150DH", "150DL", "180DH", "180DL"}
@@ -43,7 +41,7 @@ function GoldRate.GuildPrint( msg )
 		guildName, guildRankName, guildRankIndex = GetGuildInfo("player")
 		local guildTest = GoldRate.realm.."-"..guildName
 		--GoldRate.Print( guildTest..": "..( GoldRate_options.guildBlackList[guildTest] and "True" or "nil" ) )
-		if not GoldRate_options.guildBlackList[guildTest] then
+		if not GoldRate_options.guildBlackList or not GoldRate_options.guildBlackList[guildTest] then
 			SendChatMessage( msg, "GUILD" )
 			return true
 		end
@@ -473,6 +471,10 @@ function GoldRate.SumGoldValue( strIn, valueIn )
 	return( valueIn and ((sub or add) and valueIn + copperValue) or tonumber(copperValue) )
 end
 function GoldRate.GuildToggle()
+	if not GoldRate_options.guildBlackList then
+		--print("No guildBlackList. setting as empty.")
+		GoldRate_options.guildBlackList = {}
+	end
 	if (IsInGuild()) then
 		guildName = GetGuildInfo("player")
 		local guildTest = GoldRate.realm.."-"..guildName

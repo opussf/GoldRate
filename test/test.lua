@@ -610,7 +610,7 @@ end
 -- Tests for guild reporting toggle
 -------------------
 function test.testGuildToggle_off()
-	GoldRate_options.guildBlackList = {}
+	GoldRate_options.guildBlackList = nil
 	GoldRate.Command( "guild" )
 	assertTrue( GoldRate_options.guildBlackList["testRealm-Test Guild"] )
 end
@@ -620,7 +620,7 @@ function test.testGuildToggle_on()
 	assertIsNil( GoldRate_options.guildBlackList["testRealm-Test Guild"] )
 end
 function test.testGuildToggle_noGuild_emptyList()
-	GoldRate_options.guildBlackList = {}
+	GoldRate_options.guildBlackList = nil
 	local guildInfo = myGuild
 	myGuild = nil
 	GoldRate.Command( "guild" )
@@ -635,9 +635,8 @@ function test.testGuildToggle_noGuild_hasBlackList()
 	myGuild = guildInfo
 	assertTrue( GoldRate_options.guildBlackList["testRealm-Test Guild"] )
 end
-
 function test.testGuildToggle_reportOn()
-	GoldRate_options.guildBlackList = {}
+	GoldRate_options.guildBlackList = nil
 	assertTrue( GoldRate.GuildPrint( "Test" ) )
 end
 function test.testGuildToggle_reportOff()
