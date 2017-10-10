@@ -11,6 +11,9 @@
 	<exec executable="git" dir="." outputproperty="git.tag" failifexecutionfails="false" errorproperty="">
 		<arg line="describe --tags --abbrev=0" />
 	</exec>
+	<exec executable="git" dir="." outputproperty="git.firstcommit" failifexecutionfails="false" errorproperty="">
+		<arg line="rev-list --max-parents=0 --abbrev-commit HEAD" />
+	</exec>
 	<!-- Get a 'revision' based on last tag, commit count, commitsha, and branch name -->
 	<exec executable="git" dir="." outputproperty="git.revision" failifexecutionfails="false" errorproperty="">
 		<arg line="describe --tags --always HEAD" />
@@ -60,10 +63,14 @@
 	</target>
 
 	<target name="changelog" description="Creates a changelog">
+		<condition property="logstart" value="${git.tag}" else="${git.firstcommit}">
+			<length string="${git.tag}" when="greater" length="0"/>
+		</condition>
 		<mkdir dir="${working.dir}"/>
+		<echo file="${working.dir}/changelog.txt">Changes since ${logstart}..${line.separator}${line.separator}</echo>
 		<exec executable="git" dir=".">
-			<arg line="log --graph --pretty=format:'%h %ci - %d %s &lt;%an&gt;' ${git.tag}.."/>
-			<redirector output="${working.dir}/changelog.txt"/>
+			<arg line="log --graph --pretty=format:'%h %ci - %d %s &lt;%an&gt;' ${logstart}.."/>
+			<redirector append="true" output="${working.dir}/changelog.txt"/>
 		</exec>
 	</target>
 
