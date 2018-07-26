@@ -1,11 +1,12 @@
 <project name="GoldRate" default="package">
+	<!-- version 7.1 -->
 
 	<tstamp/>
 	<property file="build.properties"/>
 	<property environment="env"/>
 	<property name="env.BUILD_NUMBER" value=""/>
 	<property name="build.number" value=""/>
-	<property name="addon.dir" location="/Applications/World of Warcraft/Interface/Addons/${ant.project.name}"/>
+	<property name="addon.dir" location="${ADDONLOC}/${ant.project.name}"/>
 	<!--  Pull git repo info -->
 	<!-- Get the last tag reachable from this branch -->
 	<exec executable="git" dir="." outputproperty="git.tag" failifexecutionfails="false" errorproperty="">
@@ -58,6 +59,14 @@
 	<filter token="VERSION" value="${version.number}"/>
 	<filter token="INTERFACE" value="${INTERFACE}"/>
 
+	<patternset id="packageFiles">
+		<include name="src/*.xml"/>
+		<include name="src/*.toc"/>
+		<include name="src/*.lua"/>
+		<include name="${working.dir}/*.txt"/>
+		<include name="./*.md"/>
+	</patternset>
+
 	<target name="clean" description="Cleans old builds">
 		<delete dir="target" verbose="true"/>
 	</target>
@@ -76,47 +85,28 @@
 
 	<target name="package" depends="changelog, test" description="Create a deploy package">
 		<property name="package.dir" location="${working.dir}/${ant.project.name}"/>
-		<copy	todir="${package.dir}" filtering="true">
-			<fileset dir="src">
-				<include name="*.lua"/>
-				<include name="*.toc"/>
-				<include name="*.xml"/>
-				<include name="*.txt"/>
-			</fileset>
-			<fileset dir="${working.dir}">
-				<include name="*.txt"/>
-			</fileset>
-		</copy>
-		<copy   todir="${package.dir}/web" filtering="false">
-			<fileset dir="src/web">
-				<include name="*"/>
+		<delete dir="${package.dir}" verbose="false"/>
+		<copy	todir="${package.dir}" filtering="true" flatten="true">
+			<fileset dir=".">
+				<patternset refid="packageFiles"/>
 			</fileset>
 		</copy>
 		<zip 	destfile="${target.dir}/${project.zip}"
 				basedir="${working.dir}"
 				includes="${ant.project.name}/**"/>
-		<delete dir="${package.dir}" verbose="false"/>
 		<checksum file="${target.dir}/${project.zip}"
 				  property="zip.md5" />
 		<echo file="${target.dir}/${project.zip}.md5">${zip.md5} ${project.zip}${line.separator}</echo>
 	</target>
 
-	<target name="web.deploy" description="deploys the web site">
-		<mkdir	dir="${target.dir}/web"/>
-		<zip	destfile="${target.dir}/${ant.project.name}-web.zip"
-				basedir="site"
-				includes="**"/>
-		<delete dir="${target.dir}/web" verbose="true"/>
-	</target>
-
-	<target name="wow" depends="test" description="copy files to current wow install">
+	<target name="wow" depends="test" description="copy files to currnet wow install">
 		<mkdir dir="${addon.dir}"/>
-		<copy todir="${addon.dir}" filtering="true">
-			<fileset dir="src">
-				<include name="*.lua"/>
-				<include name="*.toc"/>
-				<include name="*.xml"/>
-				<include name="Readme.txt"/>
+		<delete>
+			<fileset dir="${addon.dir}" includes="*.toc"/>
+		</delete>
+		<copy todir="${addon.dir}" filtering="true" flatten="true">
+			<fileset dir=".">
+				<patternset refid="packageFiles"/>
 			</fileset>
 		</copy>
 		<chmod perm="ugo+x" dir="${addon.dir}" includes="GR_Export.lua" />
@@ -143,21 +133,13 @@
 		</fail>
 	</target>
 
-	<target name="deploy" depends="deploy.check" description="deploys the file" if="deploy.run">
-		<copy todir="${deploy.dir}">
-			<fileset dir="${deploy.from}">
-				<include name="*.zip"/>
-			</fileset>
+	<target name="curse" depends="package">
+		<property name="curse.dir" location="${ant.project.name}-cf"/>
+		<copy todir="${curse.dir}">
+			<fileset dir="${package.dir}"/>
 		</copy>
+		<exec executable="git" dir="${curse.dir}" failifexecutionfails="true" errorproperty="">
+			<arg line="status" />
+		</exec>
 	</target>
-
-	<target name="deploy.check">
-		<condition property="deploy.run">
-			<and>
-				<available file="${deploy.from}" type="dir"/>
-				<available file="${deploy.dir}" type="dir"/>
-			</and>
-		</condition>
-	</target>
-
 </project>
