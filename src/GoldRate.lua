@@ -25,8 +25,10 @@ GoldRate_options = {
 }
 GoldRate_tokenData = {} -- [timestamp] = value
 
-GoldRate.days = {1, 30, 60, 90, 120, 150, 180}
-GoldRate.daysText = {"High", "Low", "30DH", "30DL", "60DH", "60DL", "90DH", "90DL", "120DH", "120DL", "150DH", "150DL", "180DH", "180DL"}
+GoldRate.days = {1, 30, 60, 90, 120, 150, 180, 270, 360 }
+GoldRate.daysText = {"High", "Low", "30DH", "30DL", "60DH", "60DL",
+		"90DH", "90DL", "120DH", "120DL", "150DH", "150DL",
+		"180DH", "180DL", "270DH", "270DL", "360DH", "360DL" }
 
 function GoldRate.Print( msg, showName)
 	-- print to the chat frame
