@@ -330,6 +330,35 @@ function GoldRate.TokenInfo( msg )
 	end
 	GoldRate.Print( string.format( "Token Price %s at %s", GetCoinTextureString( GoldRate.tokenLast ), date("%x %X", GoldRate.tokenLastTS) ) )
 end
+function GoldRate.RateLastN( N )
+	-- returns rate/second, secnds till threshold
+	-- calculate the rate based on the last N samples
+	N = N or 100
+	fdata = GoldRate_data[GoldRate.realm][GoldRate.faction]
+	local sortedKeys = {}
+	for ts in pairs( fdata.consolidated ) do
+		table.insert( sortedKeys, ts )
+	end
+	table.sort( sortedKeys )
+	--print( "SortedSize: "..#sortedKeys )
+	N = math.min( N, #sortedKeys-1 )
+	--print( "N: "..N )
+	local lowTS = sortedKeys[ #sortedKeys - N ]
+	--print( "lowTS: "..lowTS )
+
+	local highTS = sortedKeys[ #sortedKeys ]
+	local startGold = fdata.consolidated[ lowTS ]
+	local endGold = fdata.consolidated[ highTS ]
+	local timeDiff = highTS - lowTS
+	local goldDiff = endGold - startGold
+	local rate = goldDiff / timeDiff
+	local targetTS = ( fdata.goal and
+			(time() + ((fdata.goal - endGold) / rate)) or 0)
+
+	--return 0, 0
+	return rate, targetTS
+
+end
 function GoldRate.RateSimple()
 	-- returns rate/second, seconds till threshold
 	-- this simply uses the first and last data elements to calculate a line for prediction (uber simple)
@@ -413,8 +442,7 @@ function GoldRate.Rate()
 	return 0, 0
 end
 function GoldRate.ShowRate()
-	local r, targetTS = GoldRate.Rate()
-	local rs, targetTSs = GoldRate.RateSimple()
+	-- show the ticker gold
 	local totalGoldNow = GoldRate.otherSummed + GetMoney()
 
 	GoldRate.tickerGold = string.format("GOL %s%s",
@@ -425,12 +453,49 @@ function GoldRate.ShowRate()
 
 	GoldRate.Print( GoldRate.tickerGold )
 
+	-- figure out and display the rate and target time
 	if (GoldRate_data[GoldRate.realm][GoldRate.faction].goal and
 			GoldRate_data[GoldRate.realm][GoldRate.faction].goal > totalGoldNow) then
-		GoldRate.Print( string.format( "%s (%0.2f) // %s (%0.2f)",
-				(date("%c", targetTSs) or "nil"), rs, (date("%c", targetTS) or "nil"), r ), false )
-	end
 
+		local methods = {
+				["last100"]   = { ["f"] = function() return GoldRate.RateLastN(100) end },
+				["last10"]    = { ["f"] = function() return GoldRate.RateLastN(10) end },
+				["last20"]    = { ["f"] = function() return GoldRate.RateLastN(20) end },
+				["firstLast"] = { ["f"] = GoldRate.RateSimple },
+				["squares"]   = { ["f"] = GoldRate.Rate },
+		}
+		local bestRate = {}
+		for k, a in pairs( methods ) do
+
+			local r, ts = a.f()
+			--print( ("%s r:%0.2f day: %s"):format( k, r, date( "%c", ts ) ) )
+			--[[
+			if( ts > time() ) then
+				print( ts.." is after now("..time()..")" )
+				if( bestRate.ts and ts < bestRate.ts ) then
+					print( ts.." is sooner than "..bestRate.ts )
+				end
+				if( not bestRate.ts ) then
+					print( "No data, store it." )
+				end
+			end
+			]]
+
+			if( ts > time() and   -- in the future
+					( ( bestRate.ts and ts < bestRate.ts ) or -- have a record, and ts is less than that record (closer in time)
+					( not bestRate.ts ) ) ) then  -- nothing stored
+				bestRate.ts = ts
+				bestRate.rate = r
+				bestRate.method = k
+				--print( "Storing "..k )
+			end
+		end
+		if( bestRate.ts ) then
+			GoldRate.Print( string.format( "Using %s: %s (%0.2f c/s)", bestRate.method, (date("%c", bestRate.ts) or "nil"), bestRate.rate ) )
+		else
+			GoldRate.Print( "No method returned a value in the future." )
+		end
+	end
 	--GoldRate.Print( GetCoinTextureString( gGained ).." gained since "..date("%x %X", GoldRate.maxInitialTS).." at a rate of "..r.." g/sec ")
 end
 function GoldRate.SetGoal( value )
