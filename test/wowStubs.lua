@@ -9,6 +9,18 @@
 -- This is not intended to replace WoWBench, but to provide a stub structure for
 --     automated unit tests.
 
+actionLog = {
+}
+-- append actions to the log to track actions that may not have an other sideeffects.
+-- record the function calls
+-- [1] = "DoEmote(....)""
+chatLog = {
+-- append chat output here
+-- [1] = { ["msg"] = "ChatOutput", ["channel"] = "where", [<other parameters>] = <values> }
+}
+
+
+
 local itemDB = {
 }
 
@@ -28,6 +40,8 @@ myCopper = 0
 -- set one of these to the number of people in the raid or party to reflect being in group or raid.
 -- roster should be an array for GetRaidRosterInfo
 myParty = { ["group"] = nil, ["raid"] = nil, ["roster"] = {} }
+playerRange = {}  -- { ["party1"] = <yards> }
+dungeonDifficultyLookup = { [34] = "Timewalking" }
 myGuild = { ["name"] = "Test Guild", }
 -- set myGuild = {} to simulate not in a guild
 outMail = {}
@@ -39,6 +53,10 @@ onCursor = {}
 globals = {}
 accountExpansionLevel = 4   -- 0 to 5
 -- registeredPrefixes - populated by the RegisterAddonMessagePrefix( prefix )
+
+myStatistics = {
+	[60] = 42  -- 60 = deaths
+}
 
 registeredPrefixes = {}
 
@@ -165,7 +183,19 @@ Achievements = {
 		["isGuildAch"] = false,
 		["wasEarnedByMe"] = false,
 		["earnedBy"] = ""
+	},
+	[5738] = {
+		["name"] = "Deadmines",
+		["points"] = 10,
+		["value"] = "6",
+
+
 	}
+
+	--[[return id, achiveInfo['name'], achiveInfo['points'], achiveInfo['completed'], achiveInfo['month'], achiveInfo['day'], achiveInfo['year'],
+		achiveInfo['description'], achiveInfo['flags'], achiveInfo['icon'], achiveInfo['rewardText'], achiveInfo['isGuildAch'],
+		achiveInfo['wasEarnedByMe'], achiveInfo['earnedBy']
+		]]
 }
 -- EquipmentSets is an array (1 based numeric key table)
 EquipmentSets = {
@@ -209,27 +239,25 @@ FactionInfo = {
 -- IIRC (Look this up) Auras are index based, use an index based system
 -- ["unit"] = { [1] = { ["Fishing"] = true }}
 UnitAuras = {}
---UnitAuras = {["player"] = { { ["Fishing"] = true } } }
+--UnitAuras = {["player"] = { { ["name"] = "Fishing" } } }
 -- 'support' code for setting / clearing auras
 function wowSetAura( unit, auraName )
 	if (UnitAuras[unit]) then
 		for i, auras in pairs( UnitAuras[unit] ) do
-			if ( auras[auraName] ) then
+			if( auras.name == auraName ) then
 				return
 			end
 		end
-		table.insert( UnitAuras[unit], { { [auraName] = true } } )
+		table.insert( UnitAuras[unit], { { ["name"] = auraName } } )
 	else  -- unknown unit
-		UnitAuras[unit] = { { [auraName] = true } }
+		UnitAuras[unit] = { { ["name"] = auraName } }
 	end
 end
 function wowClearAura( unit, auraName )
 	if UnitAuras[unit] then
 		for i, aura in pairs( UnitAuras[unit] ) do
-			for aname in pairs( aura ) do
-				if (aname == auraName) then
-					UnitAuras[unit][i] = nil
-				end
+			if( aura.name == auraName ) then
+				UnitAuras[unit][i] = nil
 			end
 		end
 		if (#UnitAuras[unit] == 0) then
@@ -286,13 +314,17 @@ function bit.bnot( n )  -- bitwise not
 	end
 	return c
 end
+-- Sound Kit
+SOUNDKIT = {
+	ALARM_CLOCK_WARNING_1 = 18871,
+}
 
 -- WOW's functions
 function getglobal( globalStr )
 	-- set the globals table to return what is needed from the 'globals'
 	return globals[ globalStr ]
 end
-function hooksecurefunc(externalFunc, internalFunc)
+function hooksecurefunc( externalFunc, internalFunc )
 end
 function strsplit( delim, subject, pieces )
 	-- delim is a string that defines all the bytes that may split the string
@@ -342,7 +374,7 @@ Frame = {
 		["Events"] = {},
 		["Hide"] = function( self ) self.__isShown = false; end,
 		["Show"] = function( self ) self.__isShown = true; end,
-		["IsShown"] = function( self ) return( self.__isShown ) end,
+		["IsVisible"] = function( self ) return( self.__isShown ) end,
 		["RegisterEvent"] = function(self, event) self.Events[event] = true; end,
 		["SetPoint"] = function() end,
 		["UnregisterEvent"] = function(self, event) self.Events[event] = nil; end,
@@ -410,7 +442,10 @@ Units = {
 }
 function CreateFrame( frameType, frameName, parentFrame, inheritFrame )
 --	print("CreateFrame: needing a new frame of type: "..(frameType or "nil"))
-	newFrame = Frame  -- deep copy of this?
+	newFrame = {}
+	for k,v in pairs( Frame ) do
+		newFrame[k] = v
+	end
 	if frameType and _G["Frame"..frameType] then  -- construct the name of the table to pull from, use _G to reference it.
 		for k, f in pairs(_G["Frame"..frameType]) do  -- add the methods in the sub frame to the returned frame
 			if k == "init" then  -- check to see if the key is 'init', which is a function to run when creating the Frame
@@ -424,8 +459,7 @@ function CreateFrame( frameType, frameName, parentFrame, inheritFrame )
 	--http://www.wowwiki.com/API_CreateFrame
 	return newFrame
 end
-
-function CreateFontString(name,...)
+function CreateFontString( name, ... )
 	--print("Creating new FontString: "..name)
 	FontString = {}
 	--	print("1")
@@ -439,8 +473,7 @@ function CreateFontString(name,...)
 	--print("FontString made?")
 	return FontString
 end
-
-function CreateStatusBar(name,...)
+function CreateStatusBar( name, ... )
 	StatusBar = {}
 	for k,v in pairs(Frame) do
 		StatusBar[k] = v
@@ -452,7 +485,6 @@ function CreateStatusBar(name,...)
 
 	return StatusBar
 end
-
 Slider = {
 		["GetName"] = function() return ""; end,
 		["SetText"] = function(text) end,
@@ -467,6 +499,31 @@ function CreateSlider( name, ... )
 	Slider["GetName"] = function(self) return self.name; end
 	Slider["SetText"] = function(text) end
 	return Slider
+end
+CheckButton = {
+		["SetChecked"] = function(self,value) self.isChecked=value; end,
+}
+function CreateCheckButton( name, ... )
+	me = {}
+	for k,v in pairs(CheckButton) do
+		me[k] = v
+	end
+	me.name = name
+	me[name.."Text"] = CreateFontString(name.."Text")
+	return me
+end
+EditBox = {
+		["SetText"] = function(self,text) self.text=text; end,
+		["SetCursorPosition"] = function(self,pos) self.cursorPosition=pos; end,
+
+}
+function CreateEditBox( name, ... )
+	me = {}
+	for k,v in pairs(EditBox) do
+		me[k] = v
+	end
+	me.name = name
+	return me
 end
 
 function ChatFrame_AddMessageEventFilter()
@@ -492,6 +549,21 @@ function CheckInbox()
 	-- http://www.wowwiki.com/API_CheckInbox
 	-- Fires the MAIL_INBOX_UPDATE event when data is available
 	-- @TODO - Write this
+end
+function CheckInteractDistance( unit, distIndex )
+	-- https://wowwiki.fandom.com/wiki/API_CheckInteractDistance
+	-- unit - string: unit lookupstr
+	-- distIndex - int: 1= inspect (28 yards), 2= Trade (11.11 yards), 3= Duel (9.9 yards), 4= Follow (28 yards)
+	-- returns: bool (1nil)
+	-- uses:  playerRange = {}  -- { ["party1"] = <yards> }
+	-- leaving blank is the same as being out of range
+	rangeIndex = { 28, 11.11, 9.9, 28 }
+	distIndex = tonumber( distIndex )
+	if( playerRange[unit] and rangeIndex[distIndex] ) then
+		if( playerRange[unit] <= rangeIndex[distIndex] ) then
+			return true
+		end
+	end
 end
 function ClearCursor()
 	onCursor = {}
@@ -534,7 +606,10 @@ function CursorHasItem()
 		return true
 	end
 end
-function DoEmote( emote )
+function DoEmote( emote, target )
+	table.insert( actionLog,
+			"DoEmote( "..(emote or "nil")..", "..(target or "nil").." )"
+	)
 	-- not tested as the only side effect is the character doing an emote
 end
 function EquipItemByName( itemIn, slotIDIn )
@@ -654,7 +729,18 @@ function GetAchievementNumCriteria( achievementID )
 		return #Achievements[achievementID]["criteria"]
 	end
 end
-function GetAddOnMetadata(addon, field)
+function GetStatistic( statID )
+	-- https://wow.gamepedia.com/API_GetStatistic
+
+	return Achievements[statID].value
+end
+function GetComparisonStatistic( achievementID )
+	-- https://wowwiki.fandom.com/wiki/API_GetComparisonStatistic
+	-- achievementID: integer - ID of the achievement
+	-- returns: string - the value of the requested statistic
+	return Achievements[achievementID].value
+end
+function GetAddOnMetadata( addon, field )
 	-- returns addonData[field] for 'addon'
 	-- local addonData = { ["version"] = "1.0", }
 	return addonData[field]
@@ -712,6 +798,10 @@ function GetContainerNumSlots( bagId )
 	else
 		return 0
 	end
+end
+function GetBagSlotFlag( bagId, filterFlagCheck )
+	-- returns true if the filterFlagCheck matches the bag's filterFlag
+	return true
 end
 function GetCurrencyInfo( id ) -- id is integer, currencyLink, currencyString
 	-- integer, link, "currency:###"
@@ -915,6 +1005,25 @@ Returns:
 ]]
 	return "Dwarf", "", 384, 0, 100, 200
 end
+function GetProfessions()
+	-- prof1, prof2, archaeology, fishing, cooking, firstAid = GetProfessions();
+	return 5, 6, 7, 8, 9
+end
+ProfessionInfo = {
+	[5] = { "prof1", "icon", 75, 300, 3, 3, 3, 3, 3, 3, "Catacylism prof1" },
+	[6] = { "prof2", "icon", 75, 300, 3, 3, 3, 3, 3, 3, "Catacylism prof2" },
+	[7] = { "Archaeology", "icon", 75, 300, 3, 3, 3, 3, 3, 3, "Catacylism Arch" },
+	[8] = { "Fishing", "icon", 75, 300, 3, 3, 3, 3, 3, 3, "Catacylism Fishing" },
+	[9] = { "Cooking", "icon", 75, 300, 3, 3, 3, 3, 3, 3, "Catacylism Cooking" },
+}
+function GetProfessionInfo( index )
+	--[[
+	name, icon, skillLevel, maxSkillLevel, numAbilities, spelloffset,
+    skillLine, skillModifier, specializationIndex,
+    specializationOffset = GetProfessionInfo(index)
+	]]
+	return unpack( ProfessionInfo[index] )
+end
 function GetNumEquipmentSets()
 	-- http://www.wowwiki.com/API_GetNumEquipmentSets
 	-- Returns 0,MAX_NUM_EQUIPMENT_SETS
@@ -979,6 +1088,9 @@ end
 function GetSendMailPrice()
 	-- returns: amount (in copper) to send the mail
 end
+function GetStatistic( index )
+	return myStatistics[index]
+end
 function GetTradeSkillItemLink( index )
 	if TradeSkillItems[index] then
 		return TradeSkillItems[index].ilink
@@ -1017,16 +1129,39 @@ end
 function GetTradeSkillRecipeLink( index )
 	return TradeSkillItems[index].elink
 end
+function GetUnitName( lookupStr )
+	lookupStr = string.lower( lookupStr )
+	-- return the player's UnitName if asking for "player"
+	if lookupStr == "player" then
+		return UnitName( lookupStr )
+	end
+	_, _, partyType, partyIndex = string.find( lookupStr, "(%S+)(%d+)" )
+	partyIndex = tonumber( partyIndex )
+	-- only return the indexed playername if the party type matches, and the index exists
+	if( myParty[partyType] and myParty.roster[partyIndex] ) then
+		return myParty.roster[partyIndex]
+	end
+end
 --[[
 function HasNewMail()
 	return true
 end
 ]]
+function GetXPExhaustion()
+	-- TODO:
+	return 3618
+end
 function InterfaceOptionsFrame_OpenToCategory()
 end
 function IsInGroup( groupType )
 	-- http://wowprogramming.com/docs/api/IsInGroup
-	return true
+	-- LE_PARTY_CATEGORY_INSTANCE = 2  -- from /dump in client
+	groupType = groupType or 1
+	local groupTypes = { [1] = "party", [2] = "instance" }
+	key = groupTypes[groupType]
+
+	--print( "IsInGroup( "..(groupType or "NIL" ).." ) -->"..(key or "NIL") )
+	return( myParty[key] and 1 or nil )
 end
 function IsInGuild()
 	-- http://www.wowwiki.com/API_IsInGuild
@@ -1034,14 +1169,37 @@ function IsInGuild()
 	return (myGuild and myGuild.name) and 1 or nil
 end
 function IsInInstance()
-	-- returns 1nil
-	return currentInstance and true or nil
+	-- https://wowwiki.fandom.com/wiki/API_IsInInstance
+	-- returns bool, string( arena | none | party | pvp | raid 		)
+	-- set myParty.string = true.  Only one should be set.
+	for partyType, _ in pairs( myParty ) do
+		if partyType ~= "roster" then -- "roster" is special.  Should probably move this someplace else....
+			return true, partyType
+		end
+	end
+	-- returns nil if not in instance
 end
 function IsInRaid()
 	-- http://www.wowwiki.com/API_IsInRaid
 	-- 1, nill boolean return of being in raid
 	-- myParty = { ["group"] = nil, ["raid"] = nil } -- set one of these to true to reflect being in group or raid.
 	return ( myParty["raid"] and 1 or nil )
+end
+function GetInstanceInfo()
+	-- https://wowwiki.fandom.com/wiki/API_GetInstanceInfo
+	-- name, type, difficultyIndex, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceMapId, lfgID = GetInstanceInfo()
+	-- name is localized!
+	-- instanceMapId -- should probably be used for lookup.
+	-- @TODO refine these....
+	return "Deadmines", 1, 34, "", 5, 1, 0, 36, 0
+end
+function GetDifficultyInfo( diffInt )
+	return dungeonDifficultyLookup[diffInt]
+end
+function IsResting()
+	return true
+end
+function LoadAddOn()
 end
 function NumTaxiNodes()
 	-- http://www.wowwiki.com/API_NumTaxiNodes
@@ -1136,6 +1294,10 @@ function RegisterAddonMessagePrefix( prefix )
 	-- Cannot be empty.
 	-- What does this do?  In a bigger system, it could allow random messages to be generated
 end
+function RequestTimePlayed()
+end
+function Screenshot( )
+end
 function SecondsToTime( secondsIn, noSeconds, notAbbreviated, maxCount )
 	-- http://www.wowwiki.com/API_SecondsToTime
 	-- formats seconds to a readable time  -- WoW omits seconds if 0 even if noSeconds is false
@@ -1194,7 +1356,22 @@ function SendChatMessage( msg, chatType, language, channel )
 	-- http://www.wowwiki.com/API_SendChatMessage
 	-- This could simulate sending text to the channel, in the language, and raise the correct event.
 	-- returns nil
+	-- append the parameters to chatLog
 	-- @TODO: Expand this
+
+	table.insert( chatLog,
+			{ ["msg"] = msg, ["chatType"] = chatType, ["language"] = language, ["channel"] = channel }
+	)
+
+	--print( string.format( "%s: %s", chatType, msg ) )
+end
+function SetAchievementComparisonUnit( lookupStr )
+	-- mostly does nothing...  Just allows INSPECT_ACHIEVEMENT_READY to happen,
+	-- and data to be gathered with:
+	-- GetComparisonStatistic( statisticID ) and GetAchievementInfo( statisticID )
+end
+function ClearAchievementComparisonUnit()
+	-- mostly does nothing...
 end
 function BNSendWhisper( id, msg )
 	-- @TODO: Expand this
@@ -1211,17 +1388,17 @@ function TaxiNodeGetType( nodeId )
 	-- http://www.wowwiki.com/API_TaxiNodeGetType
 	return TaxiNodes[nodeId].type
 end
-function UnitAura( unit, auraName )
+function UnitAffectingCombat( unit )
+	return false
+end
+function UnitAura( unit, index, filter )
 	-- @TODO: Look this up to get a better idea of what this function does.
+	-- Returns the aura name
+	-- unit, [index] [,filter]
 	-- Returns True or nil
-	if (UnitAuras[unit]) then
-		for i, auras in pairs(UnitAuras[unit]) do
-			if auras[auraName] then
-				return true
-			end
-		end
+	if( UnitAuras[unit] and UnitAuras[unit][index] ) then
+		return UnitAuras[unit][index].name
 	end
-	--print("UnitAura did not find "..auraName)
 end
 function UnitClass( who )
 	return Units[who].class
@@ -1236,6 +1413,12 @@ function UnitFactionGroup( who )
 end
 function UnitIsDeadOrGhost( who )
 
+end
+function UnitLevel( who )
+	local unitLevels = {
+		["player"] = 60,
+	}
+	return unitLevels[who]
 end
 function UnitName( who )
 	return Units[who].name
@@ -1259,6 +1442,12 @@ end
 function UnitSex( who )
 	-- 1 = unknown, 2 = Male, 3 = Female
 	return Units[who].sex
+end
+function UnitXP( who )
+	return 100
+end
+function UnitXPMax( who )
+	return 1000
 end
 ---------  C_WowTokenPublic
 C_WowTokenPublic = {}
@@ -1306,6 +1495,44 @@ function C_TradeSkillUI.GetRecipeTools( recipeID )
 	--name : string
 	--has : boolean
 end
+----------
+C_EquipmentSet = {}
+function C_EquipmentSet.GetNumEquipmentSets()
+	-- http://www.wowwiki.com/API_GetNumEquipmentSets
+	-- Returns 0,MAX_NUM_EQUIPMENT_SETS
+	return #EquipmentSets
+end
+function C_EquipmentSet.GetEquipmentSetInfo( index )
+	-- http://www.wowwiki.com/API_GetEquipmentSetInfo
+	-- Returns: name, icon, lessIndex = GetEquipmentSetInfo(index)
+	-- Returns: nill if no equipmentSet at that index
+	-- lessIndex is index-1 ( not used )
+	if EquipmentSets[index] then
+		return EquipmentSets[index].name, EquipmentSets[index].icon, index-1
+	end
+end
+function C_EquipmentSet.GetItemIDs( index )
+	-- http://wowprogramming.com/docs/api/GetEquipmentSetItemIDs
+	-- Returns a table of item IDs keyed by slotID of items in the equipmentSet
+	if EquipmentSets[index] then
+		return EquipmentSets[index].items
+	end
+end
+function C_EquipmentSet.GetIgnoredSlots( setNum )
+	-- Returns an array of true or false for each item slot (1-19)
+	-- True is ignored, false is not
+	return {}
+end
+function GetEquipmentSetInfoByName( nameIn )
+	-- http://www.wowwiki.com/API_GetEquipmentSetInfo
+	-- Returns: icon, lessIndex = GetEquipmentSetInfoByName
+	for i = 1, #EquipmentSets do
+		if EquipmentSets[i].name == nameIn then  -- Since EquipementSet names are case sensitve...
+			return EquipmentSets[i].icon, i-1
+		end
+	end
+end
+
 --http://wow.gamepedia.com/Patch_7.0.3/API_changes
 
 --/script for k,v in pairs(C_TradeSkillUI.GetAllRecipeIDs()) do print(k..":"..v) end
