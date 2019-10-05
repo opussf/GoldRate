@@ -152,7 +152,7 @@ function GoldRate.OnUpdate( arg1 )
 		C_WowTokenPublic.UpdateMarketPrice()
 		GoldRate.UpdateScanTime()
 	end
-	if coroutine.status( GoldRate.pruneThread ) ~= "dead" then
+	if GoldRate.pruneThread and coroutine.status( GoldRate.pruneThread ) ~= "dead" then
 		coroutine.resume( GoldRate.pruneThread )
 	end
 end
