@@ -1,22 +1,15 @@
 #!/usr/bin/env lua
 
-addonData = { ["Version"] = "1.0",
-}
-
 require "wowTest"
-
-test.outFileName = "testOut.xml"
 
 -- Figure out how to parse the XML here, until then....
 GoldRate_Frame = CreateFrame()
 GoldRate_Display = CreateFrame()
 --SendMailNameEditBox = CreateFontString("SendMailNameEditBox")
 
--- require the file to test
-package.path = "../src/?.lua;'" .. package.path
-require "GoldRate"
-require "GoldRateUI"
---require "GoldRate_Offline"
+ParseTOC( "../src/GoldRate.toc" )
+
+test.outFileName = "testOut.xml"
 
 -- addon setup
 function test.before()
