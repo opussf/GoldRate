@@ -18,6 +18,7 @@ function test.before()
 	GoldRate.OnLoad()
 	GoldRate.ADDON_LOADED()
 	myCopper = 150000
+	tokenPrice = 123456
 end
 function test.after()
 end
@@ -310,45 +311,16 @@ function test.testRate_goalValue()
 	goal = select(2, GoldRate.Rate() )
 	assertEquals( 100, goal )
 end
---[[  these are probably retireable as PLW is being drasticly changed
-function test.PLW_Setup()
-	-- PLW = Player Leaving World
-	GoldRate_data = { ["testRealm"] = { ["Alliance"] = { ["toons"] = { ["testPlayer"] = { ["firstTS"] = 10, ["last"] = 400 } } } } }
-	GoldRate_data.testRealm.Alliance.consolidated = {}
-	for i = 1, 1500 do
-		GoldRate_data.testRealm.Alliance.consolidated[i] = i*i
-	end
-end
-function test.testPLW_PruneOptionSet()
-	test.PLW_Setup()
-	assertEquals( 1000, GoldRate_options.maxDataPoints )
-end
-function test.testPLW_PrunesOldData()
-	-- test that some data is removed
-	test.PLW_Setup()
-	GoldRate.PLAYER_LEAVING_WORLD()
-	for i = 1, 500 do
-		assertIsNil( GoldRate_data.testRealm.Alliance.consolidated[i] )
-	end
-end
-function test.testPLW_KeepsSomeData()
-	-- test that not all data is removed.
-	test.PLW_Setup()
-	GoldRate.PLAYER_LEAVING_WORLD()
-	for i = 501, 1000 do
-		assertEquals( i*i, GoldRate_data.testRealm.Alliance.consolidated[i] )
-	end
-end
-]]
+
 ---------------
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_inArray()
 	local now = time()
+	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 	assertEquals( 123456, GoldRate_tokenData[now] )
 end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_positive()
 	local now = time()
-	GoldRate_tokenData={}
 	GoldRate_tokenData[now-100000] = 73456 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
@@ -356,12 +328,17 @@ function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_positive()
 	assertEquals( "TOK 12{circle}+5 :: 24H12 24L12 360DH12" , GoldRate.tickerToken )
 end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_zero()
+	-- the tickerToken is only changed if the token price changes
+	originalTickerToken = GoldRate.tickerToken
 	local now = time()
-	GoldRate_tokenData={}
 	GoldRate_tokenData[now-100000] = 123456 -- one day is 86400
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 20400{circle}+0 :: 24H20500 24L20400 30DH21000" , GoldRate.tickerToken )
+	if originalTickerToken then
+		assertEquals( originalTickerToken, GoldRate.tickerToken )
+	else
+		assertIsNil( GoldRate.tickerToken, "Expected nil, got: "..( GoldRate.tickerToken or "nil" ) )
+	end
 end
 function test.testToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_negitive()
 	local now = time()
