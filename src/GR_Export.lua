@@ -100,7 +100,8 @@ function ExportXML()
 				m, targetTS = Rate(realm, faction)
 				strOut = strOut .. string.format( '<rf realm="%s" faction="%s">\n', realm, faction )
 				if fdata.goal and targetTS then
-					strOut = strOut .. string.format( '<goal ts="%i">%i</goal>\n', targetTS, fdata.goal )
+					print( type( targetTS ) )
+					strOut = strOut .. string.format( '<goal ts="%s">%i</goal>\n', targetTS, fdata.goal )
 				end
 				for name, pdata in pairs( fdata.toons ) do
 					maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
