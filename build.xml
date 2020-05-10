@@ -104,12 +104,13 @@
 		<delete>
 			<fileset dir="${addon.dir}" includes="*.toc"/>
 		</delete>
-		<copy todir="${addon.dir}" filtering="true" flatten="true">
+		<copy todir="${addon.dir}" filtering="true" flatten="true" verbose="true">
 			<fileset dir=".">
 				<patternset refid="packageFiles"/>
 			</fileset>
 		</copy>
 		<chmod perm="ugo+x" dir="${addon.dir}" includes="GR_Export.lua" />
+		<echo>Deployed ${version.number} locally</echo>
 	</target>
 
 	<target name="open" description="open the addon dir in the current wow install">
