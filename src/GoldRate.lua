@@ -118,6 +118,7 @@ function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 		local now = time()
 		local changePC, diff = 0, 0
 		if (not GoldRate.tokenLast) or (GoldRate.tokenLast and GoldRate.tokenLast ~= val) then
+			-- if no previous data, or the value has changed
 			if GoldRate.tokenLast then
 				diff = val - GoldRate.tokenLast
 				changePC = (diff / GoldRate.tokenLast) * 100
@@ -139,7 +140,8 @@ function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 			--print("Found min diff ("..minAbs..") at index: "..minIndex.." "..GoldRate.daysText[minIndex]..limits[minIndex]/10000)
 
 			GoldRate.tickerToken = string.format( "TOK %i{circle}%+i :: 24H%i 24L%i %s%i",
-					val/10000, diff/10000, limits[1]/10000, limits[2]/10000, GoldRate.daysText[minIndex], limits[minIndex]/10000 )
+					math.floor( val/10000 ), math.floor( (diff/10000)+0.5 ), math.floor( limits[1]/10000 ),
+					math.floor( limits[2]/10000 ), GoldRate.daysText[minIndex], math.floor( limits[minIndex]/10000 ) )
 
 			UIErrorsFrame:AddMessage( GoldRate.tickerToken, 1.0, 1.0, 0.1, 1.0 )
 			GoldRate.Print(GoldRate.tickerToken, false)
