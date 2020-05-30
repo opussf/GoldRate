@@ -16,9 +16,9 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 			</OnEvent>
 		</Scripts>
 	</Frame>
-	<Frame name="GoldRate_Display" frameStrata="BACKGROUND" toplevel="true" enableMouse="false" movable="false" parent="UIParent">
+	<Frame name="GoldRate_Display" frameStrata="BACKGROUND" toplevel="false" parent="UIParent">
 		<Size>
-			<AbsDimenstion x="300" y="12"/>
+			<AbsDimension x="300" y="12"/>
 		</Size>
 		<Anchors>
 			<Anchor point="TOPLEFT" relativeTo="ChatFrame1" relativePoint="BOTTOMLEFT">
