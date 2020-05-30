@@ -1,23 +1,34 @@
 GoldRateUI = {}
 GoldRateUI.lastUpdate = 0
-function GoldRateUI.OnUpdate()
+function GoldRateUI.OnUpdate( arg1 )
+	GoldRate.Print( arg1 )
 	GoldRateUI.lastUpdate = time()
 	if( GoldRateUI.show and GoldRateUI.show + 300 < time() ) then
 		GoldRate_Display:Hide()
+		GoldRateUI.show = nil
 	end
+	--GoldRate_Display_String:SetText( (GoldRateUI.show + 300) -time() )
+	--GoldRate_Display_Bar1:SetMinMaxValues( 0, 300 )
+	--GoldRate_Display_Bar1:SetValue( (GoldRateUI.show + 300) - time() )
 end
 function GoldRateUI.Show( min, value, max, textIn )
-	--GoldRate_Bar1:SetMinMaxValues( 0, 150 )
-	--GoldRate_Bar1:SetValue( 100 )
-	--GoldRate_Bar1:SetFrameStrata( "HIGH" )
-	--GoldRate_Bar1Text:SetText( textIn )
 	GoldRate_Display:Show()
-	GoldRate_Display_String:SetText( textIn )
 	GoldRateUI.show = time()
-	GoldRate.Print(GetMoney()..":"..(GoldRate_Display_Bar0:IsShown() and "IsShown" or "NotShown")..":"..
-			(GoldRate_Display_Bar0:IsVisible() and "IsVisible" or "NotVisible"))
-	GoldRate.Print( "Frame:"..(GoldRate_Display:IsShown() and "IsShown" or "NotShown" ) )
-	GoldRate.Print( "IsUserPlaced:"..( GoldRate_Display:IsUserPlaced() and "True" or "False" ) )
+	print( "Show( "..min..", "..value..", "..max..", "..textIn.." ) " )
+
+	GoldRate_Display_Bar1:SetMinMaxValues( min, max )
+	GoldRate_Display_Bar1:SetValue( max )
+	GoldRate.Print( "Set bar1 to: "..max )
+	GoldRate_Display_Bar0:SetMinMaxValues( min, max )
+	GoldRate_Display_Bar0:SetValue( value )
+	GoldRate.Print( "Set bar0 to: "..value )
+
+	GoldRate_Display_String:SetText( textIn )
+
+	--GoldRate.Print(GetMoney()..":"..(GoldRate_Display_Bar0:IsShown() and "IsShown" or "NotShown")..":"..
+	--		(GoldRate_Display_Bar0:IsVisible() and "IsVisible" or "NotVisible"))
+	--GoldRate.Print( "Frame:"..(GoldRate_Display:IsShown() and "IsShown" or "NotShown" ) )
+	--GoldRate.Print( "IsUserPlaced:"..( GoldRate_Display:IsUserPlaced() and "True" or "False" ) )
 end
 
 --[[

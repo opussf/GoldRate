@@ -47,7 +47,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 					</FontHeight>
 					<Script>
 						<OnLoad>
-							self:SetFrameLevel( 3 );
+							self:SetFrameLevel( 4 );
 						</OnLoad>
 					</Script>
 				</FontString>
@@ -56,37 +56,22 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 		<Frames>
 			<StatusBar name="GoldRate_Display_Bar0" inherits="TextStatusBar">
 				<Size>
-					<AbsDimension x="300" y="10"/>
+					<AbsDimension x="300" y="12"/>
 				</Size>
 				<Anchors>
 						<Anchor point="TOPLEFT"/>
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						GoldRate_Display:SetFrameLevel( 0 );
+						GoldRate_Display:SetFrameLevel( 1 );  <!-- background? -->
 					</OnLoad>
 				</Scripts>
 				<BarTexture file="Interface\TargetingFrame\UI-StatusBar"/>
-				<BarColor r="0" g="1" b="0"/>  <!-- yellow -->
+				<BarColor r="0" g="1" b="0"/> <!-- Green -->
 			</StatusBar>
 			<StatusBar name="GoldRate_Display_Bar1" inherits="TextStatusBar">
 				<Size>
-					<AbsDimension x="300" y="10"/>
-				</Size>
-				<Anchors>
-					<Anchor point="TOPLEFT"/>
-				</Anchors>
-				<Scripts>
-					<OnLoad>
-						GoldRate_Display:SetFrameLevel( 1 );
-					</OnLoad>
-				</Scripts>
-				<BarTexture file="Interface\TargetingFrame\UI-StatusBar"/>
-				<BarColor r="0" g="0.5" b="0"/>  <!-- orange -->
-			</StatusBar>
-			<StatusBar name="GoldRate_Display_Bar2" inherits="TextStatusBar">
-				<Size>
-					<AbsDimension x="300" y="10"/>
+					<AbsDimension x="300" y="12"/>
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT"/>
@@ -97,7 +82,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 					</OnLoad>
 				</Scripts>
 				<BarTexture file="Interface\TargetingFrame\UI-StatusBar"/>
-				<BarColor r="0.5" g="0.0" b="0"/>  <!-- red -->
+				<BarColor r="1" g="0" b="0"/>
 			</StatusBar>
 		</Frames>
 		<Scripts>

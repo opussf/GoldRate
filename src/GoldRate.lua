@@ -111,7 +111,7 @@ function GoldRate.PLAYER_ENTERING_WORLD()
 	GoldRate.pruneThread = coroutine.create( GoldRate.PruneData )
 
 	GoldRate.Print( "PLAYER_ENTERING_WORLD" )
-	GoldRateUI.Show( 0, 75, 150, "GoldRate" )
+	GoldRateUI.Show( 0, 75, 150, "CurrentToken: "..GoldRate.tokenLast/10000 )
 end
 
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
@@ -146,7 +146,7 @@ function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 					math.floor( val/10000 ), math.floor( (diff/10000)+0.5 ), math.floor( limits[1]/10000 ),
 					math.floor( limits[2]/10000 ), GoldRate.daysText[minIndex], math.floor( limits[minIndex]/10000 ) )
 
-			local uiDisplay = string.format( "TOK 24L%i / %i{circle}(%+i) %s%i / 24H%i ",
+			local uiDisplay = string.format( "TOK 24L%i / %i(%+i) %s%i / 24H%i ",
 					math.floor( limits[2]/10000 ),  -- 24H low
 					math.floor( val/10000 ), -- current
 					math.floor( ( diff/10000 ) + 0.5 ),  -- diff
