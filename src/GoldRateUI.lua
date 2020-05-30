@@ -1,7 +1,6 @@
 GoldRateUI = {}
 GoldRateUI.lastUpdate = 0
-function GoldRateUI.OnUpdate( arg1 )
-	GoldRate.Print( arg1 )
+function GoldRateUI.OnUpdate( )
 	GoldRateUI.lastUpdate = time()
 	if( GoldRateUI.show and GoldRateUI.show + 300 < time() ) then
 		GoldRate_Display:Hide()

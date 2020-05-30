@@ -55,6 +55,7 @@ function GoldRate.OnLoad()
 	SlashCmdList["GOLDRATE"] = function(msg) GoldRate.Command(msg); end
 
 	GoldRate_Frame:RegisterEvent("ADDON_LOADED")
+	GoldRate_Frame:RegisterEvent("VARIABLES_LOADED")
 	GoldRate_Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 	GoldRate_Frame:RegisterEvent("PLAYER_MONEY")
 	GoldRate_Frame:RegisterEvent("TOKEN_MARKET_PRICE_UPDATED")
@@ -93,6 +94,9 @@ function GoldRate.ADDON_LOADED()
 	end
 	GoldRate.minScanPeriod = select(2, C_WowTokenPublic.GetCommerceSystemStatus() )
 	GoldRate.Print( "v"..GOLDRATE_MSG_VERSION.." loaded." )
+end
+function GoldRate.VARIABLES_LOADED( arg1 )
+	GoldRate.Print( "VARIABLES_LOADED( "..arg1.." )" )
 end
 function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["last"] = GetMoney()
