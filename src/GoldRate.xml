@@ -18,7 +18,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 	</Frame>
 	<Frame name="GoldRate_Display" frameStrata="BACKGROUND" toplevel="false" parent="UIParent">
 		<Size>
-			<AbsDimension x="300" y="12"/>
+			<AbsDimension x="300" y="15"/>
 		</Size>
 		<Anchors>
 			<Anchor point="TOPLEFT" relativeTo="ChatFrame1" relativePoint="BOTTOMLEFT">
@@ -33,34 +33,29 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 					<Color r="0.5" g="0.0" b="0.0" a="1" />
 				</Texture>
 			</Layer>
-			<Layer level="OVERLAY">
-				<FontString name="GoldRate_Display_String" inherits="GameFontWhiteSmall">
-					<Anchors>
-						<Anchor point="TOPLEFT">
-							<Offset>
-								<AbsDimension x="0" y="-5"></AbsDimension>
-							</Offset>
-						</Anchor>
-					</Anchors>
-					<FontHeight>
-						<AbsValue val="10"/>
-					</FontHeight>
-					<Script>
-						<OnLoad>
-							GoldRate_Display:SetFrameLevel( 3 );
-						</OnLoad>
-					</Script>
-				</FontString>
-			</Layer>
 		</Layers>
 		<Frames>
 			<StatusBar name="GoldRate_Display_Bar0" inherits="TextStatusBar">
 				<Size>
-					<AbsDimension x="300" y="12"/>
+					<AbsDimension x="300" y="15"/>
 				</Size>
 				<Anchors>
 						<Anchor point="TOPLEFT"/>
 				</Anchors>
+				<Layers>
+					<Layer level="LOW">
+						<FontString name="GoldRate_Display_String" inherits="GameFontNormal" wraponspaces="false">
+							<Anchors>
+								<Anchor point="CENTER">
+								</Anchor>
+							</Anchors>
+							 <FontHeight>
+								<AbsValue val="10"/>
+							</FontHeight>
+							<Color r="1" g="1" b="1"/>
+						</FontString>
+					</Layer>
+				</Layers>
 				<Scripts>
 					<OnLoad>
 						GoldRate_Display:SetFrameLevel( 0 );  <!-- background? -->
@@ -71,7 +66,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 			</StatusBar>
 			<StatusBar name="GoldRate_Display_Bar1" inherits="TextStatusBar">
 				<Size>
-					<AbsDimension x="300" y="12"/>
+					<AbsDimension x="300" y="15"/>
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT"/>
