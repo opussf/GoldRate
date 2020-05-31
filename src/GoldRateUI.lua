@@ -11,6 +11,12 @@ function GoldRateUI.OnUpdate( )
 	--GoldRate_Display_Bar1:SetValue( (GoldRateUI.show + 300) - time() )
 end
 function GoldRateUI.Show( min, value, max, textIn )
+	chatFrameWidth = ChatFrame1:GetWidth()
+	GoldRate_Display:SetWidth( chatFrameWidth )
+	GoldRate_Display_Bar0:SetWidth( chatFrameWidth )
+	GoldRate_Display_Bar1:SetWidth( chatFrameWidth )
+	GoldRate_Display_String:SetWidth( chatFrameWidth )
+
 	GoldRate_Display:Show()
 	GoldRateUI.show = time()
 	print( "Show( "..min..", "..value..", "..max..", "..textIn.." ) " )

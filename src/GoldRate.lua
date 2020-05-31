@@ -95,8 +95,8 @@ function GoldRate.ADDON_LOADED()
 	GoldRate.minScanPeriod = select(2, C_WowTokenPublic.GetCommerceSystemStatus() )
 	GoldRate.Print( "v"..GOLDRATE_MSG_VERSION.." loaded." )
 end
-function GoldRate.VARIABLES_LOADED( arg1 )
-	GoldRate.Print( "VARIABLES_LOADED( "..arg1.." )" )
+function GoldRate.VARIABLES_LOADED( arg1, arg2 )
+	GoldRate.Print( "VARIABLES_LOADED( "..( arg2 or "nil").." )" )
 end
 function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["last"] = GetMoney()

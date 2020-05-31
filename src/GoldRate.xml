@@ -38,7 +38,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>
-								<AbsDimension x="0" y="-10"></AbsDimension>
+								<AbsDimension x="0" y="-5"></AbsDimension>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -47,7 +47,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 					</FontHeight>
 					<Script>
 						<OnLoad>
-							self:SetFrameLevel( 4 );
+							GoldRate_Display:SetFrameLevel( 3 );
 						</OnLoad>
 					</Script>
 				</FontString>
@@ -63,7 +63,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						GoldRate_Display:SetFrameLevel( 1 );  <!-- background? -->
+						GoldRate_Display:SetFrameLevel( 0 );  <!-- background? -->
 					</OnLoad>
 				</Scripts>
 				<BarTexture file="Interface\TargetingFrame\UI-StatusBar"/>
@@ -78,7 +78,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						GoldRate_Display:SetFrameLevel( 2 );
+						GoldRate_Display:SetFrameLevel( 1 );
 					</OnLoad>
 				</Scripts>
 				<BarTexture file="Interface\TargetingFrame\UI-StatusBar"/>
