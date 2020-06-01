@@ -65,13 +65,17 @@ end
 --------------
 function GoldRate.ADDON_LOADED()
 	-- Unregister the event for this method.
-	GoldRate_Frame:UnregisterEvent("ADDON_LOADED")
+	GoldRate_Frame:UnregisterEvent( "ADDON_LOADED" )
 
 	-- Setup needed variables
 	GoldRate.realm   = GetRealmName()
-	GoldRate.faction = UnitFactionGroup("player")
-	GoldRate.name    = UnitName("player")
-
+	GoldRate.faction = UnitFactionGroup( "player" )
+	GoldRate.name    = UnitName( "player" )
+	GoldRate.Print( "v"..GOLDRATE_MSG_VERSION.." loaded." )
+end
+function GoldRate.VARIABLES_LOADED( arg1, arg2 )
+	GoldRate_Frame:UnregisterEvent( "VARIABLES_LOADED" )
+	GoldRate.Print( "VARIABLES_LOADED( "..( arg2 or "nil").." )" )
 	GoldRate_data[GoldRate.realm] = GoldRate_data[GoldRate.realm] or {}
 	GoldRate_data[GoldRate.realm][GoldRate.faction] = GoldRate_data[GoldRate.realm][GoldRate.faction] or {}
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated or {}
@@ -93,10 +97,7 @@ function GoldRate.ADDON_LOADED()
 		GoldRate_options.nextTokenScanTS = time() + 30
 	end
 	GoldRate.minScanPeriod = select(2, C_WowTokenPublic.GetCommerceSystemStatus() )
-	GoldRate.Print( "v"..GOLDRATE_MSG_VERSION.." loaded." )
-end
-function GoldRate.VARIABLES_LOADED( arg1, arg2 )
-	GoldRate.Print( "VARIABLES_LOADED( "..( arg2 or "nil").." )" )
+	GoldRateUI.Show( 0, 75, 150, "CurrentToken: "..GoldRate.tokenLast/10000 )
 end
 function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["last"] = GetMoney()
@@ -113,9 +114,6 @@ function GoldRate.PLAYER_ENTERING_WORLD()
 	GoldRate.PLAYER_MONEY()
 	--wend
 	GoldRate.pruneThread = coroutine.create( GoldRate.PruneData )
-
-	GoldRate.Print( "PLAYER_ENTERING_WORLD" )
-	GoldRateUI.Show( 0, 75, 150, "CurrentToken: "..GoldRate.tokenLast/10000 )
 end
 
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
