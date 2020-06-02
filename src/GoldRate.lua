@@ -97,7 +97,10 @@ function GoldRate.VARIABLES_LOADED( arg1, arg2 )
 		GoldRate_options.nextTokenScanTS = time() + 30
 	end
 	GoldRate.minScanPeriod = select(2, C_WowTokenPublic.GetCommerceSystemStatus() )
-	GoldRateUI.Show( 0, 75, 150, "CurrentToken: "..GoldRate.tokenLast/10000 )
+
+	local totalGoldNow = GoldRate.otherSummed + GetMoney()
+	GoldRateUI.Show( 0, totalGoldNow/10000, GoldRate.tokenLast/10000, "Total Gold: "..math.floor(totalGoldNow/10000).." Token: "..GoldRate.tokenLast/10000 )
+	--GoldRateUI.Show( 0, 75, 150, "CurrentToken: "..GoldRate.tokenLast/10000 )
 end
 function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["last"] = GetMoney()
@@ -105,8 +108,8 @@ function GoldRate.PLAYER_MONEY()
 			GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["firstTS"] or time()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[time()] = GoldRate.otherSummed + GetMoney()
 
-	GoldRate.ShowRate()
-	GoldRate_Display:Show()
+	--GoldRate.ShowRate()
+	--GoldRate_Display:Show()
 end
 --GoldRate.PLAYER_ENTERING_WORLD = GoldRate.PLAYER_MONEY
 function GoldRate.PLAYER_ENTERING_WORLD()
