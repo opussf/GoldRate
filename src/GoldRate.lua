@@ -55,6 +55,7 @@ function GoldRate.OnLoad()
 	SlashCmdList["GOLDRATE"] = function(msg) GoldRate.Command(msg); end
 
 	GoldRate_Frame:RegisterEvent("ADDON_LOADED")
+	GoldRate_Frame:RegisterEvent("VARIABLES_LOADED")
 	GoldRate_Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 	GoldRate_Frame:RegisterEvent("PLAYER_MONEY")
 	GoldRate_Frame:RegisterEvent("TOKEN_MARKET_PRICE_UPDATED")
@@ -64,13 +65,17 @@ end
 --------------
 function GoldRate.ADDON_LOADED()
 	-- Unregister the event for this method.
-	GoldRate_Frame:UnregisterEvent("ADDON_LOADED")
+	GoldRate_Frame:UnregisterEvent( "ADDON_LOADED" )
 
 	-- Setup needed variables
 	GoldRate.realm   = GetRealmName()
-	GoldRate.faction = UnitFactionGroup("player")
-	GoldRate.name    = UnitName("player")
-
+	GoldRate.faction = UnitFactionGroup( "player" )
+	GoldRate.name    = UnitName( "player" )
+	GoldRate.Print( "v"..GOLDRATE_MSG_VERSION.." loaded." )
+end
+function GoldRate.VARIABLES_LOADED( arg1, arg2 )
+	GoldRate_Frame:UnregisterEvent( "VARIABLES_LOADED" )
+	GoldRate.Print( "VARIABLES_LOADED( "..( arg2 or "nil").." )" )
 	GoldRate_data[GoldRate.realm] = GoldRate_data[GoldRate.realm] or {}
 	GoldRate_data[GoldRate.realm][GoldRate.faction] = GoldRate_data[GoldRate.realm][GoldRate.faction] or {}
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated or {}
@@ -92,7 +97,8 @@ function GoldRate.ADDON_LOADED()
 		GoldRate_options.nextTokenScanTS = time() + 30
 	end
 	GoldRate.minScanPeriod = select(2, C_WowTokenPublic.GetCommerceSystemStatus() )
-	GoldRate.Print( "v"..GOLDRATE_MSG_VERSION.." loaded." )
+
+	--GoldRateUI.Show( 0, 75, 150, "CurrentToken: "..GoldRate.tokenLast/10000 )
 end
 function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["last"] = GetMoney()
@@ -100,8 +106,8 @@ function GoldRate.PLAYER_MONEY()
 			GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["firstTS"] or time()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[time()] = GoldRate.otherSummed + GetMoney()
 
-	GoldRate.ShowRate()
-	GoldRate_Display:Show()
+	--GoldRate.ShowRate()
+	--GoldRate_Display:Show()
 end
 --GoldRate.PLAYER_ENTERING_WORLD = GoldRate.PLAYER_MONEY
 function GoldRate.PLAYER_ENTERING_WORLD()
@@ -109,6 +115,11 @@ function GoldRate.PLAYER_ENTERING_WORLD()
 	GoldRate.PLAYER_MONEY()
 	--wend
 	GoldRate.pruneThread = coroutine.create( GoldRate.PruneData )
+	if not GoldRate.goldShown then
+		local totalGoldNow = GoldRate.otherSummed + GetMoney()
+		GoldRateUI.Show( 0, totalGoldNow/10000, GoldRate.tokenLast/10000, "Total Gold: "..math.floor(totalGoldNow/10000).." Token: "..GoldRate.tokenLast/10000 )
+		GoldRate.goldShown = true
+	end
 end
 
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
@@ -143,9 +154,23 @@ function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 					math.floor( val/10000 ), math.floor( (diff/10000)+0.5 ), math.floor( limits[1]/10000 ),
 					math.floor( limits[2]/10000 ), GoldRate.daysText[minIndex], math.floor( limits[minIndex]/10000 ) )
 
+			local uiDisplay = string.format( "TOK 24L%i / %i(%+i) %s%i / 24H%i ",
+					math.floor( limits[2]/10000 ),  -- 24H low
+					math.floor( val/10000 ), -- current
+					math.floor( ( diff/10000 ) + 0.5 ),  -- diff
+					GoldRate.daysText[minIndex],  -- closest range
+					math.floor( limits[minIndex]/10000 ), -- yaya
+					math.floor( limits[1]/10000 )  -- 24H high
+			)
+
 			UIErrorsFrame:AddMessage( GoldRate.tickerToken, 1.0, 1.0, 0.1, 1.0 )
 			GoldRate.Print(GoldRate.tickerToken, false)
 			GoldRate.GuildPrint(GoldRate.tickerToken)
+			GoldRateUI.Show( math.floor( limits[2]/10000 ), -- min
+					math.floor( val/10000 ),  -- value
+					math.floor( limits[1]/10000 ), --  max
+					uiDisplay  -- display for the UI
+			)
 		end
 	end
 end

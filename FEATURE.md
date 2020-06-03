@@ -1,5 +1,26 @@
 # Feature
 
+## UIDisplay
+
+Show the token price in the UI.
+The UI from the Rested iLvl display can be revived to show this.
+Rested iLvl showed the iLvl average just under the chat frame, and below the text input box.
+
+For the token, show 24H Low ( min ), current value ( with change ) and closest range, and 24H High ( max ).
+
+For gold value change, create another frame under the backpack frame?
+Create the frame 2 bars high?
+
+Want to change the structure of this addon.
+
+Move some of the ADDON_LOADED stuff to VARIABLES_LOADED.
+
+### Questions
+
+Do I still want it to output to guild and chat?
+Should this be a manual trigger?
+
+
 ## multiPrune
 Prune / smooth for all realms.
 Convert the process into a co-routine
