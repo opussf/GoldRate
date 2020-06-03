@@ -98,8 +98,6 @@ function GoldRate.VARIABLES_LOADED( arg1, arg2 )
 	end
 	GoldRate.minScanPeriod = select(2, C_WowTokenPublic.GetCommerceSystemStatus() )
 
-	local totalGoldNow = GoldRate.otherSummed + GetMoney()
-	GoldRateUI.Show( 0, totalGoldNow/10000, GoldRate.tokenLast/10000, "Total Gold: "..math.floor(totalGoldNow/10000).." Token: "..GoldRate.tokenLast/10000 )
 	--GoldRateUI.Show( 0, 75, 150, "CurrentToken: "..GoldRate.tokenLast/10000 )
 end
 function GoldRate.PLAYER_MONEY()
@@ -117,6 +115,11 @@ function GoldRate.PLAYER_ENTERING_WORLD()
 	GoldRate.PLAYER_MONEY()
 	--wend
 	GoldRate.pruneThread = coroutine.create( GoldRate.PruneData )
+	if not GoldRate.goldShown then
+		local totalGoldNow = GoldRate.otherSummed + GetMoney()
+		GoldRateUI.Show( 0, totalGoldNow/10000, GoldRate.tokenLast/10000, "Total Gold: "..math.floor(totalGoldNow/10000).." Token: "..GoldRate.tokenLast/10000 )
+		GoldRate.goldShown = true
+	end
 end
 
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()

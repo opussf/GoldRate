@@ -1,6 +1,6 @@
 GoldRateUI = {}
 GoldRateUI.lastUpdate = 0
-GoldRateUI.displayTime = 300
+GoldRateUI.displayTime = 1200
 
 function GoldRateUI.OnUpdate( )
 	GoldRateUI.lastUpdate = time()
