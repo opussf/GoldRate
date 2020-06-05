@@ -75,7 +75,7 @@ function GoldRate.ADDON_LOADED()
 end
 function GoldRate.VARIABLES_LOADED( arg1, arg2 )
 	GoldRate_Frame:UnregisterEvent( "VARIABLES_LOADED" )
-	GoldRate.Print( "VARIABLES_LOADED( "..( arg2 or "nil").." )" )
+	--GoldRate.Print( "VARIABLES_LOADED( "..( arg2 or "nil").." )" )
 	GoldRate_data[GoldRate.realm] = GoldRate_data[GoldRate.realm] or {}
 	GoldRate_data[GoldRate.realm][GoldRate.faction] = GoldRate_data[GoldRate.realm][GoldRate.faction] or {}
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated or {}
