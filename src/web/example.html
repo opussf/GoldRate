@@ -1,0 +1,141 @@
+  <!DOCTYPE html>
+<html>
+  <head>
+    <title>Google Developers</title>
+
+
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:400,400italic,500,500italic,700,700italic|Roboto+Mono:400,700">
+    <link rel="stylesheet" type="text/css" href="https://google-developers.appspot.com/_static/aad4515eb1/css/devsite-cyan.css" >
+    <script src="https://google-developers.appspot.com/_static/aad4515eb1/js/prettify-bundle.js"></script>
+
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script id="jqueryui" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js" defer async></script>
+    <script src="//www.google.com/jsapi?key=AIzaSyCZfHRnq7tigC-COeQRmoa9Cxr0vbrK6xw"></script>
+    <script src="https://google-developers.appspot.com/_static/aad4515eb1/js/framebox.js"></script>
+  </head>
+  <body class="devsite-layout-docs devsite-framebox">
+<p style="display: none; height: 0; width: 0">This is a snippet from developers.google.com</p>
+
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+<div id="chartRangeFilter_dashboard_div" style="border: 1px solid #ccc">
+  <table class="columns">
+    <tr>
+      <td>
+        <div id="chartRangeFilter_chart_div" style="width: 915px; height: 300px;"></div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div id="chartRangeFilter_control_div" style="width: 915px; height: 50px;"></div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<script type="text/javascript">
+  google.load('visualization', '1.0', {'packages':['corechart', 'table', 'gauge', 'controls']});
+  google.setOnLoadCallback(drawChartRangeFilter);
+
+  function drawChartRangeFilter() {
+
+    var dashboard = new google.visualization.Dashboard(
+        document.getElementById('chartRangeFilter_dashboard_div'));
+
+    var control = new google.visualization.ControlWrapper({
+      'controlType': 'ChartRangeFilter',
+      'containerId': 'chartRangeFilter_control_div',
+      'options': {
+        // Filter by the date axis.
+        'filterColumnIndex': 0,
+        'ui': {
+          'chartType': 'LineChart',
+          'chartOptions': {
+            'chartArea': {'width': '90%'},
+            'hAxis': {'baselineColor': 'none'}
+          },
+          // Display a single series that shows the closing value of the stock.
+          // Thus, this view has two columns: the date (axis) and the stock value (line series).
+          'chartView': {
+            'columns': [0, 3]
+          },
+          // 1 day in milliseconds = 24 * 60 * 60 * 1000 = 86,400,000
+          'minRangeSize': 86400000
+        }
+      },
+      // Initial range: 2012-02-09 to 2012-03-20.
+      'state': {'range': {'start': new Date(2012, 1, 9), 'end': new Date(2012, 2, 20)}}
+    });
+
+    var chart = new google.visualization.ChartWrapper({
+      'chartType': 'CandlestickChart',
+      'containerId': 'chartRangeFilter_chart_div',
+      'options': {
+        // Use the same chart area width as the control for axis alignment.
+        'chartArea': {'height': '80%', 'width': '90%'},
+        'hAxis': {'slantedText': false},
+        'vAxis': {'viewWindow': {'min': 0, 'max': 2000}},
+        'legend': {'position': 'none'}
+      },
+      // Convert the first column from 'date' to 'string'.
+      'view': {
+        'columns': [
+          {
+            'calc': function(dataTable, rowIndex) {
+              return dataTable.getFormattedValue(rowIndex, 0);
+            },
+            'type': 'string'
+          }, 1, 2, 3, 4]
+      }
+    });
+
+    var data = new google.visualization.DataTable();
+    data.addColumn('date', 'Date');
+    data.addColumn('number', 'Stock low');
+    data.addColumn('number', 'Stock open');
+    data.addColumn('number', 'Stock close');
+    data.addColumn('number', 'Stock high');
+
+    // Create random stock values, just like it works in reality.
+    var open, close = 300;
+    var low, high;
+    for (var day = 1; day < 121; ++day) {
+      var change = (Math.sin(day / 2.5 + Math.PI) + Math.sin(day / 3) - Math.cos(day * 0.7)) * 150;
+      change = change >= 0 ? change + 10 : change - 10;
+      open = close;
+      close = Math.max(50, open + change);
+      low = Math.min(open, close) - (Math.cos(day * 1.7) + 1) * 15;
+      low = Math.max(0, low);
+      high = Math.max(open, close) + (Math.cos(day * 1.3) + 1) * 15;
+      var date = new Date(2012, 0 ,day);
+      data.addRow([date, Math.round(low), Math.round(open), Math.round(close), Math.round(high)]);
+    }
+
+    dashboard.bind(control, chart);
+    dashboard.draw(data);
+  }
+</script>
+
+
+
+
+    <input class="google-analytics-id-json" type="hidden" value="{&quot;dimensions&quot;: {&quot;dimension6&quot;: null, &quot;dimension5&quot;: &quot;en&quot;, &quot;dimension3&quot;: false, &quot;dimension1&quot;: &quot;Signed out&quot;}, &quot;gaid&quot;: &quot;UA-22084204-3&quot;}">
+
+
+
+
+    <script>
+
+
+        window.prettyPrint();
+
+      devsite.analytics.InitAnalytics();
+      devsite.permissions.init({"6749dcb526ce9bde6993550c7d928d24": true, "993b1906435224595bd618f6f331ee45": true, "b8feb4e3293a0e503a7ce02689f5de25": false});
+      devsite.base.init();
+      devsite.clickToCopy.init();
+
+    </script>
+  </body>
+</html>
+

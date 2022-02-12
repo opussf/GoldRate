@@ -5,11 +5,19 @@
 ## Idea
 This addon is in response to the WoW Token release.
 
-The token lets users buy a token for $20US from the store, then sell it on the AH.  The buyer can then redeem it for 30 days of game time.
+The token lets users buy a token for $20US from the store, then sell it on the AH for gold.
+The buyer can then redeem it for 30 days of game time.
+The suggested gold cost will fluctuate based on unknown parameters.
 
-The suggested gold cost will fluctuate based on unknown parameters, but should be available from the Auction House.
+The idea of this addon is to track the price of the tokens over time, to track your amount of gold available on any single realm, and the rate of gain, with the goal of trying to generate enough gold every month to pay for playing.
+It also includes
 
-The idea of this addon is to track the price of the tokens over time, to track the amount of gold available on any single realm, and the rate of gain, with the goal of trying to generate enough gold every month to pay for playing.
+With the axium of "Buy low, sell high", those buying tokens for game time want to buy low.
+Those selling tokens for gold want to sell high.
+Those buying token for game time want to buy low.
+
+
+I'm not going to even tackle the idea of price predictions, only the tracking of historic data.
 
 ## Some math
 [Hotmath.com] describes how to use the Least Square Method to find the Line of Best Fist of a series of ordered pairs of values.
@@ -19,6 +27,12 @@ The idea of this addon is to track the price of the tokens over time, to track t
 [Wolfram] gives a concise explanation. Including error determination.
 
 [Gaussian elimination]
+
+## Display
+Tracking data is only a viable idea and worth while if you can use that data to allow the user to make informed decisions.
+To that end, the understanding of what decisions are to be made from the data, and how the data will be used in general is required to determine how to consume the data.
+
+
 
 ## Cautions
 There are 3 types of lies: Lies, damn lies, and [statistics].

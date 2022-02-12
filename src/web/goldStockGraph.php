@@ -1,6 +1,7 @@
 <?php
 error_reporting(0);
 require_once('jpgraph/jpgraph.php');
+require_once('jpgraph/jpgraph_stock.php');
 require_once('jpgraph/jpgraph_scatter.php');
 require_once('jpgraph/jpgraph_line.php');
 require_once('jpgraph_utils.inc.php');
@@ -17,7 +18,7 @@ if (array_key_exists( "size", $_GET )) {
 $rfIn = stripslashes($_GET["rf"]);
 
 # Read CSV file
-$factionData = parseGRCSV($rfIn, $_GET["period"]);
+$factionData = parseGRCSV($rfIn);
 
 #init the jpgraph
 $graph = new Graph( $graphSizes[$size]["x"], $graphSizes[$size]["y"] );
@@ -36,7 +37,47 @@ $graph->title->SetFont(FF_FONT1,FS_BOLD);
 
 $cf = new ColorFactory();
 
-$scatterPlots = array();
+$ocmm = array();  # OpenCloseMinMax
+
+foreach( $factionData as $rf => $dataPoints) {
+	foreach( $dataPoints as $ts => $val) {
+		$beginOfDay = strtotime("midnight", $ts);
+		if ($ocmm[$beginOfDay]) {
+			$ocmm[$beginOfDay]["min"] = min($ocmm[$beginOfDay]["min"], $val);
+			$ocmm[$beginOfDay]["max"] = max($ocmm[$beginOfDay]["max"], $val);
+			if ($ts < $ocmm[$beginOfDay]["minTS"]) {
+				$ocmm[$beginOfDay]["minTS"] = $ts;
+				$ocmm[$beginOfDay]["open"] = $val;
+			}
+			if ($ts > $ocmm[$beginOfDay]["maxTS"]) {
+				$ocmm[$beginOfDay]["maxTS"] = $ts;
+				$ocmm[$beginOfDay]["close"] = $val;
+			}
+		} else {
+			$ocmm[$beginOfDay] = array( "open" => $val, "close" => $val, "min" => $val, "max" => $val , "minTS" => $ts, "maxTS" => $ts );
+		}
+	}
+}
+
+#$print_r($ocmm);
+# create the JpGraph expected data array
+
+$datax = array_keys($ocmm);
+sort($datax);
+$datay = array();
+foreach( $datax as $ts) {
+	array_push($datay, $ocmm[$ts]["open"], $ocmm[$ts]["close"], $ocmm[$ts]["min"], $ocmm[$ts]["max"]);
+}
+
+#print_r($datax);
+#print_r($datay);
+
+$sp = new StockPlot($datay, $datax);
+$graph->Add($sp);
+
+
+/*
+$stockPlots = array();
 foreach( $factionData as $rf => $dataPoints ) {
 	$scatterPlots[$rf]["datax"] = array_keys($dataPoints);
 	$scatterPlots[$rf]["datay"] = array_values($dataPoints);
@@ -64,6 +105,7 @@ foreach( $factionData as $rf => $dataPoints ) {
 	$graph->Add( $scatterPlots[$rf]["lr"] );
 
 }
+*/
 
 $graph->legend->SetPos(0.00, 0.05, 'right', 'top');
 $graph->legend->SetFrameWeight(2);
