@@ -1,5 +1,5 @@
+## Title: GoldRate v@VERSION@
 ## Interface: @INTERFACE@
-## Title: GoldRate
 ## Notes: Tracks gold income rate @VERSION@
 ## Author: opussf
 ## Version: @VERSION@
