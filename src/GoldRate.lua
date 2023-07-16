@@ -1,6 +1,7 @@
-GOLDRATE_MSG_ADDONNAME = "GoldRate";
-GOLDRATE_MSG_VERSION   = GetAddOnMetadata(GOLDRATE_MSG_ADDONNAME,"Version");
-GOLDRATE_MSG_AUTHOR    = "opussf";
+GOLDRATE_SLUG, GoldRate = ...
+GOLDRATE_MSG_ADDONNAME = GetAddOnMetadata(GOLDRATE_SLUG,"Title")
+GOLDRATE_MSG_VERSION   = GetAddOnMetadata(GOLDRATE_SLUG,"Version")
+GOLDRATE_MSG_AUTHOR    = GetAddOnMetadata(GOLDRATE_SLUG, "Author" )
 
 -- Colours
 COLOR_RED = "|cffff0000";
@@ -14,7 +15,6 @@ COLOR_GOLD = "|cffcfb52b";
 COLOR_NEON_BLUE = "|cff4d4dff";
 COLOR_END = "|r";
 
-GoldRate = {}
 GoldRate_data = {}
 GoldRate_options = {
 		['maxDataPoints'] = 1000,
@@ -392,7 +392,7 @@ function GoldRate.RateSimple()
 	fdata = GoldRate_data[GoldRate.realm][GoldRate.faction]
 	GoldRate.maxInitialTS = 0
 	for name, pdata in pairs( fdata.toons ) do
-		GoldRate.maxInitialTS = math.max( GoldRate.maxInitialTS, pdata.firstTS )
+		GoldRate.maxInitialTS = math.min( GoldRate.maxInitialTS, pdata.firstTS )
 	end
 	local sortedKeys = {}
 	for ts in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated ) do
@@ -422,7 +422,7 @@ function GoldRate.Rate()
 	-- Step 0 - find the maxInitialTS to filter data
 	GoldRate.maxInitialTS = 0
 	for name, pdata in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].toons ) do
-		GoldRate.maxInitialTS = math.max( GoldRate.maxInitialTS, pdata.firstTS )
+		GoldRate.maxInitialTS = math.min( GoldRate.maxInitialTS, pdata.firstTS )
 	end
 
 	-- Step 1 - Calculate the mean for both the x (timestamp) and y (gold) values

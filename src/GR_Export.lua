@@ -45,7 +45,7 @@ function Rate( realmIn, factionIn )
 	-- Step 0 - find the maxInitialTS to filter data
 	maxInitialTS = 0
 	for name, pdata in pairs( GoldRate_data[realmIn][factionIn].toons ) do
-		maxInitialTS = math.max( maxInitialTS, pdata.firstTS )
+		maxInitialTS = math.min( maxInitialTS, pdata.firstTS )
 	end
 
 	-- Step 1 - Calculate the mean for both the x (timestamp) and y (gold) values
@@ -104,7 +104,7 @@ function ExportXML()
 					strOut = strOut .. string.format( '<goal ts="%s">%i</goal>\n', targetTS, fdata.goal )
 				end
 				for name, pdata in pairs( fdata.toons ) do
-					maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
+					maxInitialTS = math.min( maxInitialTS, pdata.firstTS)
 				end
 				if fdata.consolidated then
 					for ts, val in PairsByKeys( fdata.consolidated ) do
@@ -153,7 +153,7 @@ function ExportJSON()
 					fStr = fStr .. string.format( '"goal": %s,', fdata.goal )
 				end
 				for name, pdata in pairs( fdata.toons ) do
-					maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
+					maxInitialTS = math.min( maxInitialTS, pdata.firstTS)
 				end
 				gdata = {}
 				if fdata.consolidated then
@@ -203,7 +203,7 @@ function ExportCSV()
 				m, targetTS = Rate(realm, faction)
 
 				for name, pdata in pairs( fdata.toons ) do
-					maxInitialTS = math.max( maxInitialTS, pdata.firstTS)
+					maxInitialTS = math.min( maxInitialTS, pdata.firstTS)
 				end
 				if fdata.consolidated then
 					for ts, val in PairsByKeys( fdata.consolidated ) do
