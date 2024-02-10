@@ -1,5 +1,11 @@
 # Feature
 
+## Rewrite
+
+Redo some of this.
+[ ] Remove the 'goal' command.   Not used.
+
+
 ## UIDisplay
 
 Show the token price in the UI.
