@@ -237,13 +237,7 @@ end
 -- 	--assertEquals( "TOK 12{circle}-5(-28.83%) 24H12 24L12" , GoldRate.tickerToken )
 -- 	assertEquals( "TOK 12{circle}-5 :: 24H12 24L12 360DL12" , GoldRate.tickerToken )
 -- end
--- function test.testToken_tokenGoal()
--- 	local now = time()
--- 	TokenPrice = 123456
--- 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
--- 	GoldRate.Command( "goal token" )
--- 	assertEquals( 123456, GoldRate_data.testRealm.Alliance.goal )
--- end
+
 -- function test.testToken_TokenInfo()
 -- 	-- just make sure the command works
 -- 	fillTokenHistory()
