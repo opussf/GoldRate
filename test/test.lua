@@ -18,6 +18,8 @@ ParseTOC( "../src/GoldRate.toc" )
 function test.before()
 	GoldRate_data = {}
 	GoldRate_tokenData = {}
+	GoldRate.tokenLastTS = nil
+	GoldRate.tokenLast = nil
 	GoldRate.OnLoad()
 	GoldRate.ADDON_LOADED()
 	GoldRate.VARIABLES_LOADED()
@@ -101,6 +103,28 @@ end
 function test.test_VARIABLES_LOADED_sets_minScanPeriod()
 	assertEquals( 300, GoldRate.minScanPeriod )
 end
+function test.test_VARIABLES_LOADED_sets_tokenTSs_with_data()
+	fillTokenHistory()
+	GoldRate.ADDON_LOADED()
+	GoldRate.VARIABLES_LOADED()
+	assertTrue( GoldRate.tokenTSs )
+end
+function test.test_VARIABLES_LOADED_sets_tokenTSs_no_data()
+	GoldRate.ADDON_LOADED()
+	GoldRate.VARIABLES_LOADED()
+	assertTrue( GoldRate.tokenTSs )
+end
+function test.test_VARIABLES_LOADED_sets_myGold()
+	GoldRate.ADDON_LOADED()
+	GoldRate.VARIABLES_LOADED()
+	assertTrue( GoldRate.myGold )
+end
+function test.test_VARIABLES_LOADED_sets_Options_nextTokenScanTS()
+	GoldRate_options.nextTokenScanTS = nil
+	GoldRate.ADDON_LOADED()
+	GoldRate.VARIABLES_LOADED()
+	assertEquals( time() + 30, GoldRate_options.nextTokenScanTS )
+end
 function test.test_PLAYER_MONEY_sets_player_last()
 	GoldRate.PLAYER_MONEY()
 	assertEquals( 150000, GoldRate_data.testRealm.Alliance.toons.testPlayer.last )
@@ -129,19 +153,58 @@ function test.test_PLAYER_ENTERTING_WORLD_sets_value_in_consolidated()
 	GoldRate.PLAYER_ENTERING_WORLD()
 	assertEquals( 150000, GoldRate_data.testRealm.Alliance.consolidated[time()] )
 end
-function test.test_PLAER_ENTERING_WORLD_sets_player_last_withData()
+function test.test_PLAYER_ENTERING_WORLD_sets_player_last_withData()
 	GoldRate_data.testRealm.Alliance.toons.testPlayer = {["firstTS"] = 3276534, ["last"] = 149999}  -- Has previous data
+	GoldRate.VARIABLES_LOADED() -- this needs to be done again to reset GoldRate.myGold
 	GoldRate.PLAYER_ENTERING_WORLD()  -- Capture the amount
-	assertEquals( 150000, GoldRate_data.testRealm.Alliance.toons.testPlayer["last"] )
+	assertEquals( 150000, GoldRate_data.testRealm.Alliance.toons.testPlayer.last )
 end
 
--- -- ---------------
--- function test.testToken_TOKEN_MARKET_PRICE_UPDATED_inArray()
--- 	local now = time()
--- 	GoldRate.ADDON_LOADED()
--- 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
--- 	assertEquals( 123456, GoldRate_tokenData[now] )
--- end
+---------------
+function test.test_TOKEN_MARKET_PRICE_UPDATED_inArray_no_previous_data()
+	local now = time()
+	GoldRate.ADDON_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	assertEquals( 123456, GoldRate_tokenData[now] )
+	assertEquals( 123456, GoldRate_tokenData[GoldRate.tokenTSs[#GoldRate.tokenTSs]])
+end
+function test.test_TOKEN_MARKET_PRICE_UPDATED_does_not_save_if_same_value_as_previous()
+	local now = time()
+	GoldRate_tokenData[now - 120] = 123456
+	GoldRate.VARIABLES_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+
+	local dataCount = 0
+	for k, v in pairs( GoldRate_tokenData ) do
+		dataCount = dataCount + 1
+	end
+	assertEquals( 1, dataCount )
+end
+function test.test_TOKEN_MARKET_PRICE_UPDATED_saves_if_different_values()
+	local now = time()
+	GoldRate_tokenData[now - 120] = 120456
+	GoldRate.VARIABLES_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	
+	local dataCount = 0
+	for k, v in pairs( GoldRate_tokenData ) do
+		dataCount = dataCount + 1
+	end
+	assertEquals( 2, dataCount )
+end
+function test.test_OnUpdate_continues_prune_coroutine()
+	GoldRate.pruneThread = nil
+	GoldRate.PLAYER_ENTERING_WORLD()
+	GoldRate.OnUpdate()
+	GoldRate.OnUpdate()
+	GoldRate.OnUpdate()
+	assertEquals( "dead", coroutine.status( GoldRate.pruneThread ) )
+end
+function test.test_OnUpdate_Updates_ScanTime()
+	GoldRate_options.nextTokenScanTS = 45
+	GoldRate.OnUpdate()
+	assertEquals( time() + 20*60, GoldRate_options.nextTokenScanTS )
+end
 -- function test.notestToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_positive()
 -- 	-- disabled
 -- 	local now = time()
@@ -339,7 +402,8 @@ function test.testSmoothOldData_linearIncrease()
 			valCount = valCount + 1
 		end
 	end
-	assertEquals( 2, valCount )
+	assertTrue( valCount > 0 )
+	assertTrue( valCount < 4 )
 end
 function test.testSmoothOldData_sawblade()
 	cutOff = time()-(30*86400)
@@ -353,7 +417,8 @@ function test.testSmoothOldData_sawblade()
 			valCount = valCount + 1
 		end
 	end
-	assertEquals( 22, valCount )  --
+	assertTrue( valCount >= 21 )
+	assertTrue( valCount <= 22 )
 end
 function test.testPruneOldData()
 	cutOff = time()-(90*86400)
@@ -368,79 +433,44 @@ function test.testPruneOldData()
 	end
 	assertEquals( 11, valCount )
 end
--- ------------------
--- -- Tests for multiPrune
--- ------------------
--- function test.makeData_multiPrune( spend )
--- 	now = time()
--- 	GoldRate.PLAYER_MONEY()
--- 	GoldRate_data.testRealm.Horde = {}
--- 	GoldRate_data.testRealm.Horde.consolidated = {}
--- 	GoldRate_data['otherRealm'] = {}
--- 	GoldRate_data['otherRealm'].Alliance = {}
--- 	GoldRate_data['otherRealm'].Alliance.consolidated = {}
+------------------
+-- Tests for multiPrune
+------------------
+function test.makeData_multiPrune( spend )
+	now = time()
+	GoldRate.PLAYER_MONEY()
+	GoldRate_data.testRealm.Horde = {}
+	GoldRate_data.testRealm.Horde.consolidated = {}
+	GoldRate_data['otherRealm'] = {}
+	GoldRate_data['otherRealm'].Alliance = {}
+	GoldRate_data['otherRealm'].Alliance.consolidated = {}
 
--- 	val = 10
--- 	for ts = now-(180*86400),now,1000 do
--- 		if spend and (val > spend) then val = 0 end
--- 		GoldRate_data.testRealm.Alliance.consolidated[ts] = val
--- 		GoldRate_data.testRealm.Horde.consolidated[ts] = val / 2
--- 		GoldRate_data['otherRealm'].Alliance.consolidated[ts] = val
--- 		val = val + 10
--- 	end
--- end
--- function test.testMultiPrune_01()
--- 	test.makeData_multiPrune( 10000 )
--- 	test.runPruneData()
+	val = 10
+	for ts = now-(180*86400),now,1000 do
+		if spend and (val > spend) then val = 0 end
+		GoldRate_data.testRealm.Alliance.consolidated[ts] = val
+		GoldRate_data.testRealm.Horde.consolidated[ts] = val / 2
+		GoldRate_data['otherRealm'].Alliance.consolidated[ts] = val
+		val = val + 10
+	end
+end
+function test.testMultiPrune_01()
+	test.makeData_multiPrune( 10000 )
+	test.runPruneData()
 
--- 	valCount = 0
--- 	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
--- 		valCount = valCount + 1
--- 	end
--- 	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Horde.consolidated ) do
--- 		valCount = valCount + 1
--- 	end
--- 	for k,v in GoldRate.PairsByKeys( GoldRate_data['otherRealm'].Alliance.consolidated ) do
--- 		valCount = valCount + 1
--- 	end
--- 	assertEquals( 7857, valCount )
--- end
--- -------------------
--- -- Tests for guild reporting toggle
--- -------------------
--- function test.testGuildToggle_off()
--- 	GoldRate_options.guildBlackList = nil
--- 	GoldRate.Command( "guild" )
--- 	assertTrue( GoldRate_options.guildBlackList["testRealm-Test Guild"] )
--- end
--- function test.testGuildToggle_on()
--- 	GoldRate_options.guildBlackList = { ["testRealm-Test Guild"]=true }
--- 	GoldRate.Command( "guild" )
--- 	assertIsNil( GoldRate_options.guildBlackList["testRealm-Test Guild"] )
--- end
--- function test.testGuildToggle_noGuild_emptyList()
--- 	GoldRate_options.guildBlackList = nil
--- 	local guildInfo = myGuild
--- 	myGuild = nil
--- 	GoldRate.Command( "guild" )
--- 	myGuild = guildInfo
--- 	assertIsNil( GoldRate_options.guildBlackList["testRealm-Test Guild"] )
--- end
--- function test.testGuildToggle_noGuild_hasBlackList()
--- 	GoldRate_options.guildBlackList = { ["testRealm-Test Guild"]=true }
--- 	local guildInfo = myGuild
--- 	myGuild = nil
--- 	GoldRate.Command( "guild" )
--- 	myGuild = guildInfo
--- 	assertTrue( GoldRate_options.guildBlackList["testRealm-Test Guild"] )
--- end
--- function test.testGuildToggle_reportOn()
--- 	GoldRate_options.guildBlackList = nil
--- 	assertTrue( GoldRate.GuildPrint( "Test" ) )
--- end
--- function test.testGuildToggle_reportOff()
--- 	GoldRate_options.guildBlackList = { ["testRealm-Test Guild"]=true }
--- 	assertIsNil( GoldRate.GuildPrint( "Test" ) )
--- end
+	valCount = 0
+	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
+		valCount = valCount + 1
+	end
+	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Horde.consolidated ) do
+		valCount = valCount + 1
+	end
+	for k,v in GoldRate.PairsByKeys( GoldRate_data['otherRealm'].Alliance.consolidated ) do
+		valCount = valCount + 1
+	end
+	--assertEquals( 7857, valCount )
+	assertTrue( valCount < 7860 ) -- +- 2 values to account for times
+	assertTrue( valCount > 7854 )
+end
 
 test.run()

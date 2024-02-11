@@ -59,6 +59,8 @@ function GoldRate.OnLoad()
 	GoldRate_Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 	GoldRate_Frame:RegisterEvent("PLAYER_MONEY")
 	GoldRate_Frame:RegisterEvent("TOKEN_MARKET_PRICE_UPDATED")
+	GoldRate_Frame:RegisterEvent("PLAYER_REGEN_DISABLED")
+	GoldRate_Frame:RegisterEvent("PLAYER_REGEN_ENABLED")
 end
 --------------
 -- Event Functions
@@ -79,42 +81,58 @@ function GoldRate.VARIABLES_LOADED( arg1, arg2 )
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated = GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated or {}
 	GoldRate_data[GoldRate.realm][GoldRate.faction].toons = GoldRate_data[GoldRate.realm][GoldRate.faction].toons or {}
 	GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name] = GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name] or {}
+	GoldRate.myGold = GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]
 	GoldRate.otherSummed = 0
 	for toonName, toonData in pairs( GoldRate_data[GoldRate.realm][GoldRate.faction].toons ) do
 		GoldRate.otherSummed = GoldRate.otherSummed + (toonName == GoldRate.name and 0 or toonData.last)
 	end
--- 	if GoldRate_tokenData then -- parse and store the last known value of the WoWToken
--- 		maxTS = 0
--- 		for ts, _ in pairs(GoldRate_tokenData) do
--- 			maxTS = max(maxTS, ts)
--- 		end
--- 		GoldRate.tokenLast = GoldRate_tokenData[maxTS]
--- 		GoldRate.tokenLastTS = maxTS
--- 	end
--- 	if (not GoldRate_options.nextTokenScanTS) then	-- set the nextTokenScanTime to +30 seconds if not set
--- 		GoldRate_options.nextTokenScanTS = time() + 30
--- 	end
+	GoldRate.SetTokenTSs()
+	if (not GoldRate_options.nextTokenScanTS) then	-- set the nextTokenScanTime to +30 seconds if not set
+		GoldRate_options.nextTokenScanTS = time() + 30
+	end
 	GoldRate.minScanPeriod = select(2, C_WowTokenPublic.GetCommerceSystemStatus() )
 end
 function GoldRate.PLAYER_MONEY()
-	GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["last"] = GetMoney()
-	GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["firstTS"] =
-			GoldRate_data[GoldRate.realm][GoldRate.faction].toons[GoldRate.name]["firstTS"] or time()
+	GoldRate.myGold.last = GetMoney()
+	GoldRate.myGold.firstTS = GoldRate.myGold.firstTS or time()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[time()] = GoldRate.otherSummed + GetMoney()
 end
 function GoldRate.PLAYER_ENTERING_WORLD()
 	GoldRate.PLAYER_MONEY()
 	GoldRate.pruneThread = coroutine.create( GoldRate.PruneData )
+	GoldRate.SetTokenTSs()
 -- 	if not GoldRate.goldShown then
 -- 		local totalGoldNow = GoldRate.otherSummed + GetMoney()
 -- 		GoldRateUI.Show( 0, totalGoldNow/10000, GoldRate.tokenLast/10000, "Total Gold: "..math.floor(totalGoldNow/10000).." Token: "..GoldRate.tokenLast/10000 )
 -- 		GoldRate.goldShown = true
 --	end
 end
-
-
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
--- 	local val = C_WowTokenPublic.GetCurrentMarketPrice()
+	local val = C_WowTokenPublic.GetCurrentMarketPrice()
+	if val then
+		local now = time()
+		if val ~= GoldRate_tokenData[GoldRate.tokenTSs[#GoldRate.tokenTSs]] then
+			GoldRate_tokenData[now] = val
+			table.insert( GoldRate.tokenTSs, now )
+			GoldRate.UpdateScanTime()
+		end
+	end
+end
+function GoldRate.PLAYER_REGEN_DISABLED()
+	GoldRate.inCombat = true
+end
+function GoldRate.PLAYER_REGEN_ENABLED()
+	GoldRate.inCombat = nil
+end
+function GoldRate.OnUpdate( arg1 )
+	if ( GoldRate_options.nextTokenScanTS and GoldRate_options.nextTokenScanTS <= time() ) then
+		C_WowTokenPublic.UpdateMarketPrice()
+		GoldRate.UpdateScanTime()
+	end
+	if GoldRate.pruneThread and coroutine.status( GoldRate.pruneThread ) ~= "dead" then
+		coroutine.resume( GoldRate.pruneThread )
+	end
+end
 -- 	local changeColor = COLOR_END
 -- 	if val then
 -- 		local now = time()
@@ -164,19 +182,20 @@ function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 -- 			)
 -- 		end
 -- 	end
+-- end
+
+
+------------
+-- Support
+------------
+function GoldRate.UpdateScanTime()
+	GoldRate_options.nextTokenScanTS = time() + 20*60  -- 20 minutes
 end
--- function GoldRate.OnUpdate( arg1 )
--- 	if ( GoldRate_options.nextTokenScanTS and GoldRate_options.nextTokenScanTS <= time() ) then
--- 		C_WowTokenPublic.UpdateMarketPrice()
--- 		GoldRate.UpdateScanTime()
--- 	end
--- 	if GoldRate.pruneThread and coroutine.status( GoldRate.pruneThread ) ~= "dead" then
--- 		coroutine.resume( GoldRate.pruneThread )
--- 	end
--- end
--- function GoldRate.UpdateScanTime()
--- 	GoldRate_options.nextTokenScanTS = time() + 5*60  -- 20 minutes
--- end
+function GoldRate.SetTokenTSs()
+	GoldRate.tokenTSs = {}
+	for ts in pairs( GoldRate_tokenData ) do table.insert( GoldRate.tokenTSs, ts ) end
+	table.sort( GoldRate.tokenTSs )
+end
 function GoldRate.PruneData()
 	GoldRate.Print("PruneData")
 -- 

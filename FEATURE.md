@@ -3,7 +3,18 @@
 ## Rewrite
 
 Redo some of this.
-[ ] Remove the 'goal' command.   Not used.
+[x] Remove the 'goal' command.   Not used.
+
+Notes:
+For the token prices, I need the current token price, and the previous token price.
+
+Hash tables are not ordered.
+With JUST the tokenData hash, I could find the last few tokens by:
+* using the current TS, and looping backwards until I find 2 values. This presents a problem where there is a huge gap in the data, or there is not enough data.
+* build a sorted array of token timestamps when the data is loaded.  Keep this updated as new token values are captured.  Rebuild when pruning.
+  The rebuild is 'cheap' if done infrequently.
+  If the sorted array is underpopulated, this is easy to see, and can be handled.
+
 
 
 ## UIDisplay
