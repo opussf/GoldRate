@@ -20,6 +20,8 @@ function test.before()
 	GoldRate_tokenData = {}
 	GoldRate.tokenLastTS = nil
 	GoldRate.tokenLast = nil
+	GoldRate.needToRebuildTicker = nil
+	chatLog = {}
 	GoldRate.OnLoad()
 	GoldRate.ADDON_LOADED()
 	GoldRate.VARIABLES_LOADED()
@@ -192,6 +194,41 @@ function test.test_TOKEN_MARKET_PRICE_UPDATED_saves_if_different_values()
 	end
 	assertEquals( 2, dataCount )
 end
+function test.test_TOKEN_MARKET_PRICE_UPDATED_sets_flag_no_previous_data()
+	GoldRate.ADDON_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	assertTrue( GoldRate.needToRebuildTicker )
+end
+function test.test_TOKEN_MARKET_PRICE_UPDATED_sets_flag_if_different_values()
+	local now = time()
+	GoldRate_tokenData[now - 120] = 121456
+	GoldRate.VARIABLES_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	assertTrue( GoldRate.needToRebuildTicker )
+end
+function test.test_TOKEN_MARKET_PRICE_UPDATED_sets_simple_tickerToken_no_previous_data()
+	GoldRate.ADDON_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	assertEquals( "TOK 123456{circle}", GoldRate.tickerToken )
+end
+function test.test_TOKEN_MARKET_PRICE_UPDATED_sets_simple_tickerToken_previous_data_positive()
+	local now = time()
+	GoldRate_tokenData[now - 120] = 122456
+	GoldRate.ADDON_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	assertEquals( "TOK 123456{circle}", GoldRate.tickerToken )
+end
+function test.test_TOKEN_MARKET_PRICE_UPDATED_prints_to_UIErrorsFrame()
+	GoldRate.ADDON_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	for i in pairs( chatLog ) do
+		if chatLog[i].chatType == "UIErrorsFrame" then
+			assertEquals( "TOK 123456{circle}", chatLog[i].msg )
+			return
+		end
+	end
+	fail( "Did not print to UIErrorsFrame." )
+end
 function test.test_OnUpdate_continues_prune_coroutine()
 	GoldRate.pruneThread = nil
 	GoldRate.PLAYER_ENTERING_WORLD()
@@ -205,6 +242,7 @@ function test.test_OnUpdate_Updates_ScanTime()
 	GoldRate.OnUpdate()
 	assertEquals( time() + 20*60, GoldRate_options.nextTokenScanTS )
 end
+
 -- function test.notestToken_TOKEN_MARKET_PRICE_UPDATED_tickerStringSet_positive()
 -- 	-- disabled
 -- 	local now = time()

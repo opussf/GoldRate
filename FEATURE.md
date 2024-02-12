@@ -15,6 +15,15 @@ With JUST the tokenData hash, I could find the last few tokens by:
   The rebuild is 'cheap' if done infrequently.
   If the sorted array is underpopulated, this is easy to see, and can be handled.
 
+Allow the token data to be captured, then the display can generate the text once there is enough CPU (Not in combat).
+The TOKEN_MARKET_PRICE_UPDATED can generate a light version.
+
+TOK 12134{cirlce}+53245
+TOK 12{circle}+5 :: 24H12 24L12 360DH12
+
+The size of this string can act as a flag.
+
+
 
 
 ## UIDisplay
