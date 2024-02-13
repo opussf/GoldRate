@@ -135,6 +135,8 @@ function GoldRate.OnUpdate( arg1 )
 	if GoldRate.pruneThread and coroutine.status( GoldRate.pruneThread ) ~= "dead" then
 		coroutine.resume( GoldRate.pruneThread )
 	end
+	if GoldRate.needToRebuildTicker and not GoldRate.inCombat then
+	end
 end
 -- 	local changeColor = COLOR_END
 -- 	if val then

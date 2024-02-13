@@ -1,7 +1,7 @@
 -----------------------------------------
 -- Author  :  Opussf
--- Date    :  February 10 2024
--- Revision:  9.1.2
+-- Date    :  February 12 2024
+-- Revision:  9.1.5
 -----------------------------------------
 -- These are functions from wow that have been needed by addons so far
 -- Not a complete list of the functions.
@@ -70,7 +70,7 @@ registeredPrefixes = {}
 
 SlotListMap={ "HeadSlot","NeckSlot","ShoulderSlot","ShirtSlot","ChestSlot","WaistSlot","LegsSlot",
 		"FeetSlot", "WristSlot", "HandsSlot", "Finger0Slot","Finger1Slot","Trinket0Slot","Trinket1Slot",
-		"BackSlot","MainHandSlot","SecondaryHandSlot","RangedSlot","TabardSlot", "Bag0Slot", "Bag1Slot",
+		"BackSlot", "MainHandSlot","SecondaryHandSlot","RangedSlot","TabardSlot", "Bag0Slot", "Bag1Slot",
 		"Bag2Slot", "Bag3Slot",
 }
 myGear = {} -- items that are equipped in the above slots, index matching
@@ -1825,7 +1825,7 @@ function saxParser.parse( fileIn )
 						fileIn = string.sub( fileIn, endProlog+2 )
 					end
 				elseif n == "!" then
-					local endComment = string.find( fileIn, "-->" )
+					local endComment = string.find( fileIn, "%-%->" )
 					if endComment then
 						fileIn = string.sub( fileIn, endComment+3 )
 					end

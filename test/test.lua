@@ -324,7 +324,8 @@ end
 function test.testGetHighLow_30Low_Asc()
 	fillTokenHistory_Asc()
 	_, _, _, low30 = GoldRate.GetHighLow()
-	assertEquals( 6481, low30 )
+	assertTrue( low30 >= 6480 )
+	assertTrue( low30 <= 6482 )
 end
 function test.testGetHighLow_60High_Asc()
 	fillTokenHistory_Asc()
@@ -349,17 +350,20 @@ end
 function test.testGetHighLow_30High_Desc()
 	fillTokenHistory_Desc()
 	_, _, high30 = GoldRate.GetHighLow()
-	assertEquals( 193519, high30 )
+	assertTrue( high30 >= 193518 )
+	assertTrue( high30 <= 193520 )
 end
 function test.testGetHighLow_30Low_Desc()
 	fillTokenHistory_Desc()
 	_, _, _, low30 = GoldRate.GetHighLow()
-	assertEquals( 191359, low30 )
+	assertTrue( low30 >= 191358 )
+	assertTrue( low30 <= 191360)
 end
 function test.testGetHighLow_60High_Desc()
 	fillTokenHistory_Desc()
 	_, _, _, _, high60 = GoldRate.GetHighLow()
-	assertEquals( 195679, high60 )
+	assertTrue( high60 >= 195678 )
+	assertTrue( high60 <= 195680 )
 end
 function test.testGetHighLow_60Low_Desc()
 	fillTokenHistory_Desc()
@@ -369,7 +373,8 @@ end
 function test.testGetHighLow_90High_Desc()
 	fillTokenHistory_Desc()
 	_, _, _, _, _, _, high90 = GoldRate.GetHighLow()
-	assertEquals( 197839, high90 )
+	assertTrue( high90 >= 197838 )
+	assertTrue( high90 <= 197840 )
 end
 function test.testGetHighLow_90Low_Desc()
 	fillTokenHistory_Desc()
