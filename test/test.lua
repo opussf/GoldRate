@@ -486,5 +486,14 @@ function test.testMultiPrune_01()
 	assertTrue( valCount < 7860 ) -- +- 2 values to account for times
 	assertTrue( valCount > 7854 )
 end
+----------------
+-- Tests for UI
+----------------
+function test.testUI_PLAYER_ENTERING_WORLD_shows_ui()
+	GoldRate.PLAYER_ENTERING_WORLD()
+
+end
+function test.testUI_2()
+end
 
 test.run()

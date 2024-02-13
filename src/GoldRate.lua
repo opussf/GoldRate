@@ -101,6 +101,7 @@ function GoldRate.PLAYER_ENTERING_WORLD()
 	GoldRate.PLAYER_MONEY()
 	GoldRate.pruneThread = coroutine.create( GoldRate.PruneData )
 	GoldRate.SetTokenTSs()
+
 -- 	if not GoldRate.goldShown then
 -- 		local totalGoldNow = GoldRate.otherSummed + GetMoney()
 -- 		GoldRateUI.Show( 0, totalGoldNow/10000, GoldRate.tokenLast/10000, "Total Gold: "..math.floor(totalGoldNow/10000).." Token: "..GoldRate.tokenLast/10000 )
@@ -134,8 +135,6 @@ function GoldRate.OnUpdate( arg1 )
 	end
 	if GoldRate.pruneThread and coroutine.status( GoldRate.pruneThread ) ~= "dead" then
 		coroutine.resume( GoldRate.pruneThread )
-	end
-	if GoldRate.needToRebuildTicker and not GoldRate.inCombat then
 	end
 end
 -- 	local changeColor = COLOR_END
