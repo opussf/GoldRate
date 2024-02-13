@@ -25,10 +25,10 @@ GoldRate_options = {
 }
 GoldRate_tokenData = {} -- [timestamp] = value
 
--- GoldRate.days = {1, 30, 60, 90, 120, 150, 180, 270, 360 }
--- GoldRate.daysText = {"High", "Low", "30DH", "30DL", "60DH", "60DL",
--- 		"90DH", "90DL", "120DH", "120DL", "150DH", "150DL",
--- 		"180DH", "180DL", "270DH", "270DL", "360DH", "360DL" }
+GoldRate.days = {1, 30, 60, 90, 120, 150, 180, 270, 360 }
+GoldRate.daysText = {"High", "Low", "30DH", "30DL", "60DH", "60DL",
+		"90DH", "90DL", "120DH", "120DL", "150DH", "150DL",
+		"180DH", "180DL", "270DH", "270DL", "360DH", "360DL" }
 
 function GoldRate.Print( msg, showName)
 	-- print to the chat frame
@@ -116,7 +116,7 @@ function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 			table.insert( GoldRate.tokenTSs, now )
 			GoldRate.UpdateScanTime()
 			GoldRate.needToRebuildTicker = true
-			GoldRate.tickerToken = "TOK "..val.."{circle}"
+			GoldRate.tickerToken = string.format( "TOK %i{circle}", math.floor(val/10000) )
 			UIErrorsFrame:AddMessage( GoldRate.tickerToken, 1.0, 1.0, 0.1, 1.0 )
 		end
 	end
@@ -298,24 +298,24 @@ function GoldRate.PairsByKeys( t, f )  -- This is an awesome function I found
 	end
 	return iter
 end
--- function GoldRate.GetHighLow()
--- 	-- return the high, low pairs for the number of days in cutoffTSs
--- 	local cutoffTSs = {}
--- 	for k in pairs( GoldRate.days ) do cutoffTSs[k] = time() - (GoldRate.days[k] * 86400) end
--- 	local limits = {}
+function GoldRate.GetHighLow()
+	-- return the high, low pairs for the number of days in cutoffTSs
+	local cutoffTSs = {}
+	for k in pairs( GoldRate.days ) do cutoffTSs[k] = time() - (GoldRate.days[k] * 86400) end
+	local limits = {}
 
--- 	for ts, val in pairs( GoldRate_tokenData ) do
--- 		for i, cutoffTS in pairs( cutoffTSs ) do
--- 			--print("i:"..i.." >i:"..(((i-1)*2)+1).." >i+1:"..(((i-1)*2)+2))
--- 			if ts >= cutoffTS then
--- 				local k = ((i-1)*2)+1  -- convert to a new index scheme.  1 based, odd is max, even is min
--- 				limits[k] = limits[k] and max(limits[k], val) or val
--- 				limits[k+1] = limits[k+1] and min(limits[k+1], val) or val
--- 			end
--- 		end
--- 	end
--- 	return unpack(limits)
--- end
+	for ts, val in pairs( GoldRate_tokenData ) do
+		for i, cutoffTS in pairs( cutoffTSs ) do
+			-- print("i:"..i.." >i:"..(((i-1)*2)+1).." >i+1:"..(((i-1)*2)+2))
+			if ts >= cutoffTS then
+				local k = ((i-1)*2)+1  -- convert to a new index scheme.  1 based, odd is max, even is min
+				limits[k] = limits[k] and max(limits[k], val) or val
+				limits[k+1] = limits[k+1] and min(limits[k+1], val) or val
+			end
+		end
+	end
+	return unpack(limits)
+end
 -- function GoldRate.GetDiffString( startVal, endVal )
 -- 	local diff = endVal - startVal
 -- 	local changePC = (diff / startVal) * 100

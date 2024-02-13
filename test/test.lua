@@ -209,21 +209,21 @@ end
 function test.test_TOKEN_MARKET_PRICE_UPDATED_sets_simple_tickerToken_no_previous_data()
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 123456{circle}", GoldRate.tickerToken )
+	assertEquals( "TOK 12{circle}", GoldRate.tickerToken )
 end
 function test.test_TOKEN_MARKET_PRICE_UPDATED_sets_simple_tickerToken_previous_data_positive()
 	local now = time()
 	GoldRate_tokenData[now - 120] = 122456
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	assertEquals( "TOK 123456{circle}", GoldRate.tickerToken )
+	assertEquals( "TOK 12{circle}", GoldRate.tickerToken )
 end
 function test.test_TOKEN_MARKET_PRICE_UPDATED_prints_to_UIErrorsFrame()
 	GoldRate.ADDON_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 	for i in pairs( chatLog ) do
 		if chatLog[i].chatType == "UIErrorsFrame" then
-			assertEquals( "TOK 123456{circle}", chatLog[i].msg )
+			assertEquals( "TOK 12{circle}", chatLog[i].msg )
 			return
 		end
 	end
@@ -305,98 +305,99 @@ end
 -- 	actual = GoldRate.GetDiffString( 100000, 50000 )
 -- 	assertEquals( expected, actual )
 -- end
--- function test.testGetHighLow_1high()
--- 	fillTokenHistory_Asc()
--- 	high, low = GoldRate.GetHighLow()
--- 	assertEquals( 8641, high )
--- end
--- function test.testGetHighLow_1low()
--- 	fillTokenHistory_Asc()
--- 	high, low = GoldRate.GetHighLow()
--- 	assertEquals( 8569, low )
--- end
--- ----
--- function test.testGetHighLow_30High_Asc()
--- 	fillTokenHistory_Asc()
--- 	_, _, high30 = GoldRate.GetHighLow()
--- 	assertEquals( 8641, high30 )
--- end
--- function test.testGetHighLow_30Low_Asc()
--- 	fillTokenHistory_Asc()
--- 	_, _, _, low30 = GoldRate.GetHighLow()
--- 	assertEquals( 6481, low30 )
--- end
--- function test.testGetHighLow_60High_Asc()
--- 	fillTokenHistory_Asc()
--- 	_, _, _, _, high60 = GoldRate.GetHighLow()
--- 	assertEquals( 8641, high60 )
--- end
--- function test.testGetHighLow_60Low_Asc()
--- 	fillTokenHistory_Asc()
--- 	_, _, _, _, _, low60 = GoldRate.GetHighLow()
--- 	assertEquals( 4321, low60 )
--- end
--- function test.testGetHighLow_90High_Asc()
--- 	fillTokenHistory_Asc()
--- 	_, _, _, _, _, _, high90 = GoldRate.GetHighLow()
--- 	assertEquals( 8641, high90 )
--- end
--- function test.testGetHighLow_90Low_Asc()
--- 	fillTokenHistory_Asc()
--- 	_, _, _, _, _, _, _, low90 = GoldRate.GetHighLow()
--- 	assertEquals( 2161, low90 )
--- end
--- function test.testGetHighLow_30High_Desc()
--- 	fillTokenHistory_Desc()
--- 	_, _, high30 = GoldRate.GetHighLow()
--- 	assertEquals( 193519, high30 )
--- end
--- function test.testGetHighLow_30Low_Desc()
--- 	fillTokenHistory_Desc()
--- 	_, _, _, low30 = GoldRate.GetHighLow()
--- 	assertEquals( 191359, low30 )
--- end
--- function test.testGetHighLow_60High_Desc()
--- 	fillTokenHistory_Desc()
--- 	_, _, _, _, high60 = GoldRate.GetHighLow()
--- 	assertEquals( 195679, high60 )
--- end
--- function test.testGetHighLow_60Low_Desc()
--- 	fillTokenHistory_Desc()
--- 	_, _, _, _, _, low60 = GoldRate.GetHighLow()
--- 	assertEquals( 191359, low60 )
--- end
--- function test.testGetHighLow_90High_Desc()
--- 	fillTokenHistory_Desc()
--- 	_, _, _, _, _, _, high90 = GoldRate.GetHighLow()
--- 	assertEquals( 197839, high90 )
--- end
--- function test.testGetHighLow_90Low_Desc()
--- 	fillTokenHistory_Desc()
--- 	_, _, _, _, _, _, _, low90 = GoldRate.GetHighLow()
--- 	assertEquals( 191359, low90 )
--- end
--- function test.testHighLow()
--- 	now = time()
--- 	GoldRate_tokenData = {}
--- 	GoldRate_tokenData[now-(100*86400)] = 200000000 -- 100 days ago, 20k
--- 	GoldRate_tokenData[now-( 85*86400)] = 230000000 --  85 days ago, 23k -- max90
--- 	GoldRate_tokenData[now-( 75*86400)] = 170000000 --  75 days ago, 17k -- min90
--- 	GoldRate_tokenData[now-( 55*86400)] = 220000000 --  55 days ago, 22k -- max60
--- 	GoldRate_tokenData[now-( 40*86400)] = 180000000 --  40 days ago, 18k -- min60
--- 	GoldRate_tokenData[now-( 25*86400)] = 210000000 --  25 days ago, 21k -- max30
--- 	GoldRate_tokenData[now-( 10*86400)] = 190000000 --  10 days ago, 19k -- min30
--- 	GoldRate_tokenData[now-(  5*86400)] = 200000000 --   5 days ago, 20k
--- 	GoldRate_tokenData[now-(0.5*86400)] = 205000000 -- 12 hours ago, 20.5k
+function test.testGetHighLow_1high()
+	fillTokenHistory_Asc()
+	high, low = GoldRate.GetHighLow()
+	assertEquals( 8641, high )
+end
+function test.testGetHighLow_1low()
+	fillTokenHistory_Asc()
+	high, low = GoldRate.GetHighLow()
+	assertEquals( 8569, low )
+end
+----
+function test.testGetHighLow_30High_Asc()
+	fillTokenHistory_Asc()
+	_, _, high30 = GoldRate.GetHighLow()
+	assertEquals( 8641, high30 )
+end
+function test.testGetHighLow_30Low_Asc()
+	fillTokenHistory_Asc()
+	_, _, _, low30 = GoldRate.GetHighLow()
+	assertEquals( 6481, low30 )
+end
+function test.testGetHighLow_60High_Asc()
+	fillTokenHistory_Asc()
+	_, _, _, _, high60 = GoldRate.GetHighLow()
+	assertEquals( 8641, high60 )
+end
+function test.testGetHighLow_60Low_Asc()
+	fillTokenHistory_Asc()
+	_, _, _, _, _, low60 = GoldRate.GetHighLow()
+	assertEquals( 4321, low60 )
+end
+function test.testGetHighLow_90High_Asc()
+	fillTokenHistory_Asc()
+	_, _, _, _, _, _, high90 = GoldRate.GetHighLow()
+	assertEquals( 8641, high90 )
+end
+function test.testGetHighLow_90Low_Asc()
+	fillTokenHistory_Asc()
+	_, _, _, _, _, _, _, low90 = GoldRate.GetHighLow()
+	assertEquals( 2161, low90 )
+end
+function test.testGetHighLow_30High_Desc()
+	fillTokenHistory_Desc()
+	_, _, high30 = GoldRate.GetHighLow()
+	assertEquals( 193519, high30 )
+end
+function test.testGetHighLow_30Low_Desc()
+	fillTokenHistory_Desc()
+	_, _, _, low30 = GoldRate.GetHighLow()
+	assertEquals( 191359, low30 )
+end
+function test.testGetHighLow_60High_Desc()
+	fillTokenHistory_Desc()
+	_, _, _, _, high60 = GoldRate.GetHighLow()
+	assertEquals( 195679, high60 )
+end
+function test.testGetHighLow_60Low_Desc()
+	fillTokenHistory_Desc()
+	_, _, _, _, _, low60 = GoldRate.GetHighLow()
+	assertEquals( 191359, low60 )
+end
+function test.testGetHighLow_90High_Desc()
+	fillTokenHistory_Desc()
+	_, _, _, _, _, _, high90 = GoldRate.GetHighLow()
+	assertEquals( 197839, high90 )
+end
+function test.testGetHighLow_90Low_Desc()
+	fillTokenHistory_Desc()
+	_, _, _, _, _, _, _, low90 = GoldRate.GetHighLow()
+	assertEquals( 191359, low90 )
+end
+function test.testHighLow()
+	now = time()
+	GoldRate_tokenData = {}
+	GoldRate_tokenData[now-(100*86400)] = 200000000 -- 100 days ago, 20k
+	GoldRate_tokenData[now-( 85*86400)] = 230000000 --  85 days ago, 23k -- max90
+	GoldRate_tokenData[now-( 75*86400)] = 170000000 --  75 days ago, 17k -- min90
+	GoldRate_tokenData[now-( 55*86400)] = 220000000 --  55 days ago, 22k -- max60
+	GoldRate_tokenData[now-( 40*86400)] = 180000000 --  40 days ago, 18k -- min60
+	GoldRate_tokenData[now-( 25*86400)] = 210000000 --  25 days ago, 21k -- max30
+	GoldRate_tokenData[now-( 10*86400)] = 190000000 --  10 days ago, 19k -- min30
+	GoldRate_tokenData[now-(  5*86400)] = 200000000 --   5 days ago, 20k
+	GoldRate_tokenData[now-(0.5*86400)] = 205000000 -- 12 hours ago, 20.5k
 
--- 	TokenPrice = 204000000  -- now, 1dLow
--- 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
--- 	assertEquals( "TOK 20400{circle}+0 :: 24H20500 24L20400 30DH21000", GoldRate.tickerToken )
--- 	TokenPrice = 123456 -- return to norm
--- end
--- ---------------
--- -- Tests for DataPrune
--- ---------------
+	TokenPrice = 204000000  -- now, 1dLow
+	GoldRate.ADDON_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	assertEquals( "TOK 20400{circle}", GoldRate.tickerToken )
+	TokenPrice = 123456 -- return to norm
+end
+---------------
+-- Tests for DataPrune
+---------------
 function test.makeOldData_linearIncrease( spend )
 	-- pass a value to spend that much once you have that much.
 	-- (Makes a sawblade with a max of spend)
