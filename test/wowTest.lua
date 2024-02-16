@@ -110,7 +110,7 @@ function test.toCobertura()
 		-- calculate some data
 
 		local coberturaTable = {}
-		table.insert( coberturaTable, "<?xml verion=\"1.0\" encoding=\"UTF-8\"?>" )
+		table.insert( coberturaTable, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" )
 		table.insert( coberturaTable, "<!DOCTYPE coverage SYSTEM 'http://cobertura.sourceforge.net/xml/coverage-04.dtd'>" )
 		table.insert( coberturaTable, "<coverage line-rate='0' branch-rate='0' lines-covered='0' lines-valid='0' branches-covered='0' branches-valid='0' complexity='0' timestamp='"..time().."' version='vROFL'")
 		table.insert( coberturaTable, "<sources><source>.</source></sources>" )
