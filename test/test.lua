@@ -2,6 +2,7 @@
 
 require "wowTest"
 test.outFileName = "testOut.xml"
+test.coberturaFileName = "coverage.xml"
 
 -- -- Figure out how to parse the XML here, until then....
 -- GoldRate_Frame = CreateFrame()
@@ -491,7 +492,7 @@ end
 ----------------
 function test.testUI_PLAYER_ENTERING_WORLD_shows_ui()
 	GoldRate.PLAYER_ENTERING_WORLD()
-
+	assertTrue( GoldRate_Display:IsVisible() )
 end
 function test.testUI_2()
 end

@@ -9,8 +9,10 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 			<OnEvent>GoldRate[event](self, ...)</OnEvent>
 		</Scripts>
 	</Frame>
+	<Frame name="GoldRate_Display" frameStrata="BACKGROUND" toplevel="false" parent="UIParent">
+	</Frame>
 	<!--
-			<Frame name="GoldRate_Displad" frameStrata="BACKGROUND" toplevel="false" parent="UIParent">
+			<Frame name="GoldRate_Display" frameStrata="BACKGROUND" toplevel="false" parent="UIParent">
 		<Size>
 			<AbsDimension x="300" y="15"/>
 		</Size>
