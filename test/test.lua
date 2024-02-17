@@ -487,9 +487,29 @@ function test.testMultiPrune_01()
 	assertTrue( valCount < 7860 ) -- +- 2 values to account for times
 	assertTrue( valCount > 7854 )
 end
+function test.test_Prune_Token_values()
+	-- Token prune only removes duplicate values
+	GoldRate_tokenData = {
+		[5] = 10000,
+		[10] = 10000,
+		[15] = 20000,
+	}
+	test.runPruneData()
+	assertIsNil( GoldRate_tokenData[10] )
+end
 ----------------
 -- Tests for UI
 ----------------
+function test.test_sets_inCombat()
+	GoldRate.inCombat = nil
+	GoldRate.PLAYER_REGEN_DISABLED()
+	assertTrue( GoldRate.inCombat )
+end
+function test.test_clears_inCombat()
+	GoldRate.inCombat = true
+	GoldRate.PLAYER_REGEN_ENABLED()
+	assertIsNil( GoldRate.inCombat )
+end
 function test.testUI_PLAYER_ENTERING_WORLD_shows_ui()
 	GoldRate.PLAYER_ENTERING_WORLD()
 	assertTrue( GoldRate_Display:IsVisible() )

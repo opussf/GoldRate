@@ -107,15 +107,15 @@ function test.toCobertura()
 		-- https://gcovr.com/en/stable/output/sonarqube.html
 		-- https://gcovr.com/en/stable/output/cobertura.html
 
-		-- calculate some data
+		-- calculate some data - meh, all coverage will be 100% for now anyway
 
 		local coberturaTable = {}
 		table.insert( coberturaTable, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" )
 		table.insert( coberturaTable, "<!DOCTYPE coverage SYSTEM 'http://cobertura.sourceforge.net/xml/coverage-04.dtd'>" )
-		table.insert( coberturaTable, "<coverage line-rate='0' branch-rate='0' lines-covered='0' lines-valid='0' branches-covered='0' branches-valid='0' complexity='0' timestamp='"..time().."' version='vROFL'>" )
-		table.insert( coberturaTable, "<sources><source>.</source></sources>" )
+		table.insert( coberturaTable, "<coverage line-rate='1' branch-rate='0' lines-covered='0' lines-valid='0' branches-covered='0' branches-valid='0' complexity='0' timestamp='"..time().."' version='vROFL'>" )
+		table.insert( coberturaTable, "<sources><source>test</source></sources>" )
 		table.insert( coberturaTable, "<packages>" )
-		table.insert( coberturaTable, "<package name='' line-rate='0' branch-rate='0' complexity='0'>" )
+		table.insert( coberturaTable, "<package name='' line-rate='1' branch-rate='0' complexity='0'>" )
 		table.insert( coberturaTable, "<classes>" )
 		for file, lines in pairs( test.coverage ) do
 			table.insert( coberturaTable, "<class name='' filename='"..file.."' line-rate='0' branch-rate='0' complexity='0'>" )

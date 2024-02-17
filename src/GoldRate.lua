@@ -133,6 +133,9 @@ function GoldRate.OnUpdate( arg1 )
 		C_WowTokenPublic.UpdateMarketPrice()
 		GoldRate.UpdateScanTime()
 	end
+	if ( not GoldRate.inCombat and GoldRate.needToRebuildTicker ) then
+		
+	end
 	if GoldRate.pruneThread and coroutine.status( GoldRate.pruneThread ) ~= "dead" then
 		coroutine.resume( GoldRate.pruneThread )
 	end
@@ -272,16 +275,17 @@ function GoldRate.PruneData()
 	-- TokenData
 	-- Only remove token values where they have not changed
 	-- Probably from duplicate values being imported
--- 	count = 0
--- 	local prevVal = 0
--- 	for ts, val in GoldRate.PairsByKeys( GoldRate_tokenData ) do
--- 		diff = val - prevVal
--- 		if (count > 0 and diff == 0) then
--- 			GoldRate_tokenData[ts] = nil
--- 		end
--- 		count = count + 1
--- 		prevVal = val
--- 	end
+	-- @TODO: Since I only look at the last year of data, does older data need to be expired?
+	count = 0
+	local prevVal = 0
+	for ts, val in GoldRate.PairsByKeys( GoldRate_tokenData ) do
+		diff = val - prevVal
+		if (count > 0 and diff == 0) then
+			GoldRate_tokenData[ts] = nil
+		end
+		count = count + 1
+		prevVal = val
+	end
 end
 --------------
 -- Non Event functions
