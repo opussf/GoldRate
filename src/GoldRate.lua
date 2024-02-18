@@ -134,63 +134,42 @@ function GoldRate.OnUpdate( arg1 )
 		GoldRate.UpdateScanTime()
 	end
 	if ( not GoldRate.inCombat and GoldRate.needToRebuildTicker ) then
-		
+		GoldRate.makeTokenText()
 	end
 	if GoldRate.pruneThread and coroutine.status( GoldRate.pruneThread ) ~= "dead" then
 		coroutine.resume( GoldRate.pruneThread )
 	end
 end
--- 	local changeColor = COLOR_END
--- 	if val then
--- 		local now = time()
--- 		local changePC, diff = 0, 0
--- 		if (not GoldRate.tokenLast) or (GoldRate.tokenLast and GoldRate.tokenLast ~= val) then
--- 			-- if no previous data, or the value has changed
--- 			if GoldRate.tokenLast then
--- 				diff = val - GoldRate.tokenLast
--- 				changePC = (diff / GoldRate.tokenLast) * 100
--- 				changeColor = (diff > 0) and COLOR_GREEN or COLOR_RED
--- 			end
--- 			GoldRate_tokenData[now] = val
--- 			GoldRate.tokenLast = val
--- 			GoldRate.tokenLastTS = now
--- 			GoldRate.UpdateScanTime()
--- 			limits = {GoldRate.GetHighLow()}
+function GoldRate.makeTokenText()
+	local currentValue = GoldRate_tokenData[GoldRate.tokenTSs[#GoldRate.tokenTSs]]
+	local diff = ( #GoldRate.tokenTSs > 1 ) and currentValue - GoldRate_tokenData[GoldRate.tokenTSs[#GoldRate.tokenTSs-1]] or 0
+	limits = {GoldRate.GetHighLow()}
 
--- 			local minAbs
--- 			for k=3,(#GoldRate.days * 2) do  -- 3 -> #days * 2
--- 				local testAbs = abs(limits[k]-val)
--- 				minAbs = minAbs and min(testAbs,minAbs) or testAbs
--- 				if minAbs == testAbs then minIndex = k end
--- 			end
+	local minAbs, minIndex
+	for k=3,(#GoldRate.days * 2) do   -- 3 -> #days * 2
+		local testAbs = abs(limits[k]-currentValue)
+		minAbs = minAbs and min(testAbs,minAbs) or testAbs
+		if minAbs == testAbs then minIndex = k end
+	end
+	
+	GoldRate.tokenText = string.format( "TOK 24L%i / %i(%+i) %s%i / 24H%i",
+			math.floor( limits[2]/10000 ),         -- 24H low
+			math.floor( currentValue/10000 ),   
+			math.floor( ( diff/10000 ) + 0.5 ),    -- diff
+			GoldRate.daysText[minIndex],           -- closest range
+			math.floor( limits[minIndex]/10000 ),  -- the value of the closest
+			math.floor( limits[1]/10000 )          -- 24H high
+	)
 
--- 			--print("Found min diff ("..minAbs..") at index: "..minIndex.." "..GoldRate.daysText[minIndex]..limits[minIndex]/10000)
-
--- 			GoldRate.tickerToken = string.format( "TOK %i{circle}%+i :: 24H%i 24L%i %s%i",
--- 					math.floor( val/10000 ), math.floor( (diff/10000)+0.5 ), math.floor( limits[1]/10000 ),
--- 					math.floor( limits[2]/10000 ), GoldRate.daysText[minIndex], math.floor( limits[minIndex]/10000 ) )
-
--- 			local uiDisplay = string.format( "TOK 24L%i / %i(%+i) %s%i / 24H%i ",
--- 					math.floor( limits[2]/10000 ),  -- 24H low
--- 					math.floor( val/10000 ), -- current
--- 					math.floor( ( diff/10000 ) + 0.5 ),  -- diff
--- 					GoldRate.daysText[minIndex],  -- closest range
--- 					math.floor( limits[minIndex]/10000 ), -- yaya
--- 					math.floor( limits[1]/10000 )  -- 24H high
--- 			)
-
---
 -- 			GoldRate.Print(GoldRate.tickerToken, false)
 -- 			GoldRate.GuildPrint(GoldRate.tickerToken)
--- 			GoldRateUI.Show( math.floor( limits[2]/10000 ), -- min
--- 					math.floor( val/10000 ),  -- value
--- 					math.floor( limits[1]/10000 ), --  max
--- 					uiDisplay  -- display for the UI
--- 			)
--- 		end
--- 	end
--- end
 
+	GoldRate.UIShow( math.floor( limits[2]/10000 ), -- min
+			math.floor( currentValue/10000 ),  -- value
+			math.floor( limits[1]/10000 ), --  max
+			GoldRate.tokenText  -- display for the UI
+	)
+end
 
 ------------
 -- Support

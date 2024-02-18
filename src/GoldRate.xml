@@ -10,12 +10,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 		</Scripts>
 	</Frame>
 	<Frame name="GoldRate_Display" frameStrata="BACKGROUND" toplevel="false" parent="UIParent">
-	</Frame>
-	<!--
-			<Frame name="GoldRate_Display" frameStrata="BACKGROUND" toplevel="false" parent="UIParent">
-		<Size>
-			<AbsDimension x="300" y="15"/>
-		</Size>
+		<Size><AbsDimension x="300" y="15"/></Size>
 		<Anchors>
 			<Anchor point="TOPLEFT" relativeTo="ChatFrame1" relativePoint="BOTTOMLEFT">
 				<Offset>
@@ -32,9 +27,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 		</Layers>
 		<Frames>
 			<StatusBar name="GoldRate_Display_Bar0" inherits="TextStatusBar">
-				<Size>
-					<AbsDimension x="300" y="15"/>
-				</Size>
+				<Size><AbsDimension x="300" y="15"/></Size>
 				<Anchors>
 						<Anchor point="TOPLEFT"/>
 				</Anchors>
@@ -53,16 +46,14 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 				</Layers>
 				<Scripts>
 					<OnLoad>
-						GoldRate_Display:SetFrameLevel( 0 );  -->  <!-- background? --> <!--
+						GoldRate_Display:SetFrameLevel( 0 );  <!-- background? -->
 					</OnLoad>
 				</Scripts>
 				<BarTexture file="Interface\TargetingFrame\UI-StatusBar"/>
-				<BarColor r="0" g="0.5" b="0"/> --> <!-- Green --> <!--
+				<BarColor r="0" g="0.5" b="0"/> <!-- Green -->
 			</StatusBar>
 			<StatusBar name="GoldRate_Display_Bar1" inherits="TextStatusBar">
-				<Size>
-					<AbsDimension x="300" y="15"/>
-				</Size>
+				<Size><AbsDimension x="300" y="15"/></Size>
 				<Anchors>
 					<Anchor point="TOPLEFT"/>
 				</Anchors>
@@ -77,8 +68,17 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 		</Frames>
 		<Scripts>
 			<OnLoad>self:Hide()</OnLoad>
-			<OnUpdate>GoldRateUI.OnUpdate(arg1)</OnUpdate>
+			<OnUpdate>GoldRate.UIOnUpdate(arg1)</OnUpdate>
 		</Scripts>
+	</Frame>
+	<!--
+		
+		
+		<Frames>
+
+			
+		</Frames>
+
 	</Frame>
 -->
 </Ui>

@@ -7,7 +7,7 @@ test.coberturaFileName = "coverage.xml"
 -- -- Figure out how to parse the XML here, until then....
 -- GoldRate_Frame = CreateFrame()
 -- GoldRate_Display = CreateFrame()
--- ChatFrame1 = CreateFrame()
+ChatFrame1 = CreateFrame()
 -- GoldRate_Display_Bar0 = CreateStatusBar()
 -- GoldRate_Display_Bar1 = CreateStatusBar()
 -- GoldRate_Display_String = CreateFontString()
@@ -22,6 +22,7 @@ function test.before()
 	GoldRate.tokenLastTS = nil
 	GoldRate.tokenLast = nil
 	GoldRate.needToRebuildTicker = nil
+	GoldRate.inCombat = nil
 	chatLog = {}
 	GoldRate.OnLoad()
 	GoldRate.ADDON_LOADED()
@@ -514,7 +515,28 @@ function test.testUI_PLAYER_ENTERING_WORLD_shows_ui()
 	GoldRate.PLAYER_ENTERING_WORLD()
 	assertTrue( GoldRate_Display:IsVisible() )
 end
-function test.testUI_2()
+function test.test_UI_one_token()
+	GoldRate.inCombat = nil
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	GoldRate.OnUpdate()
+	assertEquals( "TOK 24L12 / 12(+0) 360DL12 / 24H12", GoldRate.tokenText )
+end
+function test.test_UI_two_token()
+	GoldRate.inCombat = nil
+	now = time()
+	GoldRate_tokenData[now-( 25*86400)] = 130000 --  25 days ago, 21k -- max30
+	GoldRate.VARIABLES_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	GoldRate.OnUpdate()
+	assertEquals( "TOK 24L12 / 12(-1) 360DL12 / 24H12", GoldRate.tokenText )
+end
+function test.test_UI_more_tokens()
+	GoldRate.inCombat = nil
+	GoldRate_tokenData[time()-3600] = 500000
+	GoldRate.VARIABLES_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	GoldRate.OnUpdate()
+	assertEquals( "TOK 24L12 / 12(-38) 360DL12 / 24H50", GoldRate.tokenText )
 end
 
 test.run()
