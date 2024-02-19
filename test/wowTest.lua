@@ -108,7 +108,6 @@ function test.toCobertura()
 		-- https://gcovr.com/en/stable/output/cobertura.html
 
 		-- calculate some data - meh, all coverage will be 100% for now anyway
-
 		local coberturaTable = {}
 		table.insert( coberturaTable, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" )
 		table.insert( coberturaTable, "<!DOCTYPE coverage SYSTEM 'http://cobertura.sourceforge.net/xml/coverage-04.dtd'>" )

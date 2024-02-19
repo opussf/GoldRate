@@ -2,12 +2,12 @@
 
 require "wowTest"
 test.outFileName = "testOut.xml"
-test.coberturaFileName = "coverage.xml"
+--test.coberturaFileName = "coverage.xml"
 
 -- -- Figure out how to parse the XML here, until then....
 -- GoldRate_Frame = CreateFrame()
 -- GoldRate_Display = CreateFrame()
-ChatFrame1 = CreateFrame()
+-- ChatFrame1 = CreateFrame()
 -- GoldRate_Display_Bar0 = CreateStatusBar()
 -- GoldRate_Display_Bar1 = CreateStatusBar()
 -- GoldRate_Display_String = CreateFontString()
@@ -81,7 +81,7 @@ end
 function test.test_ADDON_LOADED_sets_faction()
 	assertEquals( "Alliance", GoldRate.faction )
 end
-function test.test_ADDON_LOADED_sets_name()	
+function test.test_ADDON_LOADED_sets_name()
 	assertEquals( "testPlayer", GoldRate.name )
 end
 function test.test_ADDON_LOADED_prints_version()
@@ -189,7 +189,7 @@ function test.test_TOKEN_MARKET_PRICE_UPDATED_saves_if_different_values()
 	GoldRate_tokenData[now - 120] = 120456
 	GoldRate.VARIABLES_LOADED()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
-	
+
 	local dataCount = 0
 	for k, v in pairs( GoldRate_tokenData ) do
 		dataCount = dataCount + 1
