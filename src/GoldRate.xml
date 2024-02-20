@@ -2,29 +2,18 @@
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\..\FrameXML\UI.xsd">
-
 	<Frame name="GoldRate_Frame" frameStrata="BACKGROUND" toplevel="false" enableMouse="false" movable="false" parent="UIParent">
 		<Scripts>
-			<OnLoad>
-				GoldRate.OnLoad();
-			</OnLoad>
-			<OnUpdate>
-				GoldRate.OnUpdate(arg1);
-			</OnUpdate>
-			<OnEvent>
-				GoldRate[event](self, ...)
-			</OnEvent>
+			<OnLoad>GoldRate.OnLoad()</OnLoad>
+			<OnUpdate>GoldRate.OnUpdate(arg1)</OnUpdate>
+			<OnEvent>GoldRate[event](self, ...)</OnEvent>
 		</Scripts>
 	</Frame>
 	<Frame name="GoldRate_Display" frameStrata="BACKGROUND" toplevel="false" parent="UIParent">
-		<Size>
-			<AbsDimension x="300" y="15"/>
-		</Size>
+		<Size><AbsDimension x="300" y="15"/></Size>
 		<Anchors>
 			<Anchor point="TOPLEFT" relativeTo="ChatFrame1" relativePoint="BOTTOMLEFT">
-				<Offset>
-					<AbsDimension x="0" y="-5"/>
-				</Offset>
+				<Offset><AbsDimension x="0" y="-5"/></Offset>
 			</Anchor>
 		</Anchors>
 		<Layers>
@@ -36,45 +25,28 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 		</Layers>
 		<Frames>
 			<StatusBar name="GoldRate_Display_Bar0" inherits="TextStatusBar">
-				<Size>
-					<AbsDimension x="300" y="15"/>
-				</Size>
-				<Anchors>
-						<Anchor point="TOPLEFT"/>
-				</Anchors>
+				<Size><AbsDimension x="300" y="15"/></Size>
+				<Anchors><Anchor point="TOPLEFT"/></Anchors>
 				<Layers>
 					<Layer level="LOW">
 						<FontString name="GoldRate_Display_String" inherits="GameFontNormal">
-							<Anchors>
-								<Anchor point="CENTER">
-								</Anchor>
-							</Anchors>
-							 <FontHeight>
-								<AbsValue val="10"/>
-							</FontHeight>
+							<Anchors><Anchor point="CENTER"/></Anchors>
+							<FontHeight><AbsValue val="10"/></FontHeight>
 							<Color r="1" g="1" b="1"/>
 						</FontString>
 					</Layer>
 				</Layers>
 				<Scripts>
-					<OnLoad>
-						GoldRate_Display:SetFrameLevel( 0 );  <!-- background? -->
-					</OnLoad>
+					<OnLoad>GoldRate_Display:SetFrameLevel( 0 )</OnLoad>  <!-- background? -->
 				</Scripts>
 				<BarTexture file="Interface\TargetingFrame\UI-StatusBar"/>
 				<BarColor r="0" g="0.5" b="0"/> <!-- Green -->
 			</StatusBar>
 			<StatusBar name="GoldRate_Display_Bar1" inherits="TextStatusBar">
-				<Size>
-					<AbsDimension x="300" y="15"/>
-				</Size>
-				<Anchors>
-					<Anchor point="TOPLEFT"/>
-				</Anchors>
+				<Size><AbsDimension x="300" y="15"/></Size>
+				<Anchors><Anchor point="TOPLEFT"/></Anchors>
 				<Scripts>
-					<OnLoad>
-						GoldRate_Display:SetFrameLevel( 1 );
-					</OnLoad>
+					<OnLoad>GoldRate_Display:SetFrameLevel( 1 )</OnLoad>
 				</Scripts>
 				<BarTexture file="Interface\TargetingFrame\UI-StatusBar"/>
 				<BarColor r="0" g="0" b="1" a="0.5" />
@@ -82,7 +54,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 		</Frames>
 		<Scripts>
 			<OnLoad>self:Hide()</OnLoad>
-			<OnUpdate>GoldRateUI.OnUpdate(arg1)</OnUpdate>
+			<OnUpdate>GoldRate.UIOnUpdate(arg1)</OnUpdate>
 		</Scripts>
 	</Frame>
 </Ui>

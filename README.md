@@ -1,6 +1,6 @@
 # GoldRate
 
-[![Build Status](https://travis-ci.org/opussf/GoldRate.svg?branch=master)](https://travis-ci.org/opussf/GoldRate)
+![Build Status](https://github.com/opussf/GoldRate/actions/workflows/normal_test.yml/badge.svg?branch=master)
 
 ## Idea
 This addon is in response to the WoW Token release.
