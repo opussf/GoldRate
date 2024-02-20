@@ -538,5 +538,60 @@ function test.test_UI_more_tokens()
 	GoldRate.OnUpdate()
 	assertEquals( "TOK 24L12 / 12(-38) 360DL12 / 24H50", GoldRate.tokenText )
 end
-
+function test.test_UIShow_Shows_the_UI()
+	GoldRate_Display:Hide()
+	GoldRate.UIShow( 1, 2, 3, "Hello" )
+	assertTrue( GoldRate_Display:IsVisible() )
+end
+function test.test_UIShow_Bar0_minmax()
+	GoldRate_Display_Bar0.min = 0
+	GoldRate_Display_Bar0.max = 0
+	GoldRate.UIShow( 1, 2, 3, "Hello" )
+	assertEquals( 1, GoldRate_Display_Bar0.min )
+	assertEquals( 3, GoldRate_Display_Bar0.max )
+end
+function test.test_UIShow_Bar1_minmax()
+	GoldRate_Display_Bar1.min = 0
+	GoldRate_Display_Bar1.max = 0
+	GoldRate.UIShow( 1, 2, 3, "Hello" )
+	assertEquals( 1, GoldRate_Display_Bar1.min )
+	assertEquals( 3, GoldRate_Display_Bar1.max )
+end
+function test.test_UIShow_Bars_setValue()
+	GoldRate_Display_Bar0.value = 0
+	GoldRate_Display_Bar1.value = 0
+	GoldRate.UIShow( 10, 20, 30, "Hello" )
+	assertEquals( 20, GoldRate_Display_Bar0.value, "Bar0 should have value." )
+	assertEquals( 30, GoldRate_Display_Bar1.value, "Bar1 should have value." )
+end
+function test.test_UIShow_Bars_setText()
+	GoldRate_Display_String.textValue = ""
+	GoldRate.UIShow( 20, 30, 40, "TOK testvalue" )
+	assertEquals( "TOK testvalue", GoldRate_Display_String.textValue )
+end
+function test.test_UIOnUpdate_sets_UILastUpdate()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	GoldRate.UIOnUpdate()
+	assertTrue( GoldRate.UILastUpdate > 0 )
+end
+function test.test_UIOnUpdate_Bar1_minmax()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	GoldRate_Display_Bar1.min = 10
+	GoldRate_Display_Bar1.max = 10
+	GoldRate.UIOnUpdate()
+	assertEquals( 0, GoldRate_Display_Bar1.min )
+	assertEquals( GoldRate.UIdisplayTime, GoldRate_Display_Bar1.max )
+end
+function test.test_UIOnUpdate_Bar1_value_NewTokenValue()
+	GoldRate.VARIABLES_LOADED()
+	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	GoldRate.OnUpdate()
+	GoldRate.UIOnUpdate()
+	assertEquals( GoldRate.UIdisplayTime, GoldRate_Display_Bar1.value )
+end
+function test.test_UIOnUpdate_Bar1_value_OldTokenValue()
+	GoldRate.tokenTSs = { time() - 180 } -- 3 minutes ago
+	GoldRate.UIOnUpdate()
+	assertEquals( GoldRate.UIdisplayTime - 180 , GoldRate_Display_Bar1.value )
+end
 test.run()

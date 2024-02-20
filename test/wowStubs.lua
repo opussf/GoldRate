@@ -1,7 +1,7 @@
 -----------------------------------------
 -- Author  :  Opussf
--- Date    :  February 12 2024
--- Revision:  9.1.5
+-- Date    :  February 18 2024
+-- Revision:  9.2
 -----------------------------------------
 -- These are functions from wow that have been needed by addons so far
 -- Not a complete list of the functions.
@@ -532,11 +532,8 @@ function CreateFontString( name, ... )
 	for k,v in pairs(Frame) do
 		FontString[k] = v
 	end
-	FontString.text = ""
-	FontString["SetText"] = function(self,text) self.text=text; end
-	FontString["GetText"] = function(self) return(self.text); end
+	FontString.textValue = ""
 	FontString.name=name
-	--print("FontString made?")
 	return FontString
 end
 function CreateStatusBar( name, ... )
@@ -545,16 +542,8 @@ function CreateStatusBar( name, ... )
 		StatusBar[k] = v
 	end
 	StatusBar.name=name
-
-	StatusBar["SetMinMaxValues"] = function() end;
-	StatusBar["Show"] = function() end;
-
 	return StatusBar
 end
-Slider = {
-		["GetName"] = function() return ""; end,
-		["SetText"] = function(text) end,
-}
 function CreateSlider( name, ... )
 	Slider = {}
 	for k,v in pairs(Frame) do
@@ -562,8 +551,6 @@ function CreateSlider( name, ... )
 	end
 	Slider.name=name
 	Slider[name.."Text"] = CreateFontString(name.."Text")
-	Slider["GetName"] = function(self) return self.name; end
-	Slider["SetText"] = function(text) end
 	return Slider
 end
 CheckButton = {
