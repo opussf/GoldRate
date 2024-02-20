@@ -67,6 +67,11 @@
 		<include name="./*.md"/>
 	</patternset>
 
+	<patternset id="resultFiles">
+		<include name="testOut.xml"/>
+		<include name="coverage.xml"/>
+	</patternset>
+
 	<target name="clean" description="Cleans old builds">
 		<delete dir="target" verbose="true"/>
 	</target>
@@ -124,7 +129,11 @@
 		<exec executable="lua" dir="test" resultproperty="testResult">
 			<arg value="test.lua"/>
 		</exec>
-		<move todir="${report.dir}" file="${test.dir}/testOut.xml"/>
+		<move todir="${report.dir}">
+			<fileset dir="${test.dir}">
+				<patternset refid="resultFiles"/>
+			</fileset>
+		</move>
 		<fail message="The tests failed. Please see the output for details." status="${testResult}">
 			<condition>
 				<not>

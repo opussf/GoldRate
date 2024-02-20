@@ -1,5 +1,35 @@
 # Feature
 
+https://vitaliimelnychuk.medium.com/code-coverage-reports-in-your-github-pull-requests-f0d164541376
+https://github.com/marketplace/actions/code-coverage-summary
+
+
+## Rewrite
+
+Redo some of this.
+[x] Remove the 'goal' command.   Not used.
+
+Notes:
+For the token prices, I need the current token price, and the previous token price.
+
+Hash tables are not ordered.
+With JUST the tokenData hash, I could find the last few tokens by:
+* using the current TS, and looping backwards until I find 2 values. This presents a problem where there is a huge gap in the data, or there is not enough data.
+* build a sorted array of token timestamps when the data is loaded.  Keep this updated as new token values are captured.  Rebuild when pruning.
+  The rebuild is 'cheap' if done infrequently.
+  If the sorted array is underpopulated, this is easy to see, and can be handled.
+
+Allow the token data to be captured, then the display can generate the text once there is enough CPU (Not in combat).
+The TOKEN_MARKET_PRICE_UPDATED can generate a light version.
+
+TOK 12134{cirlce}+53245
+TOK 12{circle}+5 :: 24H12 24L12 360DH12
+
+The size of this string can act as a flag.
+
+
+
+
 ## UIDisplay
 
 Show the token price in the UI.
