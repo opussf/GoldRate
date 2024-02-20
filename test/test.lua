@@ -2,7 +2,7 @@
 
 require "wowTest"
 test.outFileName = "testOut.xml"
---test.coberturaFileName = "coverage.xml"
+test.coberturaFileName = "coverage.xml"
 
 -- -- Figure out how to parse the XML here, until then....
 -- GoldRate_Frame = CreateFrame()
