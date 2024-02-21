@@ -101,6 +101,9 @@ function GoldRate.PLAYER_ENTERING_WORLD()
 	GoldRate.PLAYER_MONEY()
 	GoldRate.pruneThread = coroutine.create( GoldRate.PruneData )
 	GoldRate.SetTokenTSs()
+	if not GoldRate.tokenText and #GoldRate.tokenTSs > 0 then
+		GoldRate.makeTokenText()
+	end
 
 -- 	if not GoldRate.goldShown then
 -- 		local totalGoldNow = GoldRate.otherSummed + GetMoney()
@@ -151,10 +154,10 @@ function GoldRate.makeTokenText()
 		minAbs = minAbs and min(testAbs,minAbs) or testAbs
 		if minAbs == testAbs then minIndex = k end
 	end
-	
+
 	GoldRate.tokenText = string.format( "TOK 24L%i / %i(%+i) %s%i / 24H%i",
 			math.floor( limits[2]/10000 ),         -- 24H low
-			math.floor( currentValue/10000 ),   
+			math.floor( currentValue/10000 ),
 			math.floor( ( diff/10000 ) + 0.5 ),    -- diff
 			GoldRate.daysText[minIndex],           -- closest range
 			math.floor( limits[minIndex]/10000 ),  -- the value of the closest
@@ -184,7 +187,7 @@ function GoldRate.SetTokenTSs()
 end
 function GoldRate.PruneData()
 	GoldRate.Print("PruneData")
--- 
+--
 	local smoothAgeDays = GoldRate_options.smoothAgeDays or 30
 	local pruneAgeDays = GoldRate_options.pruneAgeDays or 180
 	smoothCutoff = time() - (86400 * smoothAgeDays)

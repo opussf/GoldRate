@@ -23,6 +23,7 @@ function test.before()
 	GoldRate.tokenLast = nil
 	GoldRate.needToRebuildTicker = nil
 	GoldRate.inCombat = nil
+	GoldRate.tokenText = nil
 	chatLog = {}
 	GoldRate.OnLoad()
 	GoldRate.ADDON_LOADED()
@@ -162,6 +163,22 @@ function test.test_PLAYER_ENTERING_WORLD_sets_player_last_withData()
 	GoldRate.VARIABLES_LOADED() -- this needs to be done again to reset GoldRate.myGold
 	GoldRate.PLAYER_ENTERING_WORLD()  -- Capture the amount
 	assertEquals( 150000, GoldRate_data.testRealm.Alliance.toons.testPlayer.last )
+end
+function test.test_PLAYER_ENTERING_WORLD_sets_tokenText_no_data()
+	GoldRate.VARIABLES_LOADED()
+	assertIsNil( GoldRate.tokenText )
+end
+function test.test_PLAYER_ENTERING_WORLD_sets_tokenText_one_data_point()
+	GoldRate_tokenData = {
+		[time()-600] = 20000,
+	}
+	GoldRate.VARIABLES_LOADED()
+	GoldRate.PLAYER_ENTERING_WORLD()
+	assertEquals( "TOK 24L2 / 2(+0) 360DL2 / 24H2", GoldRate.tokenText )
+end
+function test.test_VARIABLES_LOADED_shows_UI()
+	GoldRate.VARIABLES_LOADED()
+	assertTrue( GoldRate_Display:IsVisible() )
 end
 
 ---------------
@@ -494,6 +511,7 @@ function test.test_Prune_Token_values()
 		[5] = 10000,
 		[10] = 10000,
 		[15] = 20000,
+		[time()-600] = 30000,
 	}
 	test.runPruneData()
 	assertIsNil( GoldRate_tokenData[10] )
