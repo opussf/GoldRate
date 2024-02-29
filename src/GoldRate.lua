@@ -144,6 +144,7 @@ function GoldRate.OnUpdate( arg1 )
 	end
 end
 function GoldRate.makeTokenText()
+	GoldRate.needToRebuildTicker = false
 	local currentValue = GoldRate_tokenData[GoldRate.tokenTSs[#GoldRate.tokenTSs]]
 	local diff = ( #GoldRate.tokenTSs > 1 ) and currentValue - GoldRate_tokenData[GoldRate.tokenTSs[#GoldRate.tokenTSs-1]] or 0
 	limits = {GoldRate.GetHighLow()}
