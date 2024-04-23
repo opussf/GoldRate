@@ -532,8 +532,11 @@ function CreateFontString( name, ... )
 	for k,v in pairs(Frame) do
 		FontString[k] = v
 	end
-	FontString.textValue = ""
+	FontString.text = ""
+	FontString["SetText"] = function(self,text) self.text=text; end
+	FontString["GetText"] = function(self) return(self.text); end
 	FontString.name=name
+	--print("FontString made?")
 	return FontString
 end
 function CreateStatusBar( name, ... )

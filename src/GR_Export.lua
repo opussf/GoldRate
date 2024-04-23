@@ -94,13 +94,13 @@ function ExportXML()
 		strOut = "<?xml version='1.0' encoding='utf-8' ?>\n"
 		strOut = strOut .. "<goldRate>\n"
 		strOut = strOut .. "<graphAgeDays>"..GoldRate_options.graphAgeDays.."</graphAgeDays>\n"
-		for realm, rdata in pairs( GoldRate_data ) do
+		for realm, rdata in PairsByKeys( GoldRate_data ) do
 			maxInitialTS = 0
-			for faction, fdata in pairs( rdata ) do
+			for faction, fdata in PairsByKeys( rdata ) do
 				m, targetTS = Rate(realm, faction)
 				strOut = strOut .. string.format( '<rf realm="%s" faction="%s">\n', realm, faction )
 				if fdata.goal and targetTS then
-					print( type( targetTS ) )
+					--print( type( targetTS ) )
 					strOut = strOut .. string.format( '<goal ts="%s">%i</goal>\n', targetTS, fdata.goal )
 				end
 				for name, pdata in pairs( fdata.toons ) do
@@ -142,11 +142,11 @@ function ExportJSON()
 		strOut = strOut .. '"realms": [\n'
 
 		realms = {}
-		for realm, rdata in pairs( GoldRate_data ) do
+		for realm, rdata in PairsByKeys( GoldRate_data ) do
 			maxInitialTS = 0
 			rStr = string.format( '{"realm": "%s","factions": [\n', realm)
 			factions = {}
-			for faction, fdata in pairs( rdata ) do
+			for faction, fdata in PairsByKeys( rdata ) do
 				fStr = string.format( '{"faction": "%s",', faction )
 				m, targetTS = Rate(realm, faction)
 				if fdata.goal and targetTS then
@@ -197,9 +197,9 @@ end
 function ExportCSV()
 	strOut = "Realm,Faction,TimeStamp,TimeStamp,Gold\n"
 	if GoldRate_data then
-		for realm, rdata in pairs( GoldRate_data ) do
+		for realm, rdata in PairsByKeys( GoldRate_data ) do
 			maxInitialTS = 0
-			for faction, fdata in pairs( rdata ) do
+			for faction, fdata in PairsByKeys( rdata ) do
 				m, targetTS = Rate(realm, faction)
 
 				for name, pdata in pairs( fdata.toons ) do

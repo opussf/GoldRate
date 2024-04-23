@@ -1,7 +1,7 @@
 GoldRate.UIlastUpdate = 0
 GoldRate.UIdisplayTime = 1200  -- 20 minutes should be the normal update interval
 
-function GoldRate.UIOnUpdate( )
+function GoldRate.UIOnUpdate()
 	GoldRate.UILastUpdate = time()
 	GoldRate_Display_Bar1:SetMinMaxValues( 0, GoldRate.UIdisplayTime )
 	GoldRate_Display_Bar1:SetValue( GoldRate.tokenTSs[#GoldRate.tokenTSs] + GoldRate.UIdisplayTime - GoldRate.UILastUpdate )

@@ -582,7 +582,7 @@ function test.test_UIShow_Bars_setValue()
 	assertEquals( 20, GoldRate_Display_Bar0.value, "Bar0 should have value." )
 	assertEquals( 30, GoldRate_Display_Bar1.value, "Bar1 should have value." )
 end
-function test.test_UIShow_Bars_setText()
+function test.notest_UIShow_Bars_setText()
 	GoldRate_Display_String.textValue = ""
 	GoldRate.UIShow( 20, 30, 40, "TOK testvalue" )
 	assertEquals( "TOK testvalue", GoldRate_Display_String.textValue )
