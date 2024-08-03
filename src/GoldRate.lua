@@ -58,6 +58,7 @@ function GoldRate.OnLoad()
 	GoldRate_Frame:RegisterEvent("VARIABLES_LOADED")
 	GoldRate_Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 	GoldRate_Frame:RegisterEvent("PLAYER_MONEY")
+	GoldRate_Frame:RegisterEvent("ACCOUNT_MONEY")
 	GoldRate_Frame:RegisterEvent("TOKEN_MARKET_PRICE_UPDATED")
 	GoldRate_Frame:RegisterEvent("PLAYER_REGEN_DISABLED")
 	GoldRate_Frame:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -71,6 +72,7 @@ function GoldRate.ADDON_LOADED()
 	-- Setup needed variables
 	GoldRate.realm   = GetRealmName()
 	GoldRate.faction = UnitFactionGroup( "player" )
+	GoldRate.faction = "Both"
 	GoldRate.name    = UnitName( "player" )
 	GoldRate.Print( "v"..GOLDRATE_MSG_VERSION.." loaded." )
 end
@@ -91,20 +93,26 @@ function GoldRate.VARIABLES_LOADED( arg1, arg2 )
 		GoldRate_options.nextTokenScanTS = time() + 30
 	end
 	GoldRate.minScanPeriod = select(2, C_WowTokenPublic.GetCommerceSystemStatus() )
+	GoldRate_data["Warband Bank"] = GoldRate_data["Warband Bank"] or {}
+	GoldRate_data["Warband Bank"]["Both"] = GoldRate_data["Warband Bank"]["Both"] or {["toons"] = {}}
+	GoldRate_data["Warband Bank"]["Both"].consolidated = GoldRate_data["Warband Bank"]["Both"].consolidated or {0}
 end
 function GoldRate.PLAYER_MONEY()
 	GoldRate.myGold.last = GetMoney()
 	GoldRate.myGold.firstTS = GoldRate.myGold.firstTS or time()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[time()] = GoldRate.otherSummed + GetMoney()
 end
+function GoldRate.ACCOUNT_MONEY()
+	GoldRate_data["Warband Bank"].Both.consolidated[time()] = C_Bank.FetchDepositedMoney( Enum.BankType.Account )
+end
 function GoldRate.PLAYER_ENTERING_WORLD()
 	GoldRate.PLAYER_MONEY()
+	GoldRate.ACCOUNT_MONEY()
 	GoldRate.pruneThread = coroutine.create( GoldRate.PruneData )
 	GoldRate.SetTokenTSs()
 	if not GoldRate.tokenText and #GoldRate.tokenTSs > 0 then
 		GoldRate.makeTokenText()
 	end
-
 -- 	if not GoldRate.goldShown then
 -- 		local totalGoldNow = GoldRate.otherSummed + GetMoney()
 -- 		GoldRateUI.Show( 0, totalGoldNow/10000, GoldRate.tokenLast/10000, "Total Gold: "..math.floor(totalGoldNow/10000).." Token: "..GoldRate.tokenLast/10000 )
