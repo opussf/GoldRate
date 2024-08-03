@@ -80,7 +80,7 @@ function test.test_ADDON_LOADED_sets_realm()
 	assertEquals( "testRealm", GoldRate.realm )
 end
 function test.test_ADDON_LOADED_sets_faction()
-	assertEquals( "Alliance", GoldRate.faction )
+	assertEquals( "Both", GoldRate.faction )
 end
 function test.test_ADDON_LOADED_sets_name()
 	assertEquals( "testPlayer", GoldRate.name )
@@ -92,15 +92,15 @@ function test.test_ADDON_LOADED_event_notregistered()
 	assertIsNil( GoldRate_Frame.Events.ADDON_LOADED )
 end
 function test.test_VARIABLES_LOADED_setsOtherSummed_newToon()
-	GoldRate_data.testRealm.Alliance.toons.otherPlayer = {["last"] = 70000, ["firstTS"] = 100} -- give the other player 7 gold
-	GoldRate_data.testRealm.Alliance.consolidated = {[100]= 70000}
+	GoldRate_data.testRealm.Both.toons.otherPlayer = {["last"] = 70000, ["firstTS"] = 100} -- give the other player 7 gold
+	GoldRate_data.testRealm.Both.consolidated = {[100]= 70000}
 	GoldRate.ADDON_LOADED() -- force this again
 	GoldRate.VARIABLES_LOADED()
 	assertEquals( 70000, GoldRate.otherSummed )
 end
 function test.test_VARIABLES_LOADED_setsOtherSummed_revisit()
-	GoldRate_data.testRealm.Alliance.toons.testPlayer = {["last"] = 80000 }  -- give me 8 gold
-	GoldRate_data.testRealm.Alliance.toons.otherPlayer = {["last"] = 70000 } -- give the other player 7 gold
+	GoldRate_data.testRealm.Both.toons.testPlayer = {["last"] = 80000 }  -- give me 8 gold
+	GoldRate_data.testRealm.Both.toons.otherPlayer = {["last"] = 70000 } -- give the other player 7 gold
 	GoldRate.ADDON_LOADED() -- force this again
 	GoldRate.VARIABLES_LOADED()
 	assertEquals( 70000, GoldRate.otherSummed )
@@ -132,37 +132,37 @@ function test.test_VARIABLES_LOADED_sets_Options_nextTokenScanTS()
 end
 function test.test_PLAYER_MONEY_sets_player_last()
 	GoldRate.PLAYER_MONEY()
-	assertEquals( 150000, GoldRate_data.testRealm.Alliance.toons.testPlayer.last )
+	assertEquals( 150000, GoldRate_data.testRealm.Both.toons.testPlayer.last )
 end
 function test.test_PLAYER_MONEY_sets_firstTS()
 	GoldRate.PLAYER_MONEY()
-	assertEquals( time(), GoldRate_data.testRealm.Alliance.toons.testPlayer.firstTS )
+	assertEquals( time(), GoldRate_data.testRealm.Both.toons.testPlayer.firstTS )
 end
 function test.test_PLAYER_MONEY_preserves_firstTS()
-	GoldRate_data.testRealm.Alliance.toons.testPlayer = {["firstTS"] = 200, ["last"] = 10000 }
-	GoldRate_data.testRealm.Alliance.consolidated = { [200] = 10000 }
+	GoldRate_data.testRealm.Both.toons.testPlayer = {["firstTS"] = 200, ["last"] = 10000 }
+	GoldRate_data.testRealm.Both.consolidated = { [200] = 10000 }
 	GoldRate.PLAYER_MONEY()
-	assertEquals( 200, GoldRate_data.testRealm.Alliance.toons.testPlayer["firstTS"] )
+	assertEquals( 200, GoldRate_data.testRealm.Both.toons.testPlayer["firstTS"] )
 end
 function test.test_PLAYER_MONEY_sets_value_in_consolidated_single_player()
 	GoldRate.PLAYER_MONEY()
-	assertEquals( 150000, GoldRate_data.testRealm.Alliance.consolidated[time()] )
+	assertEquals( 150000, GoldRate_data.testRealm.Both.consolidated[time()] )
 end
 function test.test_PLAYER_MONEY_sets_value_in_consolidated_multiple_players()
 	-- means that GoldRate.otherSummed should be set.
 	GoldRate.otherSummed = 850000
 	GoldRate.PLAYER_MONEY()
-	assertEquals( 1000000, GoldRate_data.testRealm.Alliance.consolidated[time()] )
+	assertEquals( 1000000, GoldRate_data.testRealm.Both.consolidated[time()] )
 end
 function test.test_PLAYER_ENTERTING_WORLD_sets_value_in_consolidated()
 	GoldRate.PLAYER_ENTERING_WORLD()
-	assertEquals( 150000, GoldRate_data.testRealm.Alliance.consolidated[time()] )
+	assertEquals( 150000, GoldRate_data.testRealm.Both.consolidated[time()] )
 end
 function test.test_PLAYER_ENTERING_WORLD_sets_player_last_withData()
-	GoldRate_data.testRealm.Alliance.toons.testPlayer = {["firstTS"] = 3276534, ["last"] = 149999}  -- Has previous data
+	GoldRate_data.testRealm.Both.toons.testPlayer = {["firstTS"] = 3276534, ["last"] = 149999}  -- Has previous data
 	GoldRate.VARIABLES_LOADED() -- this needs to be done again to reset GoldRate.myGold
 	GoldRate.PLAYER_ENTERING_WORLD()  -- Capture the amount
-	assertEquals( 150000, GoldRate_data.testRealm.Alliance.toons.testPlayer.last )
+	assertEquals( 150000, GoldRate_data.testRealm.Both.toons.testPlayer.last )
 end
 function test.test_PLAYER_ENTERING_WORLD_sets_tokenText_no_data()
 	GoldRate.VARIABLES_LOADED()
@@ -251,6 +251,8 @@ end
 function test.test_OnUpdate_continues_prune_coroutine()
 	GoldRate.pruneThread = nil
 	GoldRate.PLAYER_ENTERING_WORLD()
+	GoldRate.OnUpdate()
+	GoldRate.OnUpdate()
 	GoldRate.OnUpdate()
 	GoldRate.OnUpdate()
 	GoldRate.OnUpdate()
@@ -407,7 +409,7 @@ function test.makeOldData_linearIncrease( spend )
 	val = 10
 	for ts = now-(150*86400),now,1000 do
 		if spend and (val > spend) then val = 0 end
-		GoldRate_data.testRealm.Alliance.consolidated[ts]=val
+		GoldRate_data.testRealm.Both.consolidated[ts]=val
 		val = val + 10
 	end
 	--print(val)
@@ -429,7 +431,7 @@ function test.testSmoothOldData_linearIncrease()
 	GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 	test.runPruneData()
 	valCount = 0
-	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
+	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Both.consolidated ) do
 		--print(k..":"..v)
 		if k<cutOff then
 			valCount = valCount + 1
@@ -444,7 +446,7 @@ function test.testSmoothOldData_sawblade()
 	GoldRate.VARIABLES_LOADED()
 	test.runPruneData()
 	valCount = 0
-	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
+	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Both.consolidated ) do
 		--print(k..":"..v)
 		if k<cutOff then
 			valCount = valCount + 1
@@ -459,7 +461,7 @@ function test.testPruneOldData()
 	GoldRate.VARIABLES_LOADED()
 	test.runPruneData()
 	valCount = 0
-	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
+	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Both.consolidated ) do
 		if k<cutOff then
 			valCount = valCount + 1
 		end
@@ -472,18 +474,18 @@ end
 function test.makeData_multiPrune( spend )
 	now = time()
 	GoldRate.PLAYER_MONEY()
-	GoldRate_data.testRealm.Horde = {}
-	GoldRate_data.testRealm.Horde.consolidated = {}
+	GoldRate_data.testRealm.Both = {}
+	GoldRate_data.testRealm.Both.consolidated = {}
 	GoldRate_data['otherRealm'] = {}
-	GoldRate_data['otherRealm'].Alliance = {}
-	GoldRate_data['otherRealm'].Alliance.consolidated = {}
+	GoldRate_data['otherRealm'].Both = {}
+	GoldRate_data['otherRealm'].Both.consolidated = {}
 
 	val = 10
 	for ts = now-(180*86400),now,1000 do
 		if spend and (val > spend) then val = 0 end
-		GoldRate_data.testRealm.Alliance.consolidated[ts] = val
-		GoldRate_data.testRealm.Horde.consolidated[ts] = val / 2
-		GoldRate_data['otherRealm'].Alliance.consolidated[ts] = val
+		GoldRate_data.testRealm.Both.consolidated[ts] = val
+		GoldRate_data.testRealm.Both.consolidated[ts] = val / 2
+		GoldRate_data['otherRealm'].Both.consolidated[ts] = val
 		val = val + 10
 	end
 end
@@ -492,13 +494,13 @@ function test.testMultiPrune_01()
 	test.runPruneData()
 
 	valCount = 0
-	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Alliance.consolidated ) do
+	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Both.consolidated ) do
 		valCount = valCount + 1
 	end
-	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Horde.consolidated ) do
+	for k,v in GoldRate.PairsByKeys( GoldRate_data.testRealm.Both.consolidated ) do
 		valCount = valCount + 1
 	end
-	for k,v in GoldRate.PairsByKeys( GoldRate_data['otherRealm'].Alliance.consolidated ) do
+	for k,v in GoldRate.PairsByKeys( GoldRate_data['otherRealm'].Both.consolidated ) do
 		valCount = valCount + 1
 	end
 	--assertEquals( 7857, valCount )
