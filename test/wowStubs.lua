@@ -1734,6 +1734,9 @@ C_Bank = {}
 function C_Bank.FetchDepositedMoney(  )
 	return 8376
 end
+function C_Bank.CanDepositMoney()
+	return true
+end
 
 Enum = {}
 Enum.TooltipDataType = {}

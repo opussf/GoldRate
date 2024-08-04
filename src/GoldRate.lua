@@ -103,7 +103,9 @@ function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[time()] = GoldRate.otherSummed + GetMoney()
 end
 function GoldRate.ACCOUNT_MONEY()
-	GoldRate_data["Warband Bank"].Both.consolidated[time()] = C_Bank.FetchDepositedMoney( Enum.BankType.Account )
+	if C_Bank.CanDepositMoney( Enum.BankType.Account ) then
+		GoldRate_data["Warband Bank"].Both.consolidated[time()] = C_Bank.FetchDepositedMoney( Enum.BankType.Account )
+	end
 end
 function GoldRate.PLAYER_ENTERING_WORLD()
 	GoldRate.PLAYER_MONEY()
