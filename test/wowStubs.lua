@@ -1,7 +1,7 @@
 -----------------------------------------
 -- Author  :  Opussf
--- Date    :  August 2 2024
--- Revision:  9.4.3-1-g220d744
+-- Date    :  August 5 2024
+-- Revision:  9.4.3-7-geed59e4
 -----------------------------------------
 -- These are functions from wow that have been needed by addons so far
 -- Not a complete list of the functions.
@@ -1181,7 +1181,10 @@ function GetRaidRosterInfo( raidIndex )
 	end
 end
 function GetRealmName()
-	return "testRealm"
+	return "Test Realm"
+end
+function GetNormalizedRealmName()
+	return "TestRealm"
 end
 function GetSendMailItem( slot )
 	-- 1 <= slot <= ATTACHMENTS_MAX_SEND
@@ -1731,7 +1734,7 @@ end
 -- C_Bank
 ----------
 C_Bank = {}
-function C_Bank.FetchDepositedMoney(  )
+function C_Bank.FetchDepositedMoney( accountTypeEnum )
 	return 8376
 end
 function C_Bank.CanDepositMoney()
@@ -1849,6 +1852,13 @@ function C_Reputation.GetFactionDataByID( idIn )
 	end
 end
 function C_Reputation.GetFactionParagonInfo()
+end
+
+----------
+-- Menu
+----------
+Menu = {}
+function Menu.ModifyMenu( ... )
 end
 
 -- A SAX parser takes a content handler, which provides these methods:
