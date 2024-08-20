@@ -264,19 +264,19 @@ function test.test_OnUpdate_Updates_ScanTime()
 	assertEquals( time() + 20*60, GoldRate_options.nextTokenScanTS )
 end
 
--- function test.testToken_TokenInfo()
--- 	-- just make sure the command works
--- 	fillTokenHistory()
--- 	GoldRate.Command( "token" )
--- end
--- function test.testToken_TokenList()
--- 	-- just make sure the command works
--- 	fillTokenHistory()
--- 	GoldRate.Command( "token list" )
--- end
+function test.testToken_TokenInfo()
+	-- just make sure the command works
+	fillTokenHistory()
+	GoldRate.Command( "token" )
+end
+function test.testToken_TokenList()
+	-- just make sure the command works
+	fillTokenHistory()
+	GoldRate.Command( "token list" )
+end
 
 -- function test.testGetDiffString_startLessthanEnd()
--- 	--- startVal < endVal (wowGold values)
+-- 	-- startVal < endVal (wowGold values)
 -- 	expected = "|cff00ff00+5 (100.00%)|r"
 -- 	actual = GoldRate.GetDiffString( 50000, 100000 )
 -- 	assertEquals( expected, actual )
@@ -296,87 +296,73 @@ end
 function test.testGetHighLow_1high()
 	fillTokenHistory_Asc()
 	high, low = GoldRate.GetHighLow()
-	assertTrue( high >= 8640 )
-	assertTrue( high <= 8642 )
+	assertAlmostEquals( 8641, high, nil, nil, 1 )
 end
 function test.testGetHighLow_1low()
 	fillTokenHistory_Asc()
 	high, low = GoldRate.GetHighLow()
-	assertTrue( low >= 8568 )
-	assertTrue( low <= 8570 )
+	assertAlmostEquals( 8569, low, nil, nil, 1 )
 end
 ----
 function test.testGetHighLow_30High_Asc()
 	fillTokenHistory_Asc()
 	_, _, high30 = GoldRate.GetHighLow()
-	assertTrue( high30 >= 8640 )
-	assertTrue( high30 <= 8642 )
+	assertAlmostEquals( 8641, high30, nil, nil, 1 )
 end
 function test.testGetHighLow_30Low_Asc()
 	fillTokenHistory_Asc()
 	_, _, _, low30 = GoldRate.GetHighLow()
-	assertTrue( low30 >= 6480 )
-	assertTrue( low30 <= 6482 )
+	assertAlmostEquals( 6481, low30, nil, nil, 1 )
 end
 function test.testGetHighLow_60High_Asc()
 	fillTokenHistory_Asc()
 	_, _, _, _, high60 = GoldRate.GetHighLow()
-	assertTrue( high60 >= 8640 )
-	assertTrue( high60 <= 8642 )
+	assertAlmostEquals( 8641, high60, nil, nil, 1 )
 end
 function test.testGetHighLow_60Low_Asc()
 	fillTokenHistory_Asc()
 	_, _, _, _, _, low60 = GoldRate.GetHighLow()
-	assertTrue( low60 >= 4320 )
-	assertTrue( low60 <= 4322 )
+	assertAlmostEquals( 4321, low60, nil, nil, 1 )
 end
 function test.testGetHighLow_90High_Asc()
 	fillTokenHistory_Asc()
 	_, _, _, _, _, _, high90 = GoldRate.GetHighLow()
-	assertTrue( high90 >= 8640 )
-	assertTrue( high90 <= 8642 )
+	assertAlmostEquals( 8641, high90, nil, nil, 1 )
 end
 function test.testGetHighLow_90Low_Asc()
 	fillTokenHistory_Asc()
 	_, _, _, _, _, _, _, low90 = GoldRate.GetHighLow()
-	assertTrue( low90 >= 2160 )
-	assertTrue( low90 <= 2162 )
+	assertAlmostEquals( 2161, low90, nil, nil, 1 )
 end
 function test.testGetHighLow_30High_Desc()
 	fillTokenHistory_Desc()
 	_, _, high30 = GoldRate.GetHighLow()
-	assertTrue( high30 >= 193518 )
-	assertTrue( high30 <= 193520 )
+	assertAlmostEquals( 193519, high30, nil, nil, 1 )
 end
 function test.testGetHighLow_30Low_Desc()
 	fillTokenHistory_Desc()
 	_, _, _, low30 = GoldRate.GetHighLow()
-	assertTrue( low30 >= 191358 )
-	assertTrue( low30 <= 191360)
+	assertAlmostEquals( 191359, low30, nil, nil, 1 )
 end
 function test.testGetHighLow_60High_Desc()
 	fillTokenHistory_Desc()
 	_, _, _, _, high60 = GoldRate.GetHighLow()
-	assertTrue( high60 >= 195678 )
-	assertTrue( high60 <= 195680 )
+	assertAlmostEquals( 195679, high60, nil, nil, 1 )
 end
 function test.testGetHighLow_60Low_Desc()
 	fillTokenHistory_Desc()
 	_, _, _, _, _, low60 = GoldRate.GetHighLow()
-	assertTrue( low60 >= 191358 )
-	assertTrue( low60 <= 191360 )
+	assertAlmostEquals( 191359, low60, nil, nil, 1 )
 end
 function test.testGetHighLow_90High_Desc()
 	fillTokenHistory_Desc()
 	_, _, _, _, _, _, high90 = GoldRate.GetHighLow()
-	assertTrue( high90 >= 197838 )
-	assertTrue( high90 <= 197840 )
+	assertAlmostEquals( 197839, high90, nil, nil, 1 )
 end
 function test.testGetHighLow_90Low_Desc()
 	fillTokenHistory_Desc()
 	_, _, _, _, _, _, _, low90 = GoldRate.GetHighLow()
-	assertTrue( low90 >= 191358 )
-	assertTrue( low90 <= 191360 )
+	assertAlmostEquals( 191359, low90, nil, nil, 1 )
 end
 function test.testHighLow()
 	now = time()

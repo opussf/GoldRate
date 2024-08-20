@@ -1,7 +1,7 @@
 -----------------------------------------
 -- Author  :  Opussf
--- Date    :  August 11 2024
--- Revision:  9.4.3-13-gb4f594c
+-- Date    :  August 19 2024
+-- Revision:  9.5
 -----------------------------------------
 -- These are functions from wow that have been needed by addons so far
 -- Not a complete list of the functions.
@@ -12,6 +12,7 @@
 -- * Create test.lua  - Add #!/usr/bin/env lua
 -- * require "wowTest"
 -- * set test.outFileName to an ouput.xml file
+-- * set test.coberturaFileName = "../coverage.xml" to enable coverage output
 -- * Parse the TOC - ParseTOC( "../src/sonthing.toc" )
 -- * Setup any 'Normal Frames'
 
@@ -618,11 +619,23 @@ end
 EditBox = {
 		["SetText"] = function(self,text) self.text=text; end,
 		["SetCursorPosition"] = function(self,pos) self.cursorPosition=pos; end,
-
 }
 function CreateEditBox( name, ... )
 	me = {}
 	for k,v in pairs(EditBox) do
+		me[k] = v
+	end
+	me.name = name
+	return me
+end
+Button = {
+	["enabled"] = true,
+	["SetEnabled"] = function(self,enabled) self.enabled = enabled; end,
+	["IsEnabled"] = function(self) return self.enabled; end,
+}
+function CreateButton( name, ... )
+	me = {}
+	for k,v in pairs(Button) do
 		me[k] = v
 	end
 	me.name = name
@@ -888,6 +901,10 @@ function C_AddOns.GetAddOnMetadata( addon, field )
 end
 function C_AddOns.GetNumAddOns()
 	return 1
+end
+function C_AddOns.LoadAddOn( addonName )
+end
+function C_AddOns.DisableAddOn( addonName, playerName )
 end
 
 C_Container = {}
@@ -1335,8 +1352,6 @@ end
 function IsResting()
 	return true
 end
-function LoadAddOn()
-end
 function NumTaxiNodes()
 	-- http://www.wowwiki.com/API_NumTaxiNodes
 	local count = 0
@@ -1541,13 +1556,12 @@ end
 function UnitAffectingCombat( unit )
 	return false
 end
-function UnitAura( unit, index, filter )
+C_UnitAuras = {}
+function C_UnitAuras.GetAuraDataByIndex( unit, index )
 	-- @TODO: Look this up to get a better idea of what this function does.
-	-- Returns the aura name
-	-- unit, [index] [,filter]
-	-- Returns True or nil
+	-- Returns an auraData table
 	if( UnitAuras[unit] and UnitAuras[unit][index] ) then
-		return UnitAuras[unit][index].name
+		return UnitAuras[unit][index]
 	end
 end
 function UnitClass( who )
@@ -1685,6 +1699,12 @@ function GetEquipmentSetInfoByName( nameIn )
 			return EquipmentSets[i].icon, i-1
 		end
 	end
+end
+function CanMerchantRepair()
+	return true
+end
+function CanGuildBankRepair()
+	return true
 end
 
 --http://wow.gamepedia.com/Patch_7.0.3/API_changes
