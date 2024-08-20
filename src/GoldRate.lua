@@ -1,7 +1,7 @@
 GOLDRATE_SLUG, GoldRate = ...
-GOLDRATE_MSG_ADDONNAME  = GetAddOnMetadata( GOLDRATE_SLUG, "Title" )
-GOLDRATE_MSG_VERSION    = GetAddOnMetadata( GOLDRATE_SLUG, "Version" )
-GOLDRATE_MSG_AUTHOR     = GetAddOnMetadata( GOLDRATE_SLUG, "Author" )
+GOLDRATE_MSG_ADDONNAME  = C_AddOns.GetAddOnMetadata( GOLDRATE_SLUG, "Title" )
+GOLDRATE_MSG_VERSION    = C_AddOns.GetAddOnMetadata( GOLDRATE_SLUG, "Version" )
+GOLDRATE_MSG_AUTHOR     = C_AddOns.GetAddOnMetadata( GOLDRATE_SLUG, "Author" )
 
 -- Colours
 COLOR_RED = "|cffff0000"
@@ -103,7 +103,10 @@ function GoldRate.PLAYER_MONEY()
 	GoldRate_data[GoldRate.realm][GoldRate.faction].consolidated[time()] = GoldRate.otherSummed + GetMoney()
 end
 function GoldRate.ACCOUNT_MONEY()
-	GoldRate_data["Warband Bank"].Both.consolidated[time()] = C_Bank.FetchDepositedMoney( Enum.BankType.Account )
+	local AccountGold = C_Bank.FetchDepositedMoney( Enum.BankType.Account )
+	if AccountGold > 0 then
+		GoldRate_data["Warband Bank"].Both.consolidated[time()] = AccountGold
+	end
 end
 function GoldRate.PLAYER_ENTERING_WORLD()
 	GoldRate.PLAYER_MONEY()
@@ -120,6 +123,7 @@ function GoldRate.PLAYER_ENTERING_WORLD()
 --	end
 end
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
+	GoldRate.ACCOUNT_MONEY()  -- Keep these in step
 	local val = C_WowTokenPublic.GetCurrentMarketPrice()
 	if val then
 		local now = time()
@@ -195,8 +199,6 @@ function GoldRate.SetTokenTSs()
 	table.sort( GoldRate.tokenTSs )
 end
 function GoldRate.PruneData()
-	GoldRate.Print("PruneData")
---
 	local smoothAgeDays = GoldRate_options.smoothAgeDays or 30
 	local pruneAgeDays = GoldRate_options.pruneAgeDays or 180
 	smoothCutoff = time() - (86400 * smoothAgeDays)
