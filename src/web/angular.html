@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<!--- https://www.w3schools.com/angular/angular_sql.asp  -->
+<!--- https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API -->
+<!--- https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API -->
+<html lang='en'>
+<head>
+<link href="rss" rel="alternate" type="application/rss+xml" title="Gold RSS Feed"></link>
+<link rel="stylesheet" href="/css/bootstrap.css" type="text/css"/>
+<link rel="stylesheet" href="GR.css" type="text/css"/>
+<link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css" type="text/css"/>
+<title ng-bind="limitSize + 'Gold'">Gold</title>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<script src="/js/angular.min.js"></script>
+<script src="GR.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+<div class="main" id="GoldApp" ng-app="GoldApp" ng-controller="GoldDisplay">
+
+<div class="row">
+<div class="col col-xs-6">
+<a href ng-click="">1D</a>
+<a href ng-click="">3D</a>
+<a href ng-click="">1W</a>
+<a href ng-click="">2W</a>
+<a href ng-click="">1M</a>
+<a href ng-click="">2M</a>
+<a href ng-click="">3M</a>
+<a href ng-click="">6M</a>
+<a href ng-click="">All</a>
+<a href ng-click="">Area</a>
+</div>
+</div>
+<div class="row" ng-repeat="realm in realmList">
+<div class="col col-xs-2">{{realm[0]}} ({{realm[1]}})<div id="{{realm[2]}}"></div></div>
+</div> <!-- row -->
+<div class="row">
+<div class="col col-xs-12">
+<!-- div for dashboard -->
+<div id="all_dashboard_div">
+<div id="all_chart_div"></div>
+<div id="all_filter_div"></div>
+<div>
+<button onclick="changeRange('1D');">
+1D
+</button>
+</div>
+</div>
+</div> <!-- dashboard -->
+</div> <!-- col -->
+</div> <!-- row -->
+<div class="row">
+<div class="col col-xs-12"><!--<img src="goldPercent.php?period="/>--></div>
+</div>
+
+</div>
+</div>
+
+</body>
+</html>
