@@ -54,10 +54,9 @@ $scope.drawChart = function( div ) {
 	});
 
 	var options = {
-		is3D: false,
 		bar: { groupWidth: '100%' },
 		title: "ALL DATA",
-		titlePosition: 'in',
+		titlePosition: 'out',
 		interpolateNulls: true,
 		//legend: 'none',
 		hAxis: {
@@ -69,9 +68,10 @@ $scope.drawChart = function( div ) {
 		vAxis: {
 			title: 'Gold'
 		},
-		seriesType: 'area',
+		seriesType: 'line',
+		series: {0: {type: 'area'}},
+		height: 600,
 	};
-
 
 	var comboChart = new google.visualization.ChartWrapper({
 		'chartType': 'ComboChart',
@@ -83,8 +83,20 @@ $scope.drawChart = function( div ) {
 	dashboard.bind( dateRangeFilter, comboChart );
 	dashboard.draw(data);
 
-	//chart.draw( data, options );
-
+	changeRange = function( rangeVal ) {
+		dateRangeFilter.setState(
+			{'range': {'start': new Date( Date.now() - rangeVal*1000 ), 'end': new Date()}}
+		);
+		dateRangeFilter.draw();
+	};
+	clearRange = function() {
+		dateRangeFilter.setState();
+		dateRangeFilter.draw();
+	};
+	changeOptions = function( column ) {
+		comboChart.setOption('view', {'columns': [0,column]});
+		comboChart.draw();
+	}
 }
 
 $http.get("GR.json?date="+ new Date())
