@@ -4,38 +4,72 @@ google.charts.load("current", {packages:["corechart", "controls"]});
 var app = angular.module('GoldApp', []);
 app.controller('GoldDisplay', function( $scope, $http ) {
 $scope.chartData = [];
+$scope.includedRealms = {
+	"TokenData": true
+}
+
+$scope.toggleRealm = function( rn ) {
+	if( rn in $scope.includedRealms && $scope.includedRealms[rn] ) {
+		$scope.includedRealms[rn] = false;
+	} else {
+		$scope.includedRealms[rn] = true;
+	}
+	isOk = false;
+	for( [key,value] of Object.entries($scope.includedRealms)) {
+		isOk = isOk || value;
+	}
+	if( !isOk ) {
+		$scope.includedRealms["TokenData"] = true;
+	}
+}
+$scope.setAll = function() {
+	$scope.includedRealms = {};
+	for( i in $scope.realmList ) {
+		$scope.includedRealms[$scope.realmList[i][0]] = true;
+	}
+}
 
 $scope.drawAllCharts = function() {
 	console.log( "DrawAllCharts" );
 	$scope.chartData = [['Date']];
 	for( i in $scope.realmList ) {
-		$scope.chartData[0].push( $scope.realmList[i][0] );
+		if( $scope.includedRealms[$scope.realmList[i][0]] ) {
+			$scope.chartData[0].push( $scope.realmList[i][0] );
+		}
 	}
 
 	cData = {};  // Collection data structure {date: {realm: value, ... } }
 	
 	for( i in $scope.gold.realms ) {
 		realm = $scope.gold.realms[i].realm;
-		for( di in $scope.gold.realms[i].factions[0].data ) {
-			ts = $scope.gold.realms[i].factions[0].data[di][0]; // timestamp
-			cv = $scope.gold.realms[i].factions[0].data[di][1]; // copper value
-			if( !(ts in cData) ) {
-				cData[ts] = {};
+		if( $scope.includedRealms[realm] ) {
+			console.log( realm + " is included");
+			for( di in $scope.gold.realms[i].factions[0].data ) {
+				ts = $scope.gold.realms[i].factions[0].data[di][0]; // timestamp
+				cv = $scope.gold.realms[i].factions[0].data[di][1]; // copper value
+				if( !(ts in cData) ) {
+					cData[ts] = {};
+				}
+				cData[ts][realm] = cv;
 			}
-			cData[ts][realm] = cv;
+		} else {
+			console.log( realm + " is NOT included");
 		}
 	}
 	for( var ts in cData) {
 		lTimeRealmVal = [new Date(ts*1000)]; // date takes ms, data has seconds
+		addValue = true;
 		for( i in $scope.realmList ) {
 			rn = $scope.realmList[i][0];
-			if( rn in cData[ts] ) {
-				lTimeRealmVal.push( cData[ts][rn]/10000 );
-			} else {
-				lTimeRealmVal.push(null);
+			if( $scope.includedRealms[rn] ) {
+				if( rn in cData[ts] ) {
+					lTimeRealmVal.push( cData[ts][rn]/10000 );
+				} else {
+					lTimeRealmVal.push(null);
+				}
+				$scope.chartData.push( lTimeRealmVal );
 			}
 		}
-		$scope.chartData.push( lTimeRealmVal );
 	}
 	$scope.drawChart( "all_chart_div" );
 }

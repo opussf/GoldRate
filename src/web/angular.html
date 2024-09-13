@@ -20,30 +20,19 @@
 <div class="main" id="GoldApp" ng-app="GoldApp" ng-controller="GoldDisplay">
 
 <div class="row">
-<div class="col col-xs-6">
-<a href ng-click="">1D</a>
-<a href ng-click="">3D</a>
-<a href ng-click="">1W</a>
-<a href ng-click="">2W</a>
-<a href ng-click="">1M</a>
-<a href ng-click="">2M</a>
-<a href ng-click="">3M</a>
-<a href ng-click="">6M</a>
-<a href ng-click="">All</a>
-<a href ng-click="">Area</a>
+<div class="col col-xs-12">
+<ul ng-repeat="realm in realmList">
+<li><span ng-show="includedRealms[realm[0]]" class="fa fa-caret-up"></span>
+<a href ng-click="toggleRealm(realm[0]);drawAllCharts();" alt="{{realm[1]}}">{{realm[0]}}</a></li>
+</ul>
+<a href ng-click="setAll();drawAllCharts();">ALL</a>
 </div>
-</div>
-<!--
-<div class="row" ng-repeat="realm in realmList">
-<div class="col col-xs-2">{{realm[0]}} ({{realm[1]}})<div id="{{realm[2]}}"></div></div>
-</div>--> <!-- row -->
+</div> <!-- row -->
 <div class="row">
 <div class="col col-xs-12">
 <!-- div for dashboard -->
 <div id="all_dashboard_div">
-<div id="all_chart_div"></div>
-<div id="all_filter_div"></div>
-<div>
+<div id="controlls">
 <button onclick="changeRange(86400);">1D</button>
 <button onclick="changeRange(259200);">3D</button>
 <button onclick="changeRange(604800);">1W</button>
@@ -54,9 +43,9 @@
 <button onclick="changeRange(15778800);">6M</button>
 <button onclick="changeRange(31557600);">1Y</button>
 <button onclick="clearRange();">All</button>
-
-<button onclick="changeOptions(2);">Show 2</button>
 </div>
+<div id="all_chart_div"></div>
+<div id="all_filter_div"></div>
 </div>
 </div> <!-- dashboard -->
 </div> <!-- col -->
