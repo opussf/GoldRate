@@ -22,7 +22,7 @@
 <div class="row">
 <div class="col col-xs-12">
 <ul ng-repeat="realm in realmList">
-<li><span ng-show="includedRealms[realm[0]]" class="fa fa-caret-up"></span>
+<li><span ng-show="includedRealms[realm[0]]" class="fa fa-caret-right"></span>
 <a href ng-click="toggleRealm(realm[0]);drawAllCharts();" alt="{{realm[1]}}">{{realm[0]}}</a></li>
 </ul>
 <a href ng-click="setAll();drawAllCharts();">ALL</a>
