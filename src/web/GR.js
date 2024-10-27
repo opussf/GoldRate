@@ -95,7 +95,7 @@ $scope.drawChart = function( div ) {
 		//legend: 'none',
 		hAxis: {
 			//format: 'MMM d, y',
-			format: 'MM/dd/yyyy',
+			format: 'MM/dd/yy',
 			testPosition: 'out',
 			//maxValue: new Date(),
 		},
@@ -103,6 +103,7 @@ $scope.drawChart = function( div ) {
 			title: 'Gold'
 		},
 		seriesType: 'line',
+		crosshair: { trigger: 'both', orientation: 'both' },
 		series: {0: {type: 'area'}},
 		height: 600,
 	};
