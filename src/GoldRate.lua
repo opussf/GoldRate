@@ -24,6 +24,7 @@ GoldRate_options = {
 		['pruneAgeDays'] = 180,
 }
 GoldRate_tokenData = {} -- [timestamp] = value
+GoldRate_tokenDataImport = {} -- [ts] = value -- from external sources
 
 GoldRate.days = {1, 30, 60, 90, 120, 150, 180, 270, 360 }
 GoldRate.daysText = {"High", "Low", "30DH", "30DL", "60DH", "60DL",
@@ -111,16 +112,16 @@ end
 function GoldRate.PLAYER_ENTERING_WORLD()
 	GoldRate.PLAYER_MONEY()
 	GoldRate.ACCOUNT_MONEY()
+	for ts,val in pairs( GoldRate_tokenDataImport ) do   -- @TODO: Make this a function
+		GoldRate_tokenData[ts] = val
+		GoldRate_tokenDataImport[ts] = nil
+	end
 	GoldRate.pruneThread = coroutine.create( GoldRate.PruneData )
+	GoldRate.PruneToons()
 	GoldRate.SetTokenTSs()
 	if not GoldRate.tokenText and #GoldRate.tokenTSs > 0 then
 		GoldRate.makeTokenText()
 	end
--- 	if not GoldRate.goldShown then
--- 		local totalGoldNow = GoldRate.otherSummed + GetMoney()
--- 		GoldRateUI.Show( 0, totalGoldNow/10000, GoldRate.tokenLast/10000, "Total Gold: "..math.floor(totalGoldNow/10000).." Token: "..GoldRate.tokenLast/10000 )
--- 		GoldRate.goldShown = true
---	end
 end
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 	GoldRate.ACCOUNT_MONEY()  -- Keep these in step
@@ -278,6 +279,19 @@ function GoldRate.PruneData()
 		end
 		count = count + 1
 		prevVal = val
+	end
+end
+function GoldRate.PruneToons()
+	for pruneRealm, realmStruct in pairs( GoldRate_data ) do
+		for pruneFaction, factionStruct in pairs( realmStruct ) do
+			if factionStruct.toons then
+				for name, charStruct in pairs( factionStruct.toons ) do
+					if charStruct.last == 0 then
+						factionStruct.toons[name] = nil
+					end
+				end
+			end
+		end
 	end
 end
 --------------
