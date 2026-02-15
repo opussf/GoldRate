@@ -2,16 +2,8 @@
 
 require "wowTest"
 test.outFileName = "testOut.xml"
--- test.coberturaFileName = "coverage.xml"
-
--- -- Figure out how to parse the XML here, until then....
--- GoldRate_Frame = CreateFrame()
--- GoldRate_Display = CreateFrame()
--- ChatFrame1 = CreateFrame()
--- GoldRate_Display_Bar0 = CreateStatusBar()
--- GoldRate_Display_Bar1 = CreateStatusBar()
--- GoldRate_Display_String = CreateFontString()
--- --SendMailNameEditBox = CreateFontString("SendMailNameEditBox")
+test.coberturaFileName = "../coverage.xml"
+test.coverageReportPercent = true
 
 ParseTOC( "../src/GoldRate.toc" )
 
@@ -256,6 +248,8 @@ function test.test_OnUpdate_continues_prune_coroutine()
 	GoldRate.OnUpdate()
 	GoldRate.OnUpdate()
 	GoldRate.OnUpdate()
+	GoldRate.OnUpdate()
+	GoldRate.OnUpdate()
 	assertEquals( "dead", coroutine.status( GoldRate.pruneThread ) )
 end
 function test.test_OnUpdate_Updates_ScanTime()
@@ -489,9 +483,7 @@ function test.testMultiPrune_01()
 	for k,v in GoldRate.PairsByKeys( GoldRate_data['otherRealm'].Both.consolidated ) do
 		valCount = valCount + 1
 	end
-	--assertEquals( 7857, valCount )
-	assertTrue( valCount < 7860 ) -- +- 2 values to account for times
-	assertTrue( valCount > 7854 )
+	assertAlmostEquals( 7857, valCount, nil, nil, 3 )
 end
 function test.test_Prune_Token_values()
 	-- Token prune only removes duplicate values
