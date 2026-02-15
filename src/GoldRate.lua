@@ -117,16 +117,11 @@ function GoldRate.PLAYER_ENTERING_WORLD()
 		GoldRate_tokenDataImport[ts] = nil
 	end
 	GoldRate.pruneThread = coroutine.create( GoldRate.PruneData )
+	GoldRate.PruneToons()
 	GoldRate.SetTokenTSs()
 	if not GoldRate.tokenText and #GoldRate.tokenTSs > 0 then
 		GoldRate.makeTokenText()
 	end
-
--- 	if not GoldRate.goldShown then
--- 		local totalGoldNow = GoldRate.otherSummed + GetMoney()
--- 		GoldRateUI.Show( 0, totalGoldNow/10000, GoldRate.tokenLast/10000, "Total Gold: "..math.floor(totalGoldNow/10000).." Token: "..GoldRate.tokenLast/10000 )
--- 		GoldRate.goldShown = true
---	end
 end
 function GoldRate.TOKEN_MARKET_PRICE_UPDATED()
 	GoldRate.ACCOUNT_MONEY()  -- Keep these in step
@@ -284,6 +279,19 @@ function GoldRate.PruneData()
 		end
 		count = count + 1
 		prevVal = val
+	end
+end
+function GoldRate.PruneToons()
+	for pruneRealm, realmStruct in pairs( GoldRate_data ) do
+		for pruneFaction, factionStruct in pairs( realmStruct ) do
+			if factionStruct.toons then
+				for name, charStruct in pairs( factionStruct.toons ) do
+					if charStruct.last == 0 then
+						factionStruct.toons[name] = nil
+					end
+				end
+			end
+		end
 	end
 end
 --------------
