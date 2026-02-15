@@ -282,17 +282,17 @@ function GoldRate.PruneData()
 	end
 end
 function GoldRate.PruneToons()
-	for pruneRealm, realmStruct in pairs( GoldRate_data ) do
-		for pruneFaction, factionStruct in pairs( realmStruct ) do
-			if factionStruct.toons then
-				for name, charStruct in pairs( factionStruct.toons ) do
-					if charStruct.last == 0 then
-						factionStruct.toons[name] = nil
-					end
-				end
-			end
-		end
-	end
+	-- for pruneRealm, realmStruct in pairs( GoldRate_data ) do
+	-- 	for pruneFaction, factionStruct in pairs( realmStruct ) do
+	-- 		if factionStruct.toons then
+	-- 			for name, charStruct in pairs( factionStruct.toons ) do
+	-- 				if charStruct.last == 0 then
+	-- 					factionStruct.toons[name] = nil
+	-- 				end
+	-- 			end
+	-- 		end
+	-- 	end
+	-- end
 end
 --------------
 -- Non Event functions
