@@ -224,6 +224,51 @@ function ExportCSV()
 	end
 	return strOut
 end
+function MakeTotal()
+	-- Step 1: Collect all unique timestamps across all realms
+	local allTimestamps = {}
+	local seen = {}
+	for realm, realmData in pairs(GoldRate_data) do
+		for ts, _ in pairs(realmData["Both"]["consolidated"]) do
+			if not seen[ts] then
+				seen[ts] = true
+				table.insert(allTimestamps, ts)
+			end
+		end
+	end
+	table.sort(allTimestamps)
+
+	-- Step 2: Walk timestamps in order, tracking last known value per realm
+	local currentValues = {}
+	for realm, _ in pairs(GoldRate_data) do
+		currentValues[realm] = 0
+	end
+
+	-- Step 3: Build the Total realm in the same structure as other realms
+	GoldRate_data["Total"] = {
+		["Both"] = {
+			["numVals"] = #allTimestamps,
+			["consolidated"] = {},
+			["toons"] = {},
+		}
+	}
+
+	for _, ts in ipairs(allTimestamps) do
+		for realm, realmData in pairs(GoldRate_data) do
+			if realm ~= "Total" then
+				local val = realmData["Both"]["consolidated"][ts]
+				if val then
+					currentValues[realm] = val
+				end
+			end
+		end
+		local sum = 0
+		for realm, val in pairs(currentValues) do
+			sum = sum + val
+		end
+		GoldRate_data["Total"]["Both"]["consolidated"][ts] = sum
+	end
+end
 ----
 
 functionList = {
@@ -236,6 +281,7 @@ func = functionList[string.lower( exportType )]
 
 if dataFile and FileExists( dataFile ) and exportType and func then
 	DoFile( dataFile )
+	MakeTotal()
 	strOut = func()
 	print( strOut )
 else
