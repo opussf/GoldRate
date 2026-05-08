@@ -89,19 +89,19 @@ function Rate( realmIn, factionIn )
 end
 
 function ExportXML()
-	strOut = "No data structure."
+	tOut = { "No data structure." }
 	if GoldRate_data then
-		strOut = "<?xml version='1.0' encoding='utf-8' ?>\n"
-		strOut = strOut .. "<goldRate>\n"
-		strOut = strOut .. "<graphAgeDays>"..GoldRate_options.graphAgeDays.."</graphAgeDays>\n"
+		tOut[1] = "<?xml version='1.0' encoding='utf-8' ?>\n"
+		tOut[2] = "<goldRate>\n"
+		tOut[3] = "<graphAgeDays>"..GoldRate_options.graphAgeDays.."</graphAgeDays>\n"
 		for realm, rdata in PairsByKeys( GoldRate_data ) do
 			maxInitialTS = 0
 			for faction, fdata in PairsByKeys( rdata ) do
 				m, targetTS = Rate(realm, faction)
-				strOut = strOut .. string.format( '<rf realm="%s" faction="%s">\n', realm, faction )
+				tOut[#tOut+1] = string.format( '<rf realm="%s" faction="%s">\n', realm, faction )
 				if fdata.goal and targetTS then
 					--print( type( targetTS ) )
-					strOut = strOut .. string.format( '<goal ts="%s">%i</goal>\n', targetTS, fdata.goal )
+					tOut[#tOut+1] = string.format( '<goal ts="%s">%i</goal>\n', targetTS, fdata.goal )
 				end
 				for name, pdata in pairs( fdata.toons ) do
 					maxInitialTS = math.min( maxInitialTS, pdata.firstTS)
@@ -109,7 +109,7 @@ function ExportXML()
 				if fdata.consolidated then
 					for ts, val in PairsByKeys( fdata.consolidated ) do
 						if ts >= maxInitialTS and ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
-							strOut = strOut .. string.format( '<v ts="%i">%i</v>', ts, val )
+							tOut[#tOut+1] = string.format( '<v ts="%i">%i</v>', ts, val )
 						end
 					end
 				end
@@ -118,21 +118,21 @@ function ExportXML()
 					strOut = strOut .. string.format("%s,%s,%s,%i,%i,target\n", realm, faction, os.date( "%x %X", targetTS), targetTS, GoldRate_data[realm][faction].goal )
 				end
 				]]
-				strOut = strOut .. "</rf>\n"
+				tOut[#tOut+1] = "</rf>\n"
 			end
 		end
 	end
 	if GoldRate_tokenData then
-		strOut = strOut .. string.format( '<rf realm="TokenData" faction="all">\n' )
+		tOut[#tOut+1] = string.format( '<rf realm="TokenData" faction="all">\n' )
 		for ts, val in PairsByKeys( GoldRate_tokenData ) do
 			if ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
-				strOut = strOut .. string.format( '<v ts="%i">%i</v>', ts, val )
+				tOut[#tOut+1] = string.format( '<v ts="%i">%i</v>', ts, val )
 			end
 		end
-		strOut = strOut .. "</rf>\n"
+		tOut[#tOut+1] = "</rf>\n"
 	end
-	strOut = strOut .. "</goldRate>\n"
-	return strOut
+	tOut[#tOut+1] = "</goldRate>\n"
+	return table.concat(tOut, "")
 end
 function ExportJSON()
 	strOut = "No data structure."
@@ -195,7 +195,7 @@ function ExportJSON()
 	return strOut
 end
 function ExportCSV()
-	strOut = "Realm,Faction,TimeStamp,TimeStamp,Gold\n"
+	tOut = { "Realm,Faction,TimeStamp,TimeStamp,Gold" }
 	if GoldRate_data then
 		for realm, rdata in PairsByKeys( GoldRate_data ) do
 			maxInitialTS = 0
@@ -208,7 +208,7 @@ function ExportCSV()
 				if fdata.consolidated then
 					for ts, val in PairsByKeys( fdata.consolidated ) do
 						if ts >= maxInitialTS and ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
-							strOut = strOut .. string.format( '%s,%s,%s,%i,%s\n', realm, faction, os.date( "%x %X", ts ),ts, val )
+							tOut[#tOut+1] = string.format( '%s,%s,%s,%i,%s', realm, faction, os.date( "%x %X", ts ),ts, val )
 						end
 					end
 				end
@@ -218,11 +218,11 @@ function ExportCSV()
 	if GoldRate_tokenData then
 		for ts, val in PairsByKeys( GoldRate_tokenData ) do
 			if ts >= (os.time() - (GoldRate_options.graphAgeDays * 86400)) then
-				strOut = strOut .. string.format( '%s,%s,%s,%i,%s\n', "TokenData", "Both", os.date( "%x %X", ts ),ts, val )
+				tOut[#tOut+1] = string.format( '%s,%s,%s,%i,%s', "TokenData", "Both", os.date( "%x %X", ts ),ts, val )
 			end
 		end
 	end
-	return strOut
+	return table.concat(tOut, "\n")
 end
 function MakeTotal()
 	-- Step 1: Collect all unique timestamps across all realms
